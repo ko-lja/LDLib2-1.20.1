@@ -7,14 +7,11 @@ import com.lowdragmc.lowdraglib2.gui.texture.Icons;
 import com.lowdragmc.lowdraglib2.gui.util.TreeBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import net.minecraft.nbt.CompoundTag;
+import com.lowdragmc.lowdraglib2.utils.FileUtility;
 import net.minecraft.nbt.NbtIo;
 
 import org.jetbrains.annotations.Nullable;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -152,7 +149,7 @@ public class ProjectType {
      * @throws Exception If any error occurs during file reading, data deserialization, or object creation.
      */
     public IProject loadProjectFromFile(File file) throws Exception {
-        var data = readNbtFile(file);
+        var data = FileUtility.readNbt(file.toPath());
         var project = getProjectCreator().get();
         project.deserializeNBT(Platform.getFrozenRegistry(), Objects.requireNonNull(data));
         return project;
@@ -197,12 +194,6 @@ public class ProjectType {
         NbtIo.write(fileData, file);
     }
 
-    private static CompoundTag readNbtFile(File file) throws IOException {
-        var data = NbtIo.read(file);
-        if (data == null) throw new NoSuchFileException(file.getPath());
-        return data;
-    }
-
     /**
      * Checks if a project is "dirty" compared to its serialized file representation. A project is considered "dirty"
      * if its serialized data differs from the data stored in the file.
@@ -216,7 +207,7 @@ public class ProjectType {
      */
     public boolean isProjectDirty(IProject project, File file) throws Exception {
         var data = project.serializeNBT(Platform.getFrozenRegistry());
-        var fileData = readNbtFile(file);
+        var fileData = FileUtility.readNbt(file.toPath());
         return !data.equals(fileData);
     }
 
