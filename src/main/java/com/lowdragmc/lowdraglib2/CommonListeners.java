@@ -11,9 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraftforge.bus.api.IEventBus;
-import net.minecraftforge.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.EventBusSubscriber;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
  * @date 2022/11/27
  * @implNote CommonListeners
  */
-@EventBusSubscriber(modid = LDLib2.MOD_ID)
+@Mod.EventBusSubscriber(modid = LDLib2.MOD_ID)
 public class CommonListeners {
 
     public static class ModCreativeModeTab {

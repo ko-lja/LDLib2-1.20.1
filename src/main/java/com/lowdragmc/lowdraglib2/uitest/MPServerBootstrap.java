@@ -3,8 +3,8 @@ package com.lowdragmc.lowdraglib2.uitest;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
 import com.lowdragmc.lowdraglib2.uitest.mp.MPRunConfig;
-import net.minecraftforge.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.EventBusSubscriber;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.tick.ServerTickEvent;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * that is, when the {@code runMpServer} Gradle run set the mptest role/hub system properties.
  * Inert everywhere else, including ordinary {@code runServer} launches.
  */
-@EventBusSubscriber(modid = LDLib2.MOD_ID)
+@Mod.EventBusSubscriber(modid = LDLib2.MOD_ID)
 public final class MPServerBootstrap {
 
     @Nullable

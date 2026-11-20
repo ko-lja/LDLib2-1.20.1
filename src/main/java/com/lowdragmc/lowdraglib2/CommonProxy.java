@@ -16,24 +16,25 @@ import com.lowdragmc.lowdraglib2.test.syncdata.SyncTestBlockEntity;
 import com.lowdragmc.lowdraglib2.test.syncdata.bench.SyncBenchBlock;
 import com.lowdragmc.lowdraglib2.test.syncdata.bench.SyncBenchBlockEntity;
 import com.lowdragmc.lowdraglib2.utils.ReflectionUtils;
-import net.minecraft.core.registries.BuiltInRegistries;
+
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.bus.api.IEventBus;
-import net.minecraftforge.registries.DeferredHolder;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 public class CommonProxy {
-    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(BuiltInRegistries.BLOCK, LDLib2.MOD_ID);
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(BuiltInRegistries.ITEM, LDLib2.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, LDLib2.MOD_ID);
+    private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, LDLib2.MOD_ID);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, LDLib2.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, LDLib2.MOD_ID);
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TestBlockEntity>> TEST_BE_TYPE;
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SyncTestBlockEntity>> SYNC_TEST_BE_TYPE;
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SyncBenchBlockEntity>> SYNC_BENCH_BE_TYPE;
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RendererBlockEntity>> RENDERER_BE_TYPE;
+    public static final RegistryObject<BlockEntityType<TestBlockEntity>> TEST_BE_TYPE;
+    public static final RegistryObject<BlockEntityType<SyncTestBlockEntity>> SYNC_TEST_BE_TYPE;
+    public static final RegistryObject<BlockEntityType<SyncBenchBlockEntity>> SYNC_BENCH_BE_TYPE;
+    public static final RegistryObject<BlockEntityType<RendererBlockEntity>> RENDERER_BE_TYPE;
 
     static {
         TEST_BE_TYPE = Platform.isDevEnv() ? BLOCK_ENTITY_TYPES.register("test", () -> BlockEntityType.Builder.of(TestBlockEntity::new, TestBlock.BLOCK).build(null)) : null;

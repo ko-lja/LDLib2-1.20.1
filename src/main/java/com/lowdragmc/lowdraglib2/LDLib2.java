@@ -2,10 +2,9 @@ package com.lowdragmc.lowdraglib2;
 
 import net.minecraft.util.RandomSource;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.bus.api.IEventBus;
-import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.common.Mod;
 import com.lowdragmc.lowdraglib2.CommonListeners.ModCreativeModeTab;
 import com.lowdragmc.lowdraglib2.core.mixins.MixinPluginShared;
@@ -31,14 +30,15 @@ public class LDLib2 {
     public static final Gson GSON = new GsonBuilder().create();
     private static File assetsLocation;
 
-    public LDLib2(IEventBus eventBus, ModContainer modContainer) {
+    public LDLib2(FMLJavaModLoadingContext ctx) {
         LDLib2.init();
-        new CommonProxy(eventBus);
+        var bus = ctx.getModEventBus();
+        new CommonProxy(bus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            new ClientProxy(eventBus, modContainer);
+            new ClientProxy(bus, ctx.getContainer());
         }
         if (Platform.isDevEnv()) {
-            ModCreativeModeTab.register(eventBus);
+            ModCreativeModeTab.register(bus);
         }
     }
 

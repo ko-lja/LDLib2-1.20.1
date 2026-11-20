@@ -17,8 +17,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.EventBusSubscriber;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.client.event.ClientTickEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import com.lowdragmc.lowdraglib2.client.font.LDFontStatsOverlay;
@@ -32,7 +32,7 @@ import java.util.List;
  * @date 2022/5/12
  * @implNote EventListener
  */
-@EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
 public class ClientEventListener {
 

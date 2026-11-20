@@ -5,7 +5,7 @@ import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.snapshots.Snapshot
 import com.lowdragmc.lowdraglib2.LDLib2
 import net.minecraftforge.api.distmarker.Dist
-import net.minecraftforge.bus.api.SubscribeEvent
+import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.common.EventBusSubscriber
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent
@@ -16,7 +16,7 @@ import net.minecraftforge.client.event.ClientPlayerNetworkEvent
  * alias stub) would otherwise first show as a `NoClassDefFoundError` when a player opens a screen.
  * A snapshot write and read plus one saveable-state registry touch both runtime jars.
  */
-@EventBusSubscriber(modid = "ldlib2_compose", bus = EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = "ldlib2_compose", bus = EventBusSubscriber.Bus.MOD)
 object ComposeModule {
 
     @JvmStatic
@@ -46,7 +46,7 @@ object ComposeModule {
  * <p>Client only: the `value` filter keeps FML from loading this object on a dedicated server, where
  * the event class does not exist.
  */
-@EventBusSubscriber(modid = "ldlib2_compose", value = [Dist.CLIENT])
+@Mod.EventBusSubscriber(modid = "ldlib2_compose", value = [Dist.CLIENT])
 object ComposeClientEvents {
 
     @JvmStatic

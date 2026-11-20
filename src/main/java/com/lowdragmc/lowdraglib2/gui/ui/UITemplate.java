@@ -14,7 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.bus.api.Event;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.common.NeoForge;
 
 import org.jetbrains.annotations.Nullable;

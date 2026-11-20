@@ -3,14 +3,14 @@ package com.lowdragmc.lowdraglib2.uitest;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.EventBusSubscriber;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.client.event.RenderFrameEvent;
 
 /**
  * The frame pump, plus a watchdog so a hung game still produces a report.
  */
-@EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
 public final class UITestBootstrap {
 
     private static boolean bootstrapped;

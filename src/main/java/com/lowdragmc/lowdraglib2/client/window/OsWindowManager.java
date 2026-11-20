@@ -5,11 +5,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.bus.api.EventPriority;
-import net.minecraftforge.bus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.EventBusSubscriber;
-import net.minecraftforge.client.event.RenderFrameEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
+import net.minecraftforge.fml.common.Mod;
+
 import org.lwjgl.glfw.GLFW;
 
 import java.util.LinkedHashMap;
@@ -26,7 +26,7 @@ import java.util.List;
  * misbehaving window cannot take the game's frame down with it.
  */
 @OnlyIn(Dist.CLIENT)
-@EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = LDLib2.MOD_ID, value = Dist.CLIENT)
 public final class OsWindowManager {
 
     /**
