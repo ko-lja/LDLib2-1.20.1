@@ -6,7 +6,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev'
+    id 'net.neoforged.moddev.legacyforge'
     id 'org.jetbrains.kotlin.jvm'
     // Must match the kotlin.jvm version the root project pins.
     id 'org.jetbrains.kotlin.plugin.compose' version '2.1.20'
@@ -14,10 +14,6 @@ plugins {
 
 version = compose_version
 group = maven_group
-
-// This module joins the core's runs (see "Dev runs") instead of getting NeoGradle's default ones, which
-// would launch it without the core. Must be set before the NeoForge dependency is declared.
-subsystems.conventions.runs.shouldDefaultRunsBeCreated = false
 
 repositories {
     maven {
@@ -30,8 +26,6 @@ repositories {
     }
 }
 
-jarJar.enable()
-
 configurations {
     // As in the core: compile dependency, api dependency of the publication, and Jar-in-Jar'd below.
     libraries
@@ -43,18 +37,22 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
     withSourcesJar()
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 sourceSets.main.kotlin { srcDir("src/main/java") }
 
-// Compile against the same Minecraft as the core; the core applies it at runtime.
-minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+// Compile against the same Minecraft as the core; the core applies it at runtime. No runs here: this module
+// joins the core's runs instead (see "Dev runs"), since its own would launch it without the core.
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+    accessTransformers.from rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+}
 
 /**
  * Jar-in-Jar a library at exactly {@code ver} while advertising {@code [ver,)}, so NeoForge can still
@@ -70,9 +68,8 @@ void embed(String group, String name, String ver) {
 }
 
 dependencies {
-    // compileOnly: NeoGradle makes a separate Minecraft jar per project, and having this one on the dev
-    // run's class path next to the core's makes FML refuse to start ("Found multiple copies").
-    compileOnly "net.neoforged:neoforge:${neo_version}"
+    // Minecraft/Forge come from legacyForge above. Only this module's output and libraries join the core's
+    // runs, never its Minecraft jar: two copies on the dev run's class path make FML refuse to start.
     // api: the composables take and return LDLib2 types.
     api rootProject
 
@@ -102,10 +99,10 @@ test {
     }
 }
 
-/** Numeric comparison of dotted versions; a missing component counts as 0. */
+/** Numeric comparison of dotted versions; a missing or non-numeric component (2.2.46.a) counts as 0. */
 static int compareVersions(String a, String b) {
-    def left = a.tokenize('.').collect { it.replaceAll('[^0-9].*', '') as int }
-    def right = b.tokenize('.').collect { it.replaceAll('[^0-9].*', '') as int }
+    def left = a.tokenize('.').collect { (it.replaceAll('[^0-9].*', '') ?: '0') as int }
+    def right = b.tokenize('.').collect { (it.replaceAll('[^0-9].*', '') ?: '0') as int }
     for (int i = 0; i < Math.max(left.size(), right.size()); i++) {
         int diff = (i < left.size() ? left[i] : 0) <=> (i < right.size() ? right[i] : 0)
         if (diff != 0) return diff
@@ -127,27 +124,26 @@ tasks.withType(ProcessResources).configureEach {
             "ldlib2_min_version": requiredCore,
     ]
     inputs.properties replaceProperties
-    filesMatching(['META-INF/neoforge.mods.toml']) {
+    filesMatching(['META-INF/mods.toml']) {
         expand replaceProperties
     }
 }
 
 // Dev runs: the core's runs load this module too, so `gradlew runClient` (or that task from an IDE's
 // Gradle run configuration) always has it. `-Pcompose=false` leaves it out; runParTest / runMpTest child
-// builds don't inherit -P, so use gradle.properties for those. NeoGradle's generated IDE application
-// configurations never include it: they are written before this project is configured.
+// builds don't inherit -P, so use gradle.properties for those.
 //
 // Captured outside the closure: in there `project` is the Run's project, i.e. the root.
 def composeSources = sourceSets.main
 def composeLibraries = configurations.libraries
 // providers, not hasProperty(): the latter also matches an extension named `compose`.
 if (providers.gradleProperty('compose').map { it != 'false' }.getOrElse(true)) {
-    rootProject.runs.configureEach {
-        modSource composeSources
-        dependencies {
-            runtime composeLibraries
+    rootProject.legacyForge.mods {
+        ldlib2_compose {
+            sourceSet composeSources
         }
     }
+    rootProject.dependencies.add('additionalRuntimeClasspath', files(composeLibraries))
 }
 
 // The publication depends on the core at this checkout's version; one older than ldlib2_min_version

@@ -16,7 +16,7 @@
 def ldMpOutDir = layout.buildDirectory.dir('ldlib2-mptest').get().asFile.absolutePath
 def ldMpHub = (project.findProperty('ldMpHub') ?: '').toString()
 
-// Explicit runType, because a run created from a separate script cannot borrow a type from its
+// Explicit run type, because a run created from a separate script cannot borrow a type from its
 // name the way `runs { client { } }` in build.gradle does. Working directories default to
 // runs/<name>, which is exactly the per-process isolation the harness needs (notably, two clients
 // must not share a latest.log on Windows).
@@ -24,24 +24,24 @@ def ldMpHub = (project.findProperty('ldMpHub') ?: '').toString()
 // Adding a role beyond A/B: copy an mpClient block as mpClient<Role>, keep the pattern intact -
 // the task must be named runMpClient<Role> (the orchestrator derives it from the role), and the
 // username must be LDTest<Role> (ServerContext.player(role) resolves via MPRoles.usernameFor).
-runs {
+legacyForge.runs {
     mpServer {
-        runType 'server'
+        server()
         programArgument '--nogui'
         systemProperty 'ldlib2.mptest.role', 'server'
         systemProperty 'ldlib2.mptest.out', "$ldMpOutDir/server"
         systemProperty 'ldlib2.mptest.hub', ldMpHub
     }
     mpClientA {
-        runType 'client'
-        programArguments '--username', 'LDTestA'
+        client()
+        programArguments.addAll '--username', 'LDTestA'
         systemProperty 'ldlib2.mptest.role', 'A'
         systemProperty 'ldlib2.mptest.out', "$ldMpOutDir/clientA"
         systemProperty 'ldlib2.mptest.hub', ldMpHub
     }
     mpClientB {
-        runType 'client'
-        programArguments '--username', 'LDTestB'
+        client()
+        programArguments.addAll '--username', 'LDTestB'
         systemProperty 'ldlib2.mptest.role', 'B'
         systemProperty 'ldlib2.mptest.out', "$ldMpOutDir/clientB"
         systemProperty 'ldlib2.mptest.hub', ldMpHub

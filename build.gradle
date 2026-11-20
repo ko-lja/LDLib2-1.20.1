@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.181'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.148'
     id 'org.jetbrains.kotlin.jvm' version '2.1.20'
     id 'org.jetbrains.kotlin.plugin.lombok' version '2.1.20'
     id 'io.freefair.lombok' version "9.2.0"
@@ -11,9 +11,6 @@ plugins {
 
 version = mod_version
 group = maven_group
-
-// Enable the Jar-in-Jar system for your mod
-jarJar.enable()
 
 configurations {
     libraries
@@ -35,7 +32,7 @@ configurations {
 // transitives (kotlin-stdlib, yoga, taffy) and would otherwise each need this list copied.
 allprojects {
     repositories {
-        // NeoGradle's mirrors are asked before mavenCentral(), and a 5xx from one fails the build instead of
+        // the Forge/Minecraft mirrors are asked before mavenCentral(), and a 5xx from one fails the build instead of
         // falling through, so test-only libraries skip them
         exclusiveContent {
             forRepository { mavenCentral() }
@@ -100,6 +97,16 @@ allprojects {
                 includeGroup "dev.latvian.apps"
             }
         }
+        maven { // Architectury (needed by KubeJS at runtime)
+            url "https://maven.architectury.dev/"
+            content {
+                includeGroup "dev.architectury"
+            }
+        }
+        maven {
+            name "Expandium"
+            url "https://repo.expandium.net/snapshots"
+        }
     }
 }
 
@@ -107,72 +114,106 @@ base {
     archivesName = "${project.name}-${minecraft_version}"
 }
 
-// Mojang ships Java 21 to end users in 1.20.5+, so your mod should target Java 21.
+// Minecraft 1.20.1 runs on Java 17.
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
     withSourcesJar()
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
         freeCompilerArgs.add("-Xwhen-guards")
     }
 }
 
-minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+legacyForge {
+    // Setting the version is what enables the plugin; the configurations used below only exist after it.
+    version = "${minecraft_version}-${forge_version}"
 
-// Default run configurations.
-// These can be tweaked, removed, or duplicated as needed.
-runs {
-    // applies to all the run configs below
-    configureEach {
-        // Recommended logging data for a userdev environment
-        // The markers can be added/remove as needed separated by commas.
-        // "SCAN": For mods scan.
-        // "REGISTRIES": For firing of registry events.
-        // "REGISTRYDUMP": For getting the contents of all registries.
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
+    accessTransformers.from rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
 
-        // Recommended logging level for the console
-        // You can set various levels here.
-        // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
-        systemProperty 'forge.logging.console.level', 'debug'
-
-        modSource project.sourceSets.main
-
-        dependencies {
-            runtime project.configurations.libraries
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
         }
     }
 
-    client {
-        // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-    }
+    // Default run configurations.
+    // These can be tweaked, removed, or duplicated as needed.
+    runs {
+        // applies to all the run configs below
+        configureEach { run ->
+            // One game directory per run (runs/<name>): the parallel and multi-process harnesses rely on
+            // every run having its own saves, logs and options.
+            run.gameDirectory = project.file("runs/${run.name}")
 
-    server {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-        programArgument '--nogui'
-    }
+            // Recommended logging data for a userdev environment
+            // The markers can be added/remove as needed separated by commas.
+            // "SCAN": For mods scan.
+            // "REGISTRIES": For firing of registry events.
+            // "REGISTRYDUMP": For getting the contents of all registries.
+            run.systemProperty 'forge.logging.markers', 'REGISTRIES'
 
-    // This run config launches GameTestServer and runs all registered gametests, then exits.
-    // By default, the server will crash when no gametests are provided.
-    // The gametest system is also enabled by default for other run configs under the /test command.
-    gameTestServer {
-        systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
-        // -PldSyncBench runs the sync benchmark (test/syncdata/bench) along with the gametests
-        systemProperty 'ldlib2.syncBench', project.hasProperty('ldSyncBench').toString()
-    }
+            // Recommended logging level for the console
+            // You can set various levels here.
+            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+            run.logLevel = org.slf4j.event.Level.DEBUG
+        }
 
-    data {
-        // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
-        // workingDirectory project.file('run-data')
+        client {
+            client()
+            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
 
-        // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-        programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        server {
+            server()
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+            programArgument '--nogui'
+        }
+
+        // This run config launches GameTestServer and runs all registered gametests, then exits.
+        // By default, the server will crash when no gametests are provided.
+        // The gametest system is also enabled by default for other run configs under the /test command.
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+            // -PldSyncBench runs the sync benchmark (test/syncdata/bench) along with the gametests
+            systemProperty 'ldlib2.syncBench', project.hasProperty('ldSyncBench').toString()
+        }
+
+        data {
+            data()
+            // example of overriding the gameDirectory set in configureEach above, uncomment if you want to use it
+            // gameDirectory = project.file('run-data')
+
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
     }
+}
+
+// Non-mod libraries (kotlin-stdlib, yoga, taffy) go on the game's legacy classpath in dev runs.
+configurations.additionalRuntimeClasspath.extendsFrom configurations.libraries
+
+// Mods on maven are published in SRG names and have to be remapped to the dev mappings. MDG provides
+// modImplementation / modCompileOnly / modRuntimeOnly / modApi; these add modLocalImplementation / modLocalRuntime.
+obfuscation {
+    createRemappingConfiguration(configurations.localImplementation)
+    createRemappingConfiguration(configurations.localRuntime)
+}
+
+// Forge 1.20.1 does not read [[mixins]] from mods.toml: mixin configs are listed in the jar manifest,
+// and production needs the refmap generated here.
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
+}
+
+tasks.named('jar', Jar) {
+    manifest.attributes(['MixinConfigs': "${mod_id}.mixins.json"])
 }
 
 // In-client UI test harness: -PldTest wiring plus the verifyUiTest gate.
@@ -190,7 +231,8 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 sourceSets.main.kotlin { srcDir("src/main/java") }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
+    annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+
     libraries("org.jetbrains.kotlin:kotlin-stdlib:${kotlin_stdlib_version}") {
         exclude group: "org.jetbrains", module: "annotations"
     }
@@ -203,35 +245,32 @@ dependencies {
     }
 
     // JEI
-    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}") { transitive = false }
-    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}") { transitive = false }
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}") { transitive = false }
+    modCompileOnly("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}") { transitive = false }
     // only the api is on the compile classpath, the full mod is runtime only.
     // localRuntime rather than runtimeOnly: runtimeOnly is published, and that would make
     // every downstream mod declare JEI's maven just to resolve us
-    localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}") { transitive = false }
 
     // REI
-    compileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-neoforge:${rei_version}")
-    compileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:${rei_version}")
-    compileOnly("me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-forge:${rei_version}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${rei_version}")
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-forge:${rei_version}")
 
     // EMI
-//    compileOnly("dev.emi:emi-neoforge:${emi_version}:api")
-//    compileOnly("dev.emi:emi-neoforge:${emi_version}")
-    compileOnly("maven.modrinth:emi:1.1.24+1.21.1+neoforge")
+    modCompileOnly("maven.modrinth:emi:${emi_version}")
 
     // AE2
-    localImplementation("org.appliedenergistics:appliedenergistics2:${ae2_version}")
-//    localImplementation("curse.maven:ae2-jei-integration-1074338:7727898")
+    modLocalImplementation("appeng:appliedenergistics2-forge:${ae2_version}") { transitive = false }
 
-    // KJS
-    localImplementation("dev.latvian.mods:kubejs-neoforge:${kjs_version}") {
-        exclude(group: "dev.architectury")
-    }
+    // KJS: remapped dependencies do not bring their transitives, so Rhino and Architectury are listed too
+    modLocalImplementation("dev.latvian.mods:kubejs-forge:${kjs_version}") { transitive = false }
+    modLocalImplementation("dev.latvian.mods:rhino-forge:${rhino_version}") { transitive = false }
+    modLocalImplementation("dev.architectury:architectury-forge:${architectury_version}") { transitive = false }
 
-    // Iris
-    localImplementation("maven.modrinth:sodium:${sodium_version}")
-    localImplementation("maven.modrinth:iris:${iris_version}")
+    // Oculus / Embeddium: the Forge 1.20.1 ports of Iris / Sodium
+    modLocalImplementation("maven.modrinth:embeddium:${embeddium_version}")
+    modLocalImplementation("maven.modrinth:oculus:${oculus_version}")
 
     // lombok
 //    compileOnly 'org.projectlombok:lombok:1.18.30'
@@ -271,7 +310,7 @@ tasks.withType(ProcessResources).configureEach {
             "mod_id": mod_id,
             "version": version,
             "loader_version": loader_version,
-            "forge_version": neo_version.split("\\.")[0], // only specify major version of forge
+            "forge_version": forge_version.split("\\.")[0], // only specify major version of forge
             "minecraft_version": minecraft_version,
             "jei_version_range": jei_version_range,
             "mod_license": mod_license,
@@ -281,7 +320,7 @@ tasks.withType(ProcessResources).configureEach {
     ]
     inputs.properties replaceProperties
 
-    filesMatching(['META-INF/neoforge.mods.toml']) {
+    filesMatching(['META-INF/mods.toml']) {
         expand replaceProperties + [project: project]
     }
 }
@@ -296,7 +335,7 @@ test {
 }
 
 // Configure the 'jarJar' task
-// 'all' is the default classifier
+// Its output is packed into the 'jar' task, which MDG then reobfuscates (reobfJar) for release
 tasks.named('jarJar') {
     // ...
 }
@@ -306,6 +345,7 @@ tasks.register("printVersion") {
 }
 
 // Example configuration to allow publishing using the maven-publish plugin
+// (MDG swaps the reobfuscated jar into the java component, so this publishes SRG-named jars)
 publishing {
     publications {
         register('mavenJava', MavenPublication) {

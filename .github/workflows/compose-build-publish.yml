@@ -18,7 +18,7 @@ on:
         default: false
 
 env:
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '17'
   JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
@@ -70,7 +70,7 @@ jobs:
         run: |
           CORE="${{ steps.version.outputs.core }}"
           MC="${{ steps.version.outputs.mc }}"
-          URL="https://maven.firstdark.dev/snapshots/com/lowdragmc/ldlib2/ldlib2-neoforge-$MC/$CORE/ldlib2-neoforge-$MC-$CORE.pom"
+          URL="https://maven.firstdark.dev/snapshots/com/lowdragmc/ldlib2/ldlib2-forge-$MC/$CORE/ldlib2-forge-$MC-$CORE.pom"
           CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
           if [ "$CODE" != "200" ]; then
             echo "❌ LDLib2 $CORE is not on Maven yet ($URL -> $CODE). Release the core first."

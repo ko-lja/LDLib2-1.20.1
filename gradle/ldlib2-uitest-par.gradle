@@ -25,10 +25,10 @@ def ldParJobs = (project.findProperty('ldTestJobs') ?: '0').toString().toInteger
 // every ldtest_ world it can see before creating its own, so shards sharing a game directory would
 // delete each other's worlds mid-run. Separate saves/, latest.log and options.txt come with it.
 if (ldParJobs > 0) {
-    runs {
+    legacyForge.runs {
         (0..<ldParJobs).each { shard ->
             "uiTestShard$shard" {
-                runType 'client'
+                client()
                 systemProperty 'ldlib2.uitest.run', (project.findProperty('ldTest') ?: 'all').toString()
                 systemProperty 'ldlib2.uitest.exclude', (project.findProperty('ldTestExclude') ?: '').toString()
                 systemProperty 'ldlib2.uitest.out', "$ldParOutDir/shard$shard"
