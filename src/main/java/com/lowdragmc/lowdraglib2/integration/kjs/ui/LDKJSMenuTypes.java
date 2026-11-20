@@ -8,8 +8,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.minecraftforge.client.event.RegisterMenuScreensEvent;
+import net.minecraftforge.common.extensions.IMenuTypeExtension;
 
 import java.util.function.Supplier;
 

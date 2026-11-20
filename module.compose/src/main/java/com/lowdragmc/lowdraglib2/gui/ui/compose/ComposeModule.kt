@@ -4,11 +4,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.SaveableStateRegistry
 import androidx.compose.runtime.snapshots.Snapshot
 import com.lowdragmc.lowdraglib2.LDLib2
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.common.EventBusSubscriber
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.bus.api.SubscribeEvent
+import net.minecraftforge.fml.common.EventBusSubscriber
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent
 
 /**
  * Proves at startup that the Compose runtime this mod Jar-in-Jars actually loaded. Dev runs use a flat

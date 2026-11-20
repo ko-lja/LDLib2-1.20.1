@@ -9,9 +9,9 @@ import com.lowdragmc.lowdraglib2.gui.ui.UI;
 import com.lowdragmc.lowdraglib2.integration.kjs.ui.LDKJSMenuTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraftforge.bus.api.IEventBus;
+import net.minecraftforge.common.extensions.IMenuTypeExtension;
+import net.minecraftforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 

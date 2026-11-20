@@ -1,7 +1,7 @@
 package com.lowdragmc.lowdraglib2.registry;
 
 import com.lowdragmc.lowdraglib2.Platform;
-import net.neoforged.fml.loading.modscan.ModAnnotation;
+import net.minecraftforge.fml.loading.modscan.ModAnnotation;
 
 import java.util.Map;
 

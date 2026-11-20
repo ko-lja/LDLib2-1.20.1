@@ -54,7 +54,7 @@ import net.minecraft.nbt.Tag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
-import net.neoforged.neoforge.fluids.FluidStack
+import net.minecraftforge.fluids.FluidStack
 import java.util.function.LongConsumer
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Button as LdlButton
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Dialog as LdlDialog

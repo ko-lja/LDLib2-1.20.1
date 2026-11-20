@@ -2,8 +2,8 @@ package com.lowdragmc.lowdraglib2.utils;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
 import lombok.experimental.UtilityClass;
-import net.neoforged.fml.ModList;
-import net.neoforged.neoforgespi.language.ModFileScanData;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforgespi.language.ModFileScanData;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;

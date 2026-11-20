@@ -2,8 +2,8 @@ package com.lowdragmc.lowdraglib2.client;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.common.TranslatableEnum;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.TranslatableEnum;
+import net.minecraftforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Locale;

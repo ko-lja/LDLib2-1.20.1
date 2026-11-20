@@ -9,8 +9,8 @@ import com.lowdragmc.lowdraglib2.uitest.mp.MPScenario;
 import com.lowdragmc.lowdraglib2.uitest.mp.MPScenarioBuilder;
 import com.lowdragmc.lowdraglib2.uitest.mp.MPScenarioOptions;
 import com.lowdragmc.lowdraglib2.uitest.mp.MPSegment;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.io.IOException;
 import java.util.ArrayList;

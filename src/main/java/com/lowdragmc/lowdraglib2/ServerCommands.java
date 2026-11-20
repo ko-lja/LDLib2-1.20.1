@@ -35,7 +35,7 @@ public class ServerCommands {
 											var world = context.getSource().getLevel();
 											var blockEntity = world.getBlockEntity(pos);
 											if (blockEntity != null) {
-												var tag = blockEntity.saveWithoutMetadata(context.getSource().registryAccess());
+												var tag = blockEntity.saveWithoutMetadata();
 												var value = NbtUtils.structureToSnbt(tag);
 												context.getSource().sendSuccess(() -> Component
 														.literal("[Copy to clipboard]")

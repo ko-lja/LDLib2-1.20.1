@@ -10,7 +10,7 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.5.0'
 }
 
-rootProject.name = "${mod_id}-neoforge"
+rootProject.name = "${mod_id}-forge"
 
 // Optional add-on modules. Each builds its own mod jar; the core jar never depends on them.
 include 'module.compose'

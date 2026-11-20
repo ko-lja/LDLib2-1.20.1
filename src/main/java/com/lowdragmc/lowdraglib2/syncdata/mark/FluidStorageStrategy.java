@@ -3,8 +3,8 @@ package com.lowdragmc.lowdraglib2.syncdata.mark;
 import com.lowdragmc.lowdraglib2.misc.FluidStorage;
 import com.lowdragmc.lowdraglib2.syncdata.utils.StackSnapshots;
 import net.minecraft.core.HolderLookup;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 
 /**

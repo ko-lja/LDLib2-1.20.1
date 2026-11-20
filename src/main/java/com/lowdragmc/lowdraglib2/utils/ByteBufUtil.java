@@ -4,8 +4,8 @@ import io.netty.buffer.Unpooled;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.neoforged.neoforge.common.util.FriendlyByteBufUtil;
-import net.neoforged.neoforge.network.connection.ConnectionType;
+import net.minecraftforge.common.util.FriendlyByteBufUtil;
+import net.minecraftforge.network.connection.ConnectionType;
 
 import java.util.function.Consumer;
 

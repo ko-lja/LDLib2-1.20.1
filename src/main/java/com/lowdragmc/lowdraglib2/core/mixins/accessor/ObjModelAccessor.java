@@ -4,7 +4,7 @@ import com.mojang.math.Transformation;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.neoforged.neoforge.client.model.obj.ObjModel;
+import net.minecraftforge.client.model.obj.ObjModel;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;

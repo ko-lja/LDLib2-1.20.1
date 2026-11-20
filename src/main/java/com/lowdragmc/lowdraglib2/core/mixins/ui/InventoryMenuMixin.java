@@ -5,7 +5,7 @@ import com.lowdragmc.lowdraglib2.gui.event.ContainerMenuEvent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.NeoForge;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

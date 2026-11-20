@@ -11,7 +11,7 @@ import com.lowdragmc.lowdraglib2.utils.IdentityMap;
 import lombok.Getter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 import org.apache.commons.lang3.function.Consumers;
 
 import java.util.*;

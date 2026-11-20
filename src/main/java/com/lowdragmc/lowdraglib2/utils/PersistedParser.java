@@ -19,9 +19,9 @@ import net.minecraft.nbt.*;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryOps;
-import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.util.INBTSerializable;
-import net.neoforged.neoforge.network.connection.ConnectionType;
+import net.minecraftforge.common.CommonHooks;
+import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.network.connection.ConnectionType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

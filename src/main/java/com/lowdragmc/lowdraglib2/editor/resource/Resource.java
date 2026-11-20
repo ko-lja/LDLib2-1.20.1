@@ -10,13 +10,13 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 
-import net.neoforged.fml.ModLoader;
+import net.minecraftforge.fml.ModLoader;
 import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.common.NeoForge;
 
 public abstract class Resource<T> {
     public enum DisplayMode {

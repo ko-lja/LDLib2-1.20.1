@@ -25,7 +25,7 @@ import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegister
 import com.lowdragmc.lowdraglib2.test.ui.IMenuTest
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
-import net.neoforged.neoforge.fluids.FluidStack
+import net.minecraftforge.fluids.FluidStack
 
 /**
  * A composition whose shape is decided by the server, opened through the real menu path with

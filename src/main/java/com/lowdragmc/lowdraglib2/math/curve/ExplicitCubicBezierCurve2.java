@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.INBTSerializable;
 import org.joml.Vector2f;
 
 import javax.annotation.Nonnull;

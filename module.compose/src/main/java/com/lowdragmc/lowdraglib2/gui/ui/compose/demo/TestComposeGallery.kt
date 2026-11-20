@@ -60,7 +60,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
-import net.neoforged.neoforge.fluids.FluidStack
+import net.minecraftforge.fluids.FluidStack
 
 /** Every wrapper that the other demos do not reach: `/ldlib2_screen_test compose_gallery`. */
 @LDLRegisterClient(name = "compose_gallery", registry = "ldlib2:screen_test")

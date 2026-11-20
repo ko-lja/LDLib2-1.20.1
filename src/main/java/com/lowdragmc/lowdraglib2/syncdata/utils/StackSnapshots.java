@@ -3,7 +3,7 @@ package com.lowdragmc.lowdraglib2.syncdata.utils;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidStack;
 
 /**
  * Copies of stacks to compare their later state with. A plain copy shares its component map with the original until one
