@@ -3,16 +3,15 @@ package com.lowdragmc.lowdraglib2.client.font.glyph;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.client.gui.font.providers.TrueTypeGlyphProviderDefinition;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.stb.STBTTFontinfo;
+import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FreeType;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,21 +36,6 @@ public class TrueTypeSdfSource implements GlyphSource {
      */
     private static final int PADDING = 6;
     /**
-     * Load flags for a metrics only pass, matching what vanilla's TrueType provider uses.
-     */
-    private static final int LOAD_METRICS = FreeType.FT_LOAD_BITMAP_METRICS_ONLY | FreeType.FT_LOAD_NO_BITMAP;
-    /**
-     * Rendering for the distance field. Hinting is deliberately off: it distorts the outline to fit whatever
-     * pixel grid it is rasterized on, and the field is then sampled at every other size, so that distortion
-     * would be baked in and applied to the wrong grid everywhere.
-     */
-    private static final int LOAD_UNHINTED = FreeType.FT_LOAD_RENDER | FreeType.FT_LOAD_NO_HINTING;
-    /**
-     * Rendering for the exact size raster path, where hinting is exactly what is wanted: the glyph is drawn at
-     * this size and nowhere else, so snapping stems onto the pixel grid is what makes it crisp.
-     */
-    private static final int LOAD_HINTED = FreeType.FT_LOAD_RENDER;
-    /**
      * How close {@code size * oversample} has to be to a whole pixel size for the exact size raster path to be
      * able to map one texel to one device pixel.
      */
@@ -60,16 +44,15 @@ public class TrueTypeSdfSource implements GlyphSource {
     @Nullable
     private ByteBuffer fontData;
     @Nullable
-    private FT_Face face;
+    private STBTTFontinfo face;
     private final float size;
     private final int emPixels;
     private final float oversample;
     private final float shiftX;
     private final float shiftY;
     private final IntSet skip = new IntArraySet();
-    private int currentPixelSize = -1;
 
-    private TrueTypeSdfSource(ByteBuffer fontData, FT_Face face, float size, int emPixels,
+    private TrueTypeSdfSource(ByteBuffer fontData, STBTTFontinfo face, float size, int emPixels,
                               float shiftX, float shiftY, String skip) {
         this.fontData = fontData;
         this.face = face;
@@ -89,30 +72,20 @@ public class TrueTypeSdfSource implements GlyphSource {
                                          int emPixels) {
         var file = definition.location().withPrefix("font/");
         ByteBuffer data = null;
-        FT_Face face = null;
+        STBTTFontinfo face = null;
         try (InputStream stream = resourceManager.open(file)) {
             var bytes = stream.readAllBytes();
-            // FreeType keeps a pointer into this buffer, so it has to be off heap and outlive the face
             data = MemoryUtil.memAlloc(bytes.length);
             data.put(bytes).flip();
-            synchronized (FreeTypeUtil.LIBRARY_LOCK) {
-                try (var stack = MemoryStack.stackPush()) {
-                    var pointer = stack.mallocPointer(1);
-                    FreeTypeUtil.assertError(
-                            FreeType.FT_New_Memory_Face(FreeTypeUtil.getLibrary(), data, 0L, pointer),
-                            "Initializing font face");
-                    face = FT_Face.create(pointer.get());
-                }
-                FreeTypeUtil.assertError(FreeType.FT_Select_Charmap(face, FreeType.FT_ENCODING_UNICODE),
-                        "Find unicode charmap");
+            face = STBTTFontinfo.malloc();
+            if (!STBTruetype.stbtt_InitFont(face, data)) {
+                throw new IOException("Invalid font data");
             }
             return new TrueTypeSdfSource(data, face, definition.size(), emPixels,
                     definition.shift().x(), definition.shift().y(), definition.skip());
         } catch (IOException | RuntimeException e) {
             if (face != null) {
-                synchronized (FreeTypeUtil.LIBRARY_LOCK) {
-                    FreeType.FT_Done_Face(face);
-                }
+                face.free();
             }
             if (data != null) {
                 MemoryUtil.memFree(data);
@@ -130,15 +103,15 @@ public class TrueTypeSdfSource implements GlyphSource {
             return null;
         }
         var face = this.face;
-        setPixelSize(emPixels);
-        if (FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(face, index, LOAD_METRICS), "Loading glyph metrics")) {
+        if (face == null) {
             return null;
         }
-        var slot = face.glyph();
-        if (slot == null) {
-            return null;
+        try (var stack = MemoryStack.stackPush()) {
+            var advance = stack.mallocInt(1);
+            STBTruetype.stbtt_GetGlyphHMetrics(face, index, advance, null);
+            return GlyphMetrics.of(advance.get(0) * STBTruetype.stbtt_ScaleForMappingEmToPixels(face, emPixels)
+                    / oversample);
         }
-        return GlyphMetrics.of(FreeTypeUtil.x(slot.advance()) / oversample);
     }
 
     @Nullable
@@ -148,7 +121,7 @@ public class TrueTypeSdfSource implements GlyphSource {
         if (index == 0) {
             return null;
         }
-        var rendered = render(index, emPixels, LOAD_UNHINTED);
+        var rendered = render(index, emPixels);
         if (rendered == null) {
             return null;
         }
@@ -191,7 +164,7 @@ public class TrueTypeSdfSource implements GlyphSource {
         if (metrics == null) {
             return null;
         }
-        var rendered = render(index, pixelSize, LOAD_HINTED);
+        var rendered = render(index, pixelSize);
         if (rendered == null) {
             return null;
         }
@@ -212,45 +185,36 @@ public class TrueTypeSdfSource implements GlyphSource {
     }
 
     @Nullable
-    private Rendered render(int glyphIndex, int pixelSize, int loadFlags) {
+    private Rendered render(int glyphIndex, int pixelSize) {
         var face = this.face;
         if (face == null) {
             return null;
         }
-        setPixelSize(pixelSize);
-        if (FreeTypeUtil.checkError(FreeType.FT_Load_Glyph(face, glyphIndex, loadFlags), "Rendering glyph")) {
-            return null;
+        var scale = STBTruetype.stbtt_ScaleForMappingEmToPixels(face, pixelSize);
+        try (var stack = MemoryStack.stackPush()) {
+            var advanceWidth = stack.mallocInt(1);
+            STBTruetype.stbtt_GetGlyphHMetrics(face, glyphIndex, advanceWidth, null);
+            var advance = advanceWidth.get(0) * scale;
+            var x0 = stack.mallocInt(1);
+            var y0 = stack.mallocInt(1);
+            var x1 = stack.mallocInt(1);
+            var y1 = stack.mallocInt(1);
+            STBTruetype.stbtt_GetGlyphBitmapBox(face, glyphIndex, scale, scale, x0, y0, x1, y1);
+            var width = x1.get(0) - x0.get(0);
+            var height = y1.get(0) - y0.get(0);
+            if (width <= 0 || height <= 0) {
+                return new Rendered(null, 0, 0, 0, 0, advance);
+            }
+            var buffer = MemoryUtil.memCalloc(width * height + width + 64);
+            try {
+                STBTruetype.stbtt_MakeGlyphBitmap(face, buffer, width, height, width, scale, scale, glyphIndex);
+                var coverage = new byte[width * height];
+                buffer.get(0, coverage);
+                return new Rendered(coverage, width, height, x0.get(0), -y0.get(0), advance);
+            } finally {
+                MemoryUtil.memFree(buffer);
+            }
         }
-        var slot = face.glyph();
-        if (slot == null) {
-            return null;
-        }
-        var advance = FreeTypeUtil.x(slot.advance());
-        var bitmap = slot.bitmap();
-        var width = bitmap.width();
-        var height = bitmap.rows();
-        if (width <= 0 || height <= 0) {
-            return new Rendered(null, 0, 0, 0, 0, advance);
-        }
-        if (bitmap.pixel_mode() != FreeType.FT_PIXEL_MODE_GRAY) {
-            LDLib2.LOGGER.warn("Glyph {} was not rendered as 8-bit grayscale, skipping", glyphIndex);
-            return null;
-        }
-        // rows can be padded, and a negative pitch means the rows are stored bottom up
-        var pitch = bitmap.pitch();
-        var stride = Math.abs(pitch);
-        var buffer = bitmap.buffer(stride * height);
-        if (buffer == null) {
-            return new Rendered(null, 0, 0, 0, 0, advance);
-        }
-        var coverage = new byte[width * height];
-        for (int row = 0; row < height; row++) {
-            var sourceRow = pitch < 0 ? (height - 1 - row) : row;
-            buffer.position(sourceRow * stride);
-            buffer.get(coverage, row * width, width);
-        }
-        buffer.position(0);
-        return new Rendered(coverage, width, height, slot.bitmap_left(), slot.bitmap_top(), advance);
     }
 
     private int glyphIndex(int codepoint) {
@@ -258,23 +222,13 @@ public class TrueTypeSdfSource implements GlyphSource {
         if (face == null || skip.contains(codepoint)) {
             return 0;
         }
-        return FreeType.FT_Get_Char_Index(face, codepoint);
-    }
-
-    private void setPixelSize(int pixelSize) {
-        if (currentPixelSize == pixelSize) {
-            return;
-        }
-        FreeTypeUtil.assertError(FreeType.FT_Set_Pixel_Sizes(face, pixelSize, pixelSize), "Setting pixel size");
-        currentPixelSize = pixelSize;
+        return STBTruetype.stbtt_FindGlyphIndex(face, codepoint);
     }
 
     @Override
     public synchronized void close() {
         if (face != null) {
-            synchronized (FreeTypeUtil.LIBRARY_LOCK) {
-                FreeTypeUtil.checkError(FreeType.FT_Done_Face(face), "Deleting font face");
-            }
+            face.free();
             face = null;
         }
         if (fontData != null) {
