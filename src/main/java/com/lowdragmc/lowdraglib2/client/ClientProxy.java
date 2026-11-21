@@ -17,7 +17,6 @@ import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerScreen;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUIClientElementComponent;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUITooltipComponent;
-import com.lowdragmc.lowdraglib2.gui.util.DrawerHelper;
 import com.lowdragmc.lowdraglib2.integration.kjs.ui.LDKJSMenuTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;

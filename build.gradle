@@ -265,6 +265,8 @@ dependencies {
     // every downstream mod declare JEI's maven just to resolve us
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}") { transitive = false }
 
+    modLocalRuntime("curse.maven:mezzconfig-1689768:9527933")
+
     // REI
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-forge:${rei_version}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${rei_version}")
@@ -276,6 +278,7 @@ dependencies {
 
     // AE2
     modLocalImplementation("appeng:appliedenergistics2-forge:${ae2_version}") { transitive = false }
+    modLocalRuntime("curse.maven:guideme-1173950:8204776")
 
     // KJS: remapped dependencies do not bring their transitives, so Rhino and Architectury are listed too
     modLocalImplementation("dev.latvian.mods:kubejs-forge:${kjs_version}") { transitive = false }

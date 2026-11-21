@@ -4,14 +4,18 @@ import lombok.experimental.UtilityClass;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @OnlyIn(Dist.CLIENT)
 @UtilityClass
 public final class LDProgramDefineManager {
     private static final Set<String> PROGRAM_DEFINES = new LinkedHashSet<>();
+    private static final Pattern VERSION_DIRECTIVE = Pattern.compile("(?m)^[\\t \\f]*(?:/\\*(?:[^*]|\\*+[^*/])*\\*+/[\\t \\f]*)*#[\\t \\f]*version\\b[^\\r\\n]*");
 
     public static void addProgramDefine(String define) {
         PROGRAM_DEFINES.add(define);
@@ -38,9 +42,9 @@ public final class LDProgramDefineManager {
     }
 
     public static String createProgramDefinesString(char separator) {
-        StringBuilder sb = new StringBuilder();
-        PROGRAM_DEFINES.forEach(def -> sb.append("#define ").append(def).append(separator));
-        return sb.toString();
+        return String.join(String.valueOf(separator), PROGRAM_DEFINES.stream()
+                .map(define -> "#define " + define)
+                .toList());
     }
 
     public static String createProgramNameWithDefines(String name) {
@@ -48,6 +52,27 @@ public final class LDProgramDefineManager {
     }
 
     public static Set<String> getProgramDefines() {
-        return PROGRAM_DEFINES;
+        return Collections.unmodifiableSet(new LinkedHashSet<>(PROGRAM_DEFINES));
+    }
+
+    public static List<String> insertProgramDefines(List<String> source) {
+        if (!hasProgramDefines() || source.isEmpty()) {
+            return source;
+        }
+
+        var defines = createProgramDefinesString();
+        for (var index = 0; index < source.size(); index++) {
+            var segment = source.get(index);
+            var matcher = VERSION_DIRECTIVE.matcher(segment);
+            if (matcher.find()) {
+                var result = new ArrayList<>(source);
+                result.set(index, segment.substring(0, matcher.end()) + '\n' + defines + segment.substring(matcher.end()));
+                return result;
+            }
+        }
+
+        var result = new ArrayList<>(source);
+        result.set(0, defines + '\n' + source.get(0));
+        return result;
     }
 }
