@@ -4,7 +4,7 @@ import com.lowdragmc.lowdraglib2.syncdata.holder.IManagedHolder;
 import com.lowdragmc.lowdraglib2.syncdata.holder.IPersistManagedHolder;
 import com.lowdragmc.lowdraglib2.syncdata.holder.ISyncMangedHolder;
 import com.lowdragmc.lowdraglib2.syncdata.holder.blockentity.*;
-import net.minecraft.core.HolderLookup;
+import com.lowdragmc.lowdraglib2.Platform;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -41,26 +41,26 @@ public abstract class BlockEntityMixin {
     }
 
     @Inject(method = "getUpdateTag", at = @At(value = "RETURN"))
-    private void injectGetUpdateTag(HolderLookup.Provider provider, CallbackInfoReturnable<CompoundTag> cir) {
+    private void injectGetUpdateTag(CallbackInfoReturnable<CompoundTag> cir) {
         if (this instanceof ISyncMangedHolder syncMangedHolder) {
             var tag = cir.getReturnValue();
-            tag.put(syncMangedHolder.getSyncTag(), syncMangedHolder.serializeInitialData(provider));
+            tag.put(syncMangedHolder.getSyncTag(), syncMangedHolder.serializeInitialData(Platform.getFrozenRegistry()));
         }
     }
 
     @Inject(method = "saveAdditional", at = @At(value = "RETURN"))
-    private void injectSaveAdditional(CompoundTag pTag, HolderLookup.Provider provider, CallbackInfo ci) {
+    private void injectSaveAdditional(CompoundTag pTag, CallbackInfo ci) {
         if (this instanceof IPersistManagedHolder persistManagedHolder) {
-            persistManagedHolder.saveManagedPersistentData(provider, pTag, false);
+            persistManagedHolder.saveManagedPersistentData(Platform.getFrozenRegistry(), pTag, false);
         }
     }
 
-    @Inject(method = "loadAdditional", at = @At(value = "RETURN"))
-    private void injectLoad(CompoundTag pTag, HolderLookup.Provider provider, CallbackInfo ci) {
+    @Inject(method = "load", at = @At(value = "RETURN"))
+    private void injectLoad(CompoundTag pTag, CallbackInfo ci) {
         if (this instanceof ISyncMangedHolder syncMangedHolder && pTag.get(syncMangedHolder.getSyncTag()) instanceof CompoundTag tag) {
-            syncMangedHolder.deserializeInitialData(provider, tag);
+            syncMangedHolder.deserializeInitialData(Platform.getFrozenRegistry(), tag);
         } else if (this instanceof IPersistManagedHolder persistManagedHolder) {
-            persistManagedHolder.loadManagedPersistentData(provider, pTag);
+            persistManagedHolder.loadManagedPersistentData(Platform.getFrozenRegistry(), pTag);
         }
     }
 
