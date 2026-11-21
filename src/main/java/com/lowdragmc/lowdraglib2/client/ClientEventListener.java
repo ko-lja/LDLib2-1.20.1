@@ -19,7 +19,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.client.event.ClientTickEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import com.lowdragmc.lowdraglib2.client.font.LDFontStatsOverlay;
 import net.minecraft.client.Minecraft;
@@ -42,7 +43,8 @@ public class ClientEventListener {
      * based by nature. Both free textures, so both belong between frames rather than inside one.
      */
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         LDFontManager.INSTANCE.refreshVanillaFontOptions();
         LDFontManager.INSTANCE.evictStaleRasterSizes();
     }
@@ -55,7 +57,9 @@ public class ClientEventListener {
     @SubscribeEvent
     public static void onScreenRendered(ScreenEvent.Render.Post event) {
         if (Platform.isDevEnv()) {
-            LDFontStatsOverlay.INSTANCE.render(event.getGuiGraphics(), Minecraft.getInstance().getTimer());
+            var window = Minecraft.getInstance().getWindow();
+            LDFontStatsOverlay.INSTANCE.render((ForgeGui) Minecraft.getInstance().gui, event.getGuiGraphics(), event.getPartialTick(),
+                    window.getGuiScaledWidth(), window.getGuiScaledHeight());
         }
         // Only draws while something is driving the cursor from inside the process; see the class doc.
         CursorOverlay.render(event.getGuiGraphics(), event.getPartialTick());

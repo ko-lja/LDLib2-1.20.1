@@ -22,41 +22,27 @@ import com.lowdragmc.lowdraglib2.integration.kjs.ui.LDKJSMenuTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.client.event.*;
-import net.minecraftforge.client.gui.ConfigurationScreen;
-import net.minecraftforge.client.gui.IConfigScreenFactory;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientProxy {
 
-    public ClientProxy(IEventBus eventBus, ModContainer modContainer) {
+    public ClientProxy(IEventBus eventBus) {
         eventBus.register(this);
-        modContainer.registerConfig(ModConfig.Type.CLIENT, LDLibClientConfig.SPEC);
-        // Without a screen factory NeoForge shows no Config button for the mod in the mod list, leaving the
-        // file as the only way in. ConfigurationScreen builds the screen from the spec.
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-    }
-
-    @SubscribeEvent
-    public void onRegisterMenuScreensEvent(final RegisterMenuScreensEvent event) {
-        event.register(LDMenuTypes.PLAYER_UI.get(), ModularUIContainerScreen::new);
-        event.register(LDMenuTypes.HELD_ITEM_UI.get(), ModularUIContainerScreen::new);
-        event.register(LDMenuTypes.BLOCK_UI.get(), ModularUIContainerScreen::new);
-        if (LDLib2.isKubejsLoaded()) {
-            LDKJSMenuTypes.onRegisterMenuScreensEvent(event);
-        }
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, LDLibClientConfig.SPEC);
     }
 
     @SubscribeEvent
@@ -76,12 +62,18 @@ public class ClientProxy {
     public void clientSetup(final FMLClientSetupEvent e) {
         e.enqueueWork(() -> {
             LDLibShaders.init();
+            MenuScreens.register(LDMenuTypes.PLAYER_UI.get(), ModularUIContainerScreen::new);
+            MenuScreens.register(LDMenuTypes.HELD_ITEM_UI.get(), ModularUIContainerScreen::new);
+            MenuScreens.register(LDMenuTypes.BLOCK_UI.get(), ModularUIContainerScreen::new);
+            if (LDLib2.isKubejsLoaded()) {
+                LDKJSMenuTypes.onRegisterMenuScreensEvent();
+            }
         });
     }
 
     @SubscribeEvent
     public void modelRegistry(final ModelEvent.RegisterGeometryLoaders e) {
-        e.register(LDLib2.id("renderer"), LDLRendererModel.Loader.INSTANCE);
+        e.register(LDLib2.id("renderer").getPath(), LDLRendererModel.Loader.INSTANCE);
     }
 
     @SubscribeEvent
@@ -108,9 +100,9 @@ public class ClientProxy {
      * hidden by the rest of the HUD.
      */
     @SubscribeEvent
-    public void registerFontStatsOverlay(RegisterGuiLayersEvent event) {
+    public void registerFontStatsOverlay(RegisterGuiOverlaysEvent event) {
         if (Platform.isDevEnv()) {
-            event.registerAboveAll(LDLib2.id("font_stats"), LDFontStatsOverlay.INSTANCE);
+            event.registerAboveAll(LDLib2.id("font_stats").getPath(), LDFontStatsOverlay.INSTANCE);
         }
     }
 
@@ -132,7 +124,7 @@ public class ClientProxy {
                         entry.getKey().getPath()
                                 .replace("models/", "")
                                 .replace(".json", ""));
-                event.register(ModelResourceLocation.standalone(modelLocation));
+                event.register(modelLocation);
             }
         }
         IRendererResource.INSTANCE.onAdditionalModel(event::register);
@@ -143,7 +135,7 @@ public class ClientProxy {
 
     public static ParticleProvider getProvider(ParticleType<?> type) {
         if (Minecraft.getInstance().particleEngine instanceof ParticleEngineAccessor accessor) {
-            return accessor.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getKey(type));
+            return accessor.getProviders().get(ForgeRegistries.PARTICLE_TYPES.getKey(type));
         }
         return null;
     }

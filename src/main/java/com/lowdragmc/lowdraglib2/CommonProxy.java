@@ -4,6 +4,7 @@ import com.lowdragmc.lowdraglib2.client.renderer.block.RendererBlock;
 import com.lowdragmc.lowdraglib2.client.renderer.block.RendererBlockEntity;
 import com.lowdragmc.lowdraglib2.gui.factory.LDMenuTypes;
 import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
+import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
 import com.lowdragmc.lowdraglib2.networking.LDLNetworking;
 import com.lowdragmc.lowdraglib2.networking.rpc.RPCPacketDistributor;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.api.type.TypeHandles;
@@ -55,7 +56,7 @@ public class CommonProxy {
         BLOCKS.register("renderer_block", () -> RendererBlock.BLOCK);
 
         // used for forge events (ClientProxy + CommonProxy)
-        eventBus.addListener(LDLNetworking::registerPayloads);
+        LDLNetworking.init();
         // init common features
         CommonProxy.init(eventBus);
         // load ldlib2 plugin

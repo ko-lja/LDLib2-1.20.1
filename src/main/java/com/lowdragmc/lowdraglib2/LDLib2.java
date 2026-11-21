@@ -35,7 +35,7 @@ public class LDLib2 {
         var bus = ctx.getModEventBus();
         new CommonProxy(bus);
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            new ClientProxy(bus, ctx.getContainer());
+            new ClientProxy(bus);
         }
         if (Platform.isDevEnv()) {
             ModCreativeModeTab.register(bus);
