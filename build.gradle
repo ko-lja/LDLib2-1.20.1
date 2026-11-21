@@ -120,6 +120,8 @@ java {
     withSourcesJar()
 }
 
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
 kotlin {
     jvmToolchain(17)
     compilerOptions {
@@ -232,6 +234,15 @@ sourceSets.main.kotlin { srcDir("src/main/java") }
 
 dependencies {
     annotationProcessor "org.spongepowered:mixin:${mixin_version}:processor"
+
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation("io.github.llamalad7:mixinextras-forge:0.4.1")
+    jarJar(group: 'io.github.llamalad7', name: 'mixinextras-forge') {
+        version {
+            require "[0.4.1,)"
+            prefer "0.4.1"
+        }
+    }
 
     libraries("org.jetbrains.kotlin:kotlin-stdlib:${kotlin_stdlib_version}") {
         exclude group: "org.jetbrains", module: "annotations"
