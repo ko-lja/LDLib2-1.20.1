@@ -1,12 +1,15 @@
 package com.lowdragmc.lowdraglib2.core.mixins.accessor;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import java.nio.ByteBuffer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Invoker;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BufferBuilder.class)
 public interface BufferBuilderAccessor {
-    @Invoker
-    long invokeBeginElement(VertexFormatElement element);
+    @Accessor("nextElementByte")
+    int getNextElementByte();
+
+    @Accessor("buffer")
+    ByteBuffer getBuffer();
 }

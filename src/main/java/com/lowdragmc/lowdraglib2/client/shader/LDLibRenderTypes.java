@@ -47,6 +47,8 @@ public class LDLibRenderTypes extends RenderType {
                     DefaultVertexFormat.POSITION_TEX_COLOR,
                     VertexFormat.Mode.QUADS,
                     1536,
+                    false,
+                    false,
                     CompositeState.builder()
                             .setShaderState(GUI_TEXTURE_SHADER)
                             .setTextureState(new TextureStateShard(texture, false, false))

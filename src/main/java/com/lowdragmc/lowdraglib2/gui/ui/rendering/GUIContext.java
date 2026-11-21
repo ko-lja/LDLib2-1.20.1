@@ -58,7 +58,7 @@ public class GUIContext {
     public final ObjectArrayList<Rect> scissorStack = new ObjectArrayList<>();
     @OnlyIn(Dist.CLIENT)
     private final ObjectArrayList<PostCall> postRenderingCalls = new ObjectArrayList<>();
-    private record PostCall(Consumer<GUIContext> call, PoseStack.Pose pose) {}
+    private record PostCall(Consumer<GUIContext> call, Matrix4f pose) {}
     private int lastFBO = -1;
     
     @OnlyIn(Dist.CLIENT)
@@ -170,7 +170,7 @@ public class GUIContext {
     }
 
     public void postRendering(Consumer<GUIContext> call) {
-        postRenderingCalls.add(new PostCall(call, pose.last().copy()));
+        postRenderingCalls.add(new PostCall(call, new Matrix4f(pose.last().pose())));
     }
 
     public void callPostRendering() {
@@ -180,7 +180,7 @@ public class GUIContext {
             final PostCall postRenderingCall = (PostCall) postCallsElements[i];
             pose.pushPose();
             pose.setIdentity();
-            pose.mulPose(postRenderingCall.pose.pose());
+            pose.mulPose(postRenderingCall.pose);
             postRenderingCall.call.accept(this);
             pose.popPose();
         }

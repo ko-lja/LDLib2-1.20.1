@@ -10,7 +10,7 @@ import java.nio.FloatBuffer;
 public class MeshDataSorter {
 
     @Nullable
-    public static MeshDataSortResult sortPrimitives(MeshData meshData, ByteBufferBuilder bufferBuilder, VertexSorting sorting) {
+    public static MeshDataSortResult sortPrimitives(BufferBuilder.RenderedBuffer meshData, VertexSorting sorting) {
         var drawState = meshData.drawState();
         VertexFormat.Mode mode = drawState.mode();
         int verticesPerPrimitive = getVerticesPerPrimitive(mode);
@@ -31,7 +31,7 @@ public class MeshDataSorter {
         }
         
         MeshDataSortResult sortResult = new MeshDataSortResult(centroids, drawState.indexType(), mode);
-        ByteBufferBuilder.Result indexBuffer = sortResult.buildSortedIndexBuffer(bufferBuilder, sorting);
+        ByteBuffer indexBuffer = sortResult.buildSortedIndexBuffer(sorting);
         
         return new MeshDataSortResult(centroids, drawState.indexType(), mode, indexBuffer);
     }
@@ -47,10 +47,18 @@ public class MeshDataSorter {
     
     private static Vector3f[] extractPrimitiveCentroids(ByteBuffer byteBuffer, int vertexCount,
                                                        VertexFormat format, VertexFormat.Mode mode) {
-        int positionOffset = format.getOffset(VertexFormatElement.POSITION);
-        if (positionOffset == -1) {
+        int positionIndex = -1;
+        var elements = format.getElements();
+        for (int i = 0; i < elements.size(); i++) {
+            if (elements.get(i).getUsage() == VertexFormatElement.Usage.POSITION) {
+                positionIndex = i;
+                break;
+            }
+        }
+        if (positionIndex == -1) {
             throw new IllegalArgumentException("Cannot identify primitive centers with no position element");
         }
+        int positionOffset = format.getOffset(positionIndex) / 4;
         
         int verticesPerPrimitive = getVerticesPerPrimitive(mode);
         if (verticesPerPrimitive == 0 || vertexCount < verticesPerPrimitive) {

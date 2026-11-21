@@ -53,14 +53,14 @@ public abstract class ProgramMixin {
             target = "Lcom/mojang/blaze3d/preprocessor/GlslPreprocessor;process(Ljava/lang/String;)Ljava/util/List;"))
     private static List<String> ldlib2$appendDefines(List<String> original) {
         if (LDProgramDefineManager.hasProgramDefines() && !original.isEmpty()) {
-            while (original.getFirst().isBlank()) {
+            while (original.get(0).isBlank()) {
                 original = original.subList(1, original.size());
                 if (original.isEmpty()) {
                     return original;
                 }
             }
             if (!original.isEmpty()) {
-                var firstLine = original.getFirst();
+                var firstLine = original.get(0);
                 var matcher = LDLibShaders.REGEX_VERSION.matcher(firstLine);
                 var defineLine = LDProgramDefineManager.createProgramDefinesString();
                 String newFirstLine;

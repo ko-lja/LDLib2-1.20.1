@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.client.shader;
 
+import com.google.common.collect.ImmutableMap;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.client.shader.management.Shader;
 import com.mojang.blaze3d.shaders.Program;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static com.mojang.blaze3d.vertex.VertexFormatElement.POSITION;
 
 @OnlyIn(Dist.CLIENT)
 public class LDLibShaders {
@@ -112,13 +112,13 @@ public class LDLibShaders {
 	/**
 	 * the vertex format for HSB color, three four of float
 	 */
-	public static final VertexFormatElement HSB_Alpha = VertexFormatElement.register(VertexFormatElement.findNextId(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.COLOR, 4);
-	public static final VertexFormatElement AA = VertexFormatElement.register(VertexFormatElement.findNextId(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.COLOR, 1);
+	public static final VertexFormatElement HSB_Alpha = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.COLOR, 4);
+	public static final VertexFormatElement AA = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.COLOR, 1);
 
-	public static VertexFormat HSB_VERTEX_FORMAT = VertexFormat.builder()
-			.add("Position", POSITION)
-			.add("HSB_ALPHA", HSB_Alpha)
-			.build();
+	public static VertexFormat HSB_VERTEX_FORMAT = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+			.put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+			.put("HSB_ALPHA", HSB_Alpha)
+			.build());
 
     public static void registerShaders(RegisterShadersEvent registerShadersEvent) {
 		var resourceProvider = registerShadersEvent.getResourceProvider();

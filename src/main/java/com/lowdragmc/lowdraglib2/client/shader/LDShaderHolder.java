@@ -35,7 +35,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.lowdragmc.lowdraglib2.compat.nbt.INBTSerializable;
 import org.jetbrains.annotations.UnknownNullability;
 import org.joml.*;
 
@@ -128,8 +128,9 @@ public class LDShaderHolder implements IConfigurable, INBTSerializable<CompoundT
         if (defines.isEmpty()) return baseInstance;
         return shadersWithDefines.computeIfAbsent(defines.stream().collect(Collectors.toUnmodifiableSet()),
                 definesKey -> {
-                    var defineWithUid = new LinkedHashSet<>(definesKey);
-                    defineWithUid.addFirst(shaderUid);
+                    var defineWithUid = new LinkedHashSet<String>();
+                    defineWithUid.add(shaderUid);
+                    defineWithUid.addAll(definesKey);
                     try {
                         var shader = LDShaderInstance.create(resourceProvider, baseInstance.shaderLocation, baseInstance.getVertexFormat(), defineWithUid);
                         if (shader == null) return baseInstance;
@@ -431,14 +432,15 @@ public class LDShaderHolder implements IConfigurable, INBTSerializable<CompoundT
             float imageWidth = 1;
             float imageHeight = 1;
             var mat = graphics.pose().last().pose();
-            var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, POSITION_TEX_COLOR);
+            var buffer = Tesselator.getInstance().getBuilder();
+            buffer.begin(VertexFormat.Mode.QUADS, POSITION_TEX_COLOR);
             RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
             RenderSystem.setShaderTexture(0, getSamplerID(name));
-            buffer.addVertex(mat, x, y + height, 0).setUv(imageU, imageV + imageHeight).setColor(-1);
-            buffer.addVertex(mat, x + width, y + height, 0).setUv(imageU + imageWidth, imageV + imageHeight).setColor(-1);
-            buffer.addVertex(mat, x + width, y, 0).setUv(imageU + imageWidth, imageV).setColor(-1);
-            buffer.addVertex(mat, x, y, 0).setUv(imageU, imageV).setColor(-1);
-            BufferUploader.drawWithShader(buffer.buildOrThrow());
+            buffer.vertex(mat, x, y + height, 0).uv(imageU, imageV + imageHeight).color(-1).endVertex();
+            buffer.vertex(mat, x + width, y + height, 0).uv(imageU + imageWidth, imageV + imageHeight).color(-1).endVertex();
+            buffer.vertex(mat, x + width, y, 0).uv(imageU + imageWidth, imageV).color(-1).endVertex();
+            buffer.vertex(mat, x, y, 0).uv(imageU, imageV).color(-1).endVertex();
+            BufferUploader.drawWithShader(buffer.end());
         };
     }
 

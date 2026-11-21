@@ -1,53 +1,51 @@
 package com.lowdragmc.lowdraglib2.client.utils;
 
-import com.lowdragmc.lowdraglib2.core.mixins.accessor.MeshDataAccessor;
 import com.mojang.blaze3d.vertex.*;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
-import org.apache.commons.lang3.mutable.MutableLong;
 import org.joml.Vector3f;
-import org.lwjgl.system.MemoryUtil;
 
 import org.jetbrains.annotations.Nullable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class MeshDataSortResult {
     public final Vector3f[] centroids;
     public final VertexFormat.IndexType indexType;
     public final VertexFormat.Mode mode;
-    public final ByteBufferBuilder.Result indexBuffer;
+    public final ByteBuffer indexBuffer;
 
     public MeshDataSortResult(Vector3f[] centroids, VertexFormat.IndexType indexType, VertexFormat.Mode mode) {
         this(centroids, indexType, mode, null);
     }
 
     public MeshDataSortResult(Vector3f[] centroids, VertexFormat.IndexType indexType,
-                              VertexFormat.Mode mode, ByteBufferBuilder.Result indexBuffer) {
+                              VertexFormat.Mode mode, ByteBuffer indexBuffer) {
         this.centroids = centroids;
         this.indexType = indexType;
         this.mode = mode;
         this.indexBuffer = indexBuffer;
     }
 
-    public void applyTo(MeshData meshData) {
-        if (meshData instanceof MeshDataAccessor accessor) {
-            accessor.setIndexBuffer(indexBuffer);
-        }
+    @Deprecated
+    public void applyTo(BufferBuilder.RenderedBuffer meshData) {
+        throw new UnsupportedOperationException("MeshData does not exist on 1.20.1; RenderedBuffer has no replaceable index buffer");
     }
 
     @Nullable
-    public ByteBufferBuilder.Result buildSortedIndexBuffer(ByteBufferBuilder bufferBuilder, VertexSorting sorting) {
+    public ByteBuffer buildSortedIndexBuffer(VertexSorting sorting) {
         int[] primitiveIndices = sorting.sort(this.centroids);
         
         return switch (mode) {
-            case TRIANGLES -> buildTriangleIndexBuffer(bufferBuilder, primitiveIndices);
-            case QUADS -> buildQuadIndexBuffer(bufferBuilder, primitiveIndices);
-            case LINES, DEBUG_LINES -> buildLineIndexBuffer(bufferBuilder, primitiveIndices);
+            case TRIANGLES -> buildTriangleIndexBuffer(primitiveIndices);
+            case QUADS -> buildQuadIndexBuffer(primitiveIndices);
+            case LINES, DEBUG_LINES -> buildLineIndexBuffer(primitiveIndices);
             default -> null;
         };
     }
     
-    private ByteBufferBuilder.Result buildTriangleIndexBuffer(ByteBufferBuilder bufferBuilder, int[] primitiveIndices) {
-        long memoryAddress = bufferBuilder.reserve(primitiveIndices.length * 3 * this.indexType.bytes);
-        IntConsumer indexWriter = createIndexWriter(memoryAddress, this.indexType);
+    private ByteBuffer buildTriangleIndexBuffer(int[] primitiveIndices) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(primitiveIndices.length * 3 * this.indexType.bytes).order(ByteOrder.nativeOrder());
+        IntConsumer indexWriter = createIndexWriter(buffer, this.indexType);
         
         for (int primitiveIndex : primitiveIndices) {
             int baseVertexIndex = primitiveIndex * 3;
@@ -56,12 +54,13 @@ public class MeshDataSortResult {
             indexWriter.accept(baseVertexIndex + 2);
         }
         
-        return bufferBuilder.build();
+        buffer.flip();
+        return buffer;
     }
     
-    private ByteBufferBuilder.Result buildQuadIndexBuffer(ByteBufferBuilder bufferBuilder, int[] primitiveIndices) {
-        long memoryAddress = bufferBuilder.reserve(primitiveIndices.length * 6 * this.indexType.bytes);
-        IntConsumer indexWriter = createIndexWriter(memoryAddress, this.indexType);
+    private ByteBuffer buildQuadIndexBuffer(int[] primitiveIndices) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(primitiveIndices.length * 6 * this.indexType.bytes).order(ByteOrder.nativeOrder());
+        IntConsumer indexWriter = createIndexWriter(buffer, this.indexType);
         
         for (int primitiveIndex : primitiveIndices) {
             int baseVertexIndex = primitiveIndex * 4;
@@ -74,12 +73,13 @@ public class MeshDataSortResult {
             indexWriter.accept(baseVertexIndex);
         }
         
-        return bufferBuilder.build();
+        buffer.flip();
+        return buffer;
     }
     
-    private ByteBufferBuilder.Result buildLineIndexBuffer(ByteBufferBuilder bufferBuilder, int[] primitiveIndices) {
-        long memoryAddress = bufferBuilder.reserve(primitiveIndices.length * 2 * this.indexType.bytes);
-        IntConsumer indexWriter = createIndexWriter(memoryAddress, this.indexType);
+    private ByteBuffer buildLineIndexBuffer(int[] primitiveIndices) {
+        ByteBuffer buffer = ByteBuffer.allocateDirect(primitiveIndices.length * 2 * this.indexType.bytes).order(ByteOrder.nativeOrder());
+        IntConsumer indexWriter = createIndexWriter(buffer, this.indexType);
         
         for (int primitiveIndex : primitiveIndices) {
             int baseVertexIndex = primitiveIndex * 2;
@@ -87,15 +87,14 @@ public class MeshDataSortResult {
             indexWriter.accept(baseVertexIndex + 1);
         }
         
-        return bufferBuilder.build();
+        buffer.flip();
+        return buffer;
     }
     
-    private IntConsumer createIndexWriter(long index, VertexFormat.IndexType type) {
-        MutableLong mutableLong = new MutableLong(index);
-        
+    private IntConsumer createIndexWriter(ByteBuffer buffer, VertexFormat.IndexType type) {
         return switch (type) {
-            case SHORT -> value -> MemoryUtil.memPutShort(mutableLong.getAndAdd(2L), (short) value);
-            case INT -> value -> MemoryUtil.memPutInt(mutableLong.getAndAdd(4L), value);
+            case SHORT -> value -> buffer.putShort((short) value);
+            case INT -> value -> buffer.putInt(value);
         };
     }
 }
