@@ -136,6 +136,8 @@ legacyForge {
 
     accessTransformers.from rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
 
+    addModdingDependenciesTo sourceSets.test
+
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
@@ -267,6 +269,7 @@ dependencies {
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-default-plugin-forge:${rei_version}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-forge:${rei_version}")
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-forge:${rei_version}")
+    compileOnly("me.shedaniel.cloth:basic-math:0.6.1")
 
     // EMI
     modCompileOnly("maven.modrinth:emi:${emi_version}")
