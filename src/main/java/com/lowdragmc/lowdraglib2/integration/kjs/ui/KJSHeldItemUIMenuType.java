@@ -1,5 +1,7 @@
 package com.lowdragmc.lowdraglib2.integration.kjs.ui;
 
+import com.lowdragmc.lowdraglib2.compat.network.ByteBufCodecs;
+import com.lowdragmc.lowdraglib2.gui.factory.ContainerUIOpener;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -19,13 +21,13 @@ public class KJSHeldItemUIMenuType {
         var heldItem = player.getItemInHand(hand);
         var event = new ItemUIEventJS(player, hand, heldItem, id);
         UIEvents.ITEM.post(ScriptType.SERVER, id, event);
-        return player.openMenu(event).isPresent();
+        return ContainerUIOpener.open(player, event);
     }
 
     public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
         var player = inv.player;
         var hand = data.readEnum(InteractionHand.class);
-        var itemstack = ItemStack.OPTIONAL_STREAM_CODEC.decode(data);
+        var itemstack = ByteBufCodecs.OPTIONAL_ITEM_STACK.decode(data);
         var id = data.readUtf();
         var event = new ItemUIEventJS(player, hand, itemstack, id);
         UIEvents.ITEM.post(ScriptType.CLIENT, id, event);
@@ -56,7 +58,7 @@ public class KJSHeldItemUIMenuType {
         @Override
         public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
             buffer.writeEnum(hand);
-            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, itemStack);
+            ByteBufCodecs.OPTIONAL_ITEM_STACK.encode(buffer, itemStack);
             super.writeClientSideData(menu, buffer);
         }
     }

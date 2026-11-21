@@ -5,6 +5,7 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -42,7 +43,8 @@ public class PlayerUIMenuType {
         if (!UI_HOLDERS.containsKey(id)) return false;
         var holder = UI_HOLDERS.get(id).apply(player);
         if (holder == null) return false;
-        player.openMenu(new MenuProvider() {
+        if (!(player instanceof ServerPlayer serverPlayer)) return false;
+        return ContainerUIOpener.open(serverPlayer, new MenuProvider() {
             @Override
             public Component getDisplayName() {
                 return Component.translatable(id.toLanguageKey());
@@ -52,14 +54,7 @@ public class PlayerUIMenuType {
             public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
                 return new ModularUIContainerMenu(LDMenuTypes.PLAYER_UI.get(), containerId, playerInventory, holder);
             }
-
-
-            @Override
-            public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
-                buffer.writeResourceLocation(id);
-            }
-        });
-        return true;
+        }, (menu, buffer) -> buffer.writeResourceLocation(id));
     }
 
     public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {

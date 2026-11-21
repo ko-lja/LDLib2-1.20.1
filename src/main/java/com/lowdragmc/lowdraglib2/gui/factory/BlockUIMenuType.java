@@ -6,8 +6,8 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.network.ByteBufCodecs;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,7 +33,7 @@ public class BlockUIMenuType {
         var blockstate = player.level().getBlockState(pos);
         if (blockstate.getBlock() instanceof BlockUI blockUI) {
             var holder = blockUI.createUIHolder(player, pos, blockstate);
-            return player.openMenu(holder).isPresent();
+            return ContainerUIOpener.open(player, holder);
         }
         return false;
     }

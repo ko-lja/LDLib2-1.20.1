@@ -78,4 +78,27 @@ public abstract class ScreenMixin extends AbstractContainerEventHandler implemen
         }
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        for (var child : children()) {
+            if (child instanceof IModularUIHolder holder) {
+                var mui = holder.getModularUI();
+                if (mui != null && mui.getWidget().mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+                    return true;
+                }
+            }
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        for (var child : children()) {
+            if (child instanceof IModularUIHolder holder) {
+                var mui = holder.getModularUI();
+                if (mui == null) continue;
+                mui.getWidget().mouseMoved(mouseX, mouseY);
+            }
+        }
+    }
 }

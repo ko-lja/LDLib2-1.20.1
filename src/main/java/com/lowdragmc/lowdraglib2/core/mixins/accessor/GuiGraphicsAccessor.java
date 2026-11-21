@@ -25,6 +25,6 @@ public interface GuiGraphicsAccessor {
     void ldlib2$renderTooltipInternal(Font font, List<ClientTooltipComponent> components,
                                       int mouseX, int mouseY, ClientTooltipPositioner positioner);
 
-    @Accessor("tooltipStack")
+    @Accessor(value = "tooltipStack", remap = false)
     void ldlib2$setTooltipStack(ItemStack stack);
 }

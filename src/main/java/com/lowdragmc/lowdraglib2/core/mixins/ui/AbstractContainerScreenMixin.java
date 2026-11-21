@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.core.mixins.ui;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.lowdragmc.lowdraglib2.gui.holder.IItemSlotHolderMenu;
 import com.lowdragmc.lowdraglib2.gui.holder.IModularUIHolder;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.ItemSlot;
@@ -68,13 +69,15 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
         }
     }
 
-    @Inject(method = "renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;IIF)V", at = @At(value = "HEAD"), cancellable = true)
-    private void ldlib2$renderSlotHighlight(GuiGraphics guiGraphics, Slot slot, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
-        if (getMenu() instanceof IItemSlotHolderMenu menu) {
-            if (menu.isItemSlot(slot)) {
-                ci.cancel();
-            }
-        }
+    @Shadow
+    protected Slot hoveredSlot;
+
+    @WrapWithCondition(
+            method = "render",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlotHighlight(Lnet/minecraft/client/gui/GuiGraphics;IIII)V", remap = false)
+    )
+    private boolean ldlib2$renderSlotHighlight(GuiGraphics guiGraphics, int x, int y, int blitOffset, int color) {
+        return !(getMenu() instanceof IItemSlotHolderMenu menu && hoveredSlot != null && menu.isItemSlot(hoveredSlot));
     }
 
     @Inject(method = "renderSlot", at = @At(value = "HEAD"), cancellable = true)

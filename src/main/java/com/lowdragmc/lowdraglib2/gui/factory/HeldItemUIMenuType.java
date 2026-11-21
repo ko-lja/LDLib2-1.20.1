@@ -11,6 +11,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import com.lowdragmc.lowdraglib2.compat.network.ByteBufCodecs;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +32,7 @@ public class HeldItemUIMenuType {
         var heldItem = player.getItemInHand(hand);
         if (heldItem.getItem() instanceof HeldItemUI heldItemUI) {
             var holder = heldItemUI.createUIHolder(player, hand, heldItem);
-            return player.openMenu(holder).isPresent();
+            return ContainerUIOpener.open(player, holder);
         }
         return false;
     }
@@ -39,7 +40,7 @@ public class HeldItemUIMenuType {
     public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
         var player = inv.player;
         var hand = data.readEnum(InteractionHand.class);
-        var itemstack = ItemStack.OPTIONAL_STREAM_CODEC.decode(data);
+        var itemstack = ByteBufCodecs.OPTIONAL_ITEM_STACK.decode(data);
         if (itemstack.getItem() instanceof HeldItemUI heldItemUI) {
             var holder = heldItemUI.createUIHolder(player, hand, itemstack);
             return new ModularUIContainerMenu(LDMenuTypes.HELD_ITEM_UI.get(), windowId, inv, holder);
@@ -123,7 +124,7 @@ public class HeldItemUIMenuType {
         @Override
         public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
             buffer.writeEnum(hand);
-            ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, itemStack);
+            ByteBufCodecs.OPTIONAL_ITEM_STACK.encode(buffer, itemStack);
         }
 
         @Override

@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.integration.kjs.ui;
 
+import com.lowdragmc.lowdraglib2.gui.factory.ContainerUIOpener;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import dev.latvian.mods.kubejs.script.ScriptType;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -15,7 +16,7 @@ public class KJSPlayerUIMenuType {
     public static boolean openUI(ServerPlayer player, String id) {
         var event = new PlayerUIEventJS(player, id);
         UIEvents.PLAYER.post(ScriptType.SERVER, id, event);
-        return player.openMenu(event).isPresent();
+        return ContainerUIOpener.open(player, event);
     }
 
     public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
