@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,7 +15,6 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.world.level.Level;
-import org.joml.Matrix4fStack;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -88,9 +86,9 @@ public class ParticleManager {
         RenderSystem.enableDepthTest();
         RenderSystem.activeTexture(org.lwjgl.opengl.GL13.GL_TEXTURE2);
         RenderSystem.activeTexture(org.lwjgl.opengl.GL13.GL_TEXTURE0);
-        Matrix4fStack posestack = RenderSystem.getModelViewStack();
-        posestack.pushMatrix();
-        posestack.mul(pMatrixStack.last().pose());
+        var posestack = RenderSystem.getModelViewStack();
+        posestack.pushPose();
+        posestack.mulPoseMatrix(pMatrixStack.last().pose());
         RenderSystem.applyModelViewMatrix();
 
         for(ParticleRenderType particlerendertype : this.particles.keySet()) {
@@ -100,20 +98,18 @@ public class ParticleManager {
                 RenderSystem.setShader(GameRenderer::getParticleShader);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 var tesselator = Tesselator.getInstance();
-                var bufferBuilder = particlerendertype.begin(tesselator, this.textureManager);
-                if (bufferBuilder == null) continue;
+                var bufferBuilder = tesselator.getBuilder();
+                particlerendertype.begin(bufferBuilder, this.textureManager);
 
                 for(var particle : iterable) {
                     particle.render(bufferBuilder, pActiveRenderInfo, pPartialTicks);
                 }
 
-                var data = bufferBuilder.build();
-                if (data == null) continue;
-                BufferUploader.drawWithShader(data);
+                particlerendertype.end(tesselator);
             }
         }
 
-        posestack.popMatrix();
+        posestack.popPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
