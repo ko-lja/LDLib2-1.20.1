@@ -13,7 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
 import lombok.Getter;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,12 +27,12 @@ public class CustomDirectAccessor<TYPE> implements IDirectAccessor<TYPE>, IMarkF
     private final Class<TYPE> type;
     private final boolean supportChildClass;
     private final Codec<TYPE> codec;
-    private final StreamCodec<? super RegistryFriendlyByteBuf, TYPE> streamCodec;
+    private final StreamCodec<? super FriendlyByteBuf, TYPE> streamCodec;
     @Nullable
     private final IMarkFunction markFunction;
 
     protected CustomDirectAccessor(Class<TYPE> type, boolean supportChildClass,
-                                   Codec<TYPE> codec, StreamCodec<? super RegistryFriendlyByteBuf, TYPE> streamCodec,
+                                   Codec<TYPE> codec, StreamCodec<? super FriendlyByteBuf, TYPE> streamCodec,
                                    @Nullable IMarkFunction<TYPE, ?> markFunction) {
         this.type = type;
         this.supportChildClass = supportChildClass;
@@ -65,12 +65,12 @@ public class CustomDirectAccessor<TYPE> implements IDirectAccessor<TYPE>, IMarkF
     }
 
     @Override
-    public void readDirectVarToStream(RegistryFriendlyByteBuf buffer, IVar<TYPE> var) {
+    public void readDirectVarToStream(FriendlyByteBuf buffer, IVar<TYPE> var) {
         streamCodec.encode(buffer, var.value());
     }
 
     @Override
-    public void writeDirectVarFromStream(RegistryFriendlyByteBuf buffer, IVar<TYPE> var) {
+    public void writeDirectVarFromStream(FriendlyByteBuf buffer, IVar<TYPE> var) {
         var.set(streamCodec.decode(buffer));
     }
 
@@ -134,7 +134,7 @@ public class CustomDirectAccessor<TYPE> implements IDirectAccessor<TYPE>, IMarkF
         private final Class<TYPE> type;
         private final boolean supportChildClass;
         private Codec<TYPE> codec;
-        private StreamCodec<? super RegistryFriendlyByteBuf, TYPE> streamCodec;
+        private StreamCodec<? super FriendlyByteBuf, TYPE> streamCodec;
         private @Nullable IMarkFunction<TYPE, ?> markFunction;
         private boolean codecMark;
 
@@ -148,7 +148,7 @@ public class CustomDirectAccessor<TYPE> implements IDirectAccessor<TYPE>, IMarkF
             return this;
         }
 
-        public Builder<TYPE> streamCodec(StreamCodec<? super RegistryFriendlyByteBuf, TYPE> streamCodec) {
+        public Builder<TYPE> streamCodec(StreamCodec<? super FriendlyByteBuf, TYPE> streamCodec) {
             this.streamCodec = streamCodec;
             return this;
         }

@@ -12,7 +12,7 @@ import com.mojang.serialization.DynamicOps;
 import lombok.Getter;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,7 @@ public final class RegistryAccessor<TYPE> implements IDirectAccessor<TYPE>, IMar
     private final Class<TYPE> typeClass;
     private final Registry<TYPE> registry;
     private final Codec<TYPE> codec;
-    private final StreamCodec<RegistryFriendlyByteBuf, TYPE> streamCodec;
+    private final StreamCodec<FriendlyByteBuf, TYPE> streamCodec;
 
     private RegistryAccessor(Class<TYPE> typeClass, Registry<TYPE> registry) {
         this.typeClass = typeClass;
@@ -59,12 +59,12 @@ public final class RegistryAccessor<TYPE> implements IDirectAccessor<TYPE>, IMar
     }
 
     @Override
-    public void readDirectVarToStream(RegistryFriendlyByteBuf buffer, IVar<TYPE> var) {
+    public void readDirectVarToStream(FriendlyByteBuf buffer, IVar<TYPE> var) {
         streamCodec.encode(buffer, var.value());
     }
 
     @Override
-    public void writeDirectVarFromStream(RegistryFriendlyByteBuf buffer, IVar<TYPE> var) {
+    public void writeDirectVarFromStream(FriendlyByteBuf buffer, IVar<TYPE> var) {
         var.set(streamCodec.decode(buffer));
     }
 

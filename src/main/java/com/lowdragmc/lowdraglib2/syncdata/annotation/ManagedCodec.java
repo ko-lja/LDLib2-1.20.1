@@ -101,7 +101,7 @@ public @interface ManagedCodec {
     String value();
 
     /**
-     * Name of a method returning a {@code StreamCodec<? super RegistryFriendlyByteBuf, T>}, used wherever the field
+     * Name of a method returning a {@code StreamCodec<? super FriendlyByteBuf, T>}, used wherever the field
      * is written to a byte buffer instead of being saved: a managed holder's sync packets after the initial sync,
      * and {@code PersistedParser} writing an object to a buffer. It is never used for saves.
      * <br>

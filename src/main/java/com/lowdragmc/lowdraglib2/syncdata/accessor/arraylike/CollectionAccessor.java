@@ -10,7 +10,7 @@ import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
 import lombok.Getter;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -111,7 +111,7 @@ public class CollectionAccessor<TYPE> implements
     }
 
     @Override
-    public void readReadOnlyValueToStream(RegistryFriendlyByteBuf buffer, @NotNull Collection<TYPE> value) {
+    public void readReadOnlyValueToStream(FriendlyByteBuf buffer, @NotNull Collection<TYPE> value) {
         buffer.writeVarInt(value.size());
         for (var v : value) {
             if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
@@ -133,7 +133,7 @@ public class CollectionAccessor<TYPE> implements
     }
 
     @Override
-    public void writeReadOnlyValueFromStream(RegistryFriendlyByteBuf buffer, @NotNull Collection<TYPE> value) {
+    public void writeReadOnlyValueFromStream(FriendlyByteBuf buffer, @NotNull Collection<TYPE> value) {
         var size = buffer.readVarInt();
         if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
             value.clear();

@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -25,18 +25,18 @@ import java.util.List;
 public record SPacketAutoSyncBlockEntities(List<Entry> entries) implements CustomPacketPayload {
     public static final ResourceLocation ID = LDLib2.id("auto_sync_block_entities");
     public static final Type<SPacketAutoSyncBlockEntities> TYPE = new Type<>(ID);
-    public static final StreamCodec<RegistryFriendlyByteBuf, SPacketAutoSyncBlockEntities> CODEC =
+    public static final StreamCodec<FriendlyByteBuf, SPacketAutoSyncBlockEntities> CODEC =
             Entry.CODEC.apply(ByteBufCodecs.list()).map(SPacketAutoSyncBlockEntities::new, SPacketAutoSyncBlockEntities::entries);
 
     public record Entry(BlockPos pos, BlockEntityType<?> type, BitSet changed, byte[] data, CompoundTag extra) {
-        private static final StreamCodec<RegistryFriendlyByteBuf, BlockEntityType<?>> TYPE_CODEC = ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE);
-        public static final StreamCodec<RegistryFriendlyByteBuf, Entry> CODEC = StreamCodec.of((buf, entry) -> entry.write(buf), Entry::read);
+        private static final StreamCodec<FriendlyByteBuf, BlockEntityType<?>> TYPE_CODEC = ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE);
+        public static final StreamCodec<FriendlyByteBuf, Entry> CODEC = StreamCodec.of((buf, entry) -> entry.write(buf), Entry::read);
 
         public static Entry of(SPacketAutoSyncBlockEntity packet) {
             return new Entry(packet.getPos(), packet.getBlockEntityType(), packet.getChanged(), packet.getData(), packet.getExtra());
         }
 
-        private void write(RegistryFriendlyByteBuf buf) {
+        private void write(FriendlyByteBuf buf) {
             buf.writeBlockPos(pos);
             TYPE_CODEC.encode(buf, type);
             buf.writeByteArray(changed.toByteArray());
@@ -47,7 +47,7 @@ public record SPacketAutoSyncBlockEntities(List<Entry> entries) implements Custo
             }
         }
 
-        private static Entry read(RegistryFriendlyByteBuf buf) {
+        private static Entry read(FriendlyByteBuf buf) {
             var pos = buf.readBlockPos();
             var type = TYPE_CODEC.decode(buf);
             var changed = BitSet.valueOf(buf.readByteArray());

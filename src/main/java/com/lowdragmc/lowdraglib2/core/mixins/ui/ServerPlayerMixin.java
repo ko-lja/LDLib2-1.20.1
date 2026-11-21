@@ -3,7 +3,7 @@ package com.lowdragmc.lowdraglib2.core.mixins.ui;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.lowdragmc.lowdraglib2.gui.event.ContainerMenuEvent;
 import com.lowdragmc.lowdraglib2.gui.holder.IModularUIHolder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -21,7 +21,7 @@ public abstract class ServerPlayerMixin {
             method = "lambda$openMenu$15",
             at = @At(value = "RETURN")
     )
-    private static void ldlib2$writeCustomData(MenuProvider menuProvider, AbstractContainerMenu menu, Consumer<RegistryFriendlyByteBuf> extraDataWriter, RegistryFriendlyByteBuf buffer, CallbackInfo ci) {
+    private static void ldlib2$writeCustomData(MenuProvider menuProvider, AbstractContainerMenu menu, Consumer<FriendlyByteBuf> extraDataWriter, FriendlyByteBuf buffer, CallbackInfo ci) {
         if (menu instanceof IModularUIHolder holder) {
             holder.writeInitialData(buffer);
         }

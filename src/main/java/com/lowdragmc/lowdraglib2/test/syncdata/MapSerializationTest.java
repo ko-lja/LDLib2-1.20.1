@@ -46,7 +46,7 @@ public class MapSerializationTest {
         public final Map<String, List<BlockPos>> roListManaged = new HashMap<>();
 
         public CompoundTag roListMapSerialize(Map<String, List<BlockPos>> m) {
-            // Wrap in CompoundTag because RegistryFriendlyByteBuf.readNbt() strictly requires
+            // Wrap in CompoundTag because FriendlyByteBuf.readNbt() strictly requires
             // CompoundTag on the buffer path; ListTag works for NBT but fails over the wire.
             var keys = new ListTag();
             m.keySet().stream().sorted().forEach(k -> keys.add(StringTag.valueOf(k)));
@@ -78,7 +78,7 @@ public class MapSerializationTest {
         public final Map<NestedReadOnly, NestedReadOnly> roKRoV = new LinkedHashMap<>();
 
         public CompoundTag roMapSerialize(Map<String, NestedReadOnly> m) {
-            // Wrap in CompoundTag because RegistryFriendlyByteBuf.readNbt() strictly requires
+            // Wrap in CompoundTag because FriendlyByteBuf.readNbt() strictly requires
             // CompoundTag on the buffer path; ListTag works for NBT but fails over the wire.
             var keys = new ListTag();
             m.keySet().stream().sorted().forEach(k -> keys.add(StringTag.valueOf(k)));

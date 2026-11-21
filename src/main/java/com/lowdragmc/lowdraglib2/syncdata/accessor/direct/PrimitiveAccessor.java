@@ -10,7 +10,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,12 +57,12 @@ public final class PrimitiveAccessor<TYPE> implements IDirectAccessor<TYPE>, IMa
     }
 
     @Override
-    public void readDirectVarToStream(RegistryFriendlyByteBuf buffer, IVar<TYPE> var) {
+    public void readDirectVarToStream(FriendlyByteBuf buffer, IVar<TYPE> var) {
         streamCodec.encode(buffer, var.value());
     }
 
     @Override
-    public void writeDirectVarFromStream(RegistryFriendlyByteBuf buffer, IVar<TYPE> var) {
+    public void writeDirectVarFromStream(FriendlyByteBuf buffer, IVar<TYPE> var) {
         var.set(streamCodec.decode(buffer));
     }
 

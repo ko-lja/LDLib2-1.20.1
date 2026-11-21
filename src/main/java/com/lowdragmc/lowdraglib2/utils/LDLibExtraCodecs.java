@@ -11,8 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.inventory.RecipeHolder;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
@@ -43,7 +43,7 @@ public final class LDLibExtraCodecs {
 
     public final static Codec<UUID> UUID = Codec.STRING.xmap(java.util.UUID::fromString, java.util.UUID::toString);
 
-    public final static Codec<Tag> TAG = ExtraCodecs.converter(NbtOps.INSTANCE);
+    public final static Codec<Tag> TAG = ExtraCodecs(NbtOps.INSTANCE);
 
     public final static Codec<RecipeHolder> RECIPE_HOLDER_ID = ResourceLocation.CODEC.flatXmap(id -> {
         if (Platform.getMinecraftServer() != null) {
@@ -54,7 +54,7 @@ public final class LDLibExtraCodecs {
             return level.getRecipeManager().byKey(id).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown recipe: " + id));
         }
         return DataResult.error(() -> "No recipe manager available");
-    }, recipeHolder -> DataResult.success(recipeHolder.id()));
+    }, recipeHolder -> DataResult.success(recipeHolder));
 
     public final static PrimitiveCodec<Character> CHAR = new PrimitiveCodec<>() {
         public <T> DataResult<Character> read(DynamicOps<T> ops, T input) {
@@ -71,25 +71,25 @@ public final class LDLibExtraCodecs {
     };
 
     public final static Codec<Number> NUMBER = TAG.xmap(
-            tag -> switch (tag) {
-                case IntTag intTag -> intTag.getAsInt();
-                case LongTag longTag -> longTag.getAsLong();
-                case ByteTag byteTag -> byteTag.getAsByte();
-                case ShortTag shortTag -> shortTag.getAsShort();
-                case FloatTag floatTag -> floatTag.getAsFloat();
-                case DoubleTag doubleTag -> doubleTag.getAsDouble();
-                case null -> null;
-                default -> throw new IllegalArgumentException("Invalid tag type: " + tag.getClass().getName());
+            tag -> {
+                if (tag instanceof IntTag intTag) return intTag.getAsInt();
+                else if (tag instanceof LongTag longTag) return longTag.getAsLong();
+                else if (tag instanceof ByteTag byteTag) return byteTag.getAsByte();
+                else if (tag instanceof ShortTag shortTag) return shortTag.getAsShort();
+                else if (tag instanceof FloatTag floatTag) return floatTag.getAsFloat();
+                else if (tag instanceof DoubleTag doubleTag) return doubleTag.getAsDouble();
+                else if (tag == null) return null;
+                else throw new IllegalArgumentException("Invalid tag type: " + tag.getClass().getName())
             },
-            number -> switch (number) {
-                case Integer value -> IntTag.valueOf(value);
-                case Long value -> LongTag.valueOf(value);
-                case Byte value -> ByteTag.valueOf(value);
-                case Short value -> ShortTag.valueOf(value);
-                case Float value -> FloatTag.valueOf(value);
-                case Double value -> DoubleTag.valueOf(value);
-                case null -> null;
-                default -> DoubleTag.valueOf(number.doubleValue());
+            number -> {
+                if (number instanceof Integer value) return IntTag.valueOf(value);
+                else if (number instanceof Long value) return LongTag.valueOf(value);
+                else if (number instanceof Byte value) return ByteTag.valueOf(value);
+                else if (number instanceof Short value) return ShortTag.valueOf(value);
+                else if (number instanceof Float value) return FloatTag.valueOf(value);
+                else if (number instanceof Double value) return DoubleTag.valueOf(value);
+                else if (number == null) return null;
+                else return DoubleTag.valueOf(number.doubleValue());
             }
     );
 

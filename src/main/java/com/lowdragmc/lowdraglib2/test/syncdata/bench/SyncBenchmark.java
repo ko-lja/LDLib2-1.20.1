@@ -11,7 +11,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -347,8 +347,8 @@ public class SyncBenchmark {
         return updates;
     }
 
-    private static <T> long wireBytes(ServerLevel level, StreamCodec<RegistryFriendlyByteBuf, T> codec, T payload, ResourceLocation channel) {
-        var buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), level.registryAccess(), ConnectionType.NEOFORGE);
+    private static <T> long wireBytes(ServerLevel level, StreamCodec<FriendlyByteBuf, T> codec, T payload, ResourceLocation channel) {
+        var buf = new FriendlyByteBuf(Unpooled.buffer(), level.registryAccess(), ConnectionType.NEOFORGE);
         try {
             codec.encode(buf, payload);
             int id = channel.toString().length();

@@ -16,7 +16,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.experimental.UtilityClass;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraftforge.common.CommonHooks;
@@ -199,14 +199,14 @@ public final class PersistedParser {
 
     /**
      * Writes an object into the provided {@link ByteBuf} for serialization.
-     * This method ensures that the object is serialized using a {@link RegistryFriendlyByteBuf},
+     * This method ensures that the object is serialized using a {@link FriendlyByteBuf},
      * which handles special registries and connection types.
      */
     public static void writeBuff(ByteBuf buf, Object object) {
-        var provider = buf instanceof RegistryFriendlyByteBuf registryBuf ?
+        var provider = buf instanceof FriendlyByteBuf registryBuf ?
                 registryBuf.registryAccess() : Platform.getFrozenRegistry();
-        var registryBuf = buf instanceof RegistryFriendlyByteBuf rb ?
-                rb : new RegistryFriendlyByteBuf(buf, provider, ConnectionType.NEOFORGE);
+        var registryBuf = buf instanceof FriendlyByteBuf rb ?
+                rb : new FriendlyByteBuf(buf, provider, ConnectionType.NEOFORGE);
         writeStreamBuffInternal(true, registryBuf, object.getClass(), object, provider);
     }
 
@@ -219,16 +219,16 @@ public final class PersistedParser {
 
     /**
      * Reads the serialized object data from the provided {@link ByteBuf}.
-     * This method utilizes either the existing {@link RegistryFriendlyByteBuf}
+     * This method utilizes either the existing {@link FriendlyByteBuf}
      * or creates a new instance to handle registries and support specific
      * connection types. The deserialization is processed through an internal
      * utility method to populate object fields.
      */
     public static void readBuff(ByteBuf buf, Object object) {
-        var provider = buf instanceof RegistryFriendlyByteBuf registryBuf ?
+        var provider = buf instanceof FriendlyByteBuf registryBuf ?
                 registryBuf.registryAccess() : Platform.getFrozenRegistry();
-        var registryBuf = buf instanceof RegistryFriendlyByteBuf rb ?
-                rb : new RegistryFriendlyByteBuf(buf, provider, ConnectionType.NEOFORGE);
+        var registryBuf = buf instanceof FriendlyByteBuf rb ?
+                rb : new FriendlyByteBuf(buf, provider, ConnectionType.NEOFORGE);
         readStreamBuffInternal(true, registryBuf, new HashMap<>(), object.getClass(), object, provider);
     }
 
@@ -452,12 +452,12 @@ public final class PersistedParser {
     }
 
     /**
-     * Serializes the fields of the given object into a {@link RegistryFriendlyByteBuf} stream,
+     * Serializes the fields of the given object into a {@link FriendlyByteBuf} stream,
      * processing only the fields annotated with {@link Persisted} or {@link Configurable}.
      * This internal method performs recursive serialization, traversing the class hierarchy and handling special cases
      * for serializable interfaces and additional data handling.
      */
-    private static void writeStreamBuffInternal(boolean root, RegistryFriendlyByteBuf buf, Class<?> clazz, Object object, HolderLookup.Provider provider) {
+    private static void writeStreamBuffInternal(boolean root, FriendlyByteBuf buf, Class<?> clazz, Object object, HolderLookup.Provider provider) {
         if (clazz == Object.class || clazz == null) return;
 
         if (root && object instanceof IPersistedSerializable serializable) {
@@ -514,13 +514,13 @@ public final class PersistedParser {
     }
 
     /**
-     * Deserializes the object's fields from the given {@link RegistryFriendlyByteBuf},
+     * Deserializes the object's fields from the given {@link FriendlyByteBuf},
      * processing fields annotated with {@link Persisted} or {@link Configurable}.
      * Handles recursive deserialization across class hierarchies and manages
      * pre- and post-deserialization hooks for objects implementing {@link IPersistedSerializable}.
      * Additionally supports fields capable of serialization using {@link INBTSerializable}.
      */
-    private static void readStreamBuffInternal(boolean root, RegistryFriendlyByteBuf buf, Map<String, Method> setters, Class<?> clazz, Object object, HolderLookup.Provider provider) {
+    private static void readStreamBuffInternal(boolean root, FriendlyByteBuf buf, Map<String, Method> setters, Class<?> clazz, Object object, HolderLookup.Provider provider) {
         if (clazz == Object.class || clazz == null) return;
 
         if (root && object instanceof IPersistedSerializable serializable) {

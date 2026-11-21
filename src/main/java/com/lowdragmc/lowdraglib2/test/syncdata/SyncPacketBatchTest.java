@@ -15,7 +15,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -234,8 +234,8 @@ public class SyncPacketBatchTest {
         return bits;
     }
 
-    private static <T> RegistryFriendlyByteBuf buffer(ServerLevel level, StreamCodec<RegistryFriendlyByteBuf, T> codec, T value) {
-        var buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), level.registryAccess(), ConnectionType.NEOFORGE);
+    private static <T> FriendlyByteBuf buffer(ServerLevel level, StreamCodec<FriendlyByteBuf, T> codec, T value) {
+        var buf = new FriendlyByteBuf(Unpooled.buffer(), level.registryAccess(), ConnectionType.NEOFORGE);
         codec.encode(buf, value);
         return buf;
     }

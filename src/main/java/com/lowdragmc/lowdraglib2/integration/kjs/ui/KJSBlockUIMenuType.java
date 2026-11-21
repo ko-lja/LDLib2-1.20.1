@@ -6,7 +6,7 @@ import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +24,7 @@ public class KJSBlockUIMenuType {
         return player.openMenu(event).isPresent();
     }
 
-    public static ModularUIContainerMenu create(int windowId, Inventory inv, RegistryFriendlyByteBuf data) {
+    public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
         var player = inv.player;
         var pos = data.readBlockPos();
         var blockstate = BlockUIMenuType.BLOCK_STATE_STREAM_CODEC.decode(data);
@@ -57,7 +57,7 @@ public class KJSBlockUIMenuType {
 
         @Override
         @HideFromJS
-        public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buffer) {
+        public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
             buffer.writeBlockPos(pos);
             BlockUIMenuType.BLOCK_STATE_STREAM_CODEC.encode(buffer, blockState);
             super.writeClientSideData(menu, buffer);

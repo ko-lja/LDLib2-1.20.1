@@ -10,7 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.RegistryOps;
 import net.minecraftforge.common.CommonHooks;
 import net.minecraftforge.common.util.INBTSerializable;
@@ -97,12 +97,12 @@ public class INBTSerializableReadOnlyAccessor implements IReadOnlyAccessor<INBTS
     }
 
     @Override
-    public void readReadOnlyValueToStream(RegistryFriendlyByteBuf buffer, @NotNull INBTSerializable<?> value) {
+    public void readReadOnlyValueToStream(FriendlyByteBuf buffer, @NotNull INBTSerializable<?> value) {
         buffer.writeNbt(value.serializeNBT(buffer.registryAccess()));
     }
 
     @Override
-    public void writeReadOnlyValueFromStream(RegistryFriendlyByteBuf buffer, @NotNull INBTSerializable<?> value) {
+    public void writeReadOnlyValueFromStream(FriendlyByteBuf buffer, @NotNull INBTSerializable<?> value) {
         var nbt = buffer.readNbt(NbtAccounter.unlimitedHeap());
         if (nbt != null) {
             ((INBTSerializable)value).deserializeNBT(buffer.registryAccess(), nbt);

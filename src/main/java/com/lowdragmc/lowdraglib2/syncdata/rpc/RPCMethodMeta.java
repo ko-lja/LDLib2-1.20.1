@@ -7,7 +7,7 @@ import com.lowdragmc.lowdraglib2.syncdata.accessor.direct.IDirectAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.var.ManagedHolderVar;
 import com.lowdragmc.lowdraglib2.utils.ByteBufUtil;
 import lombok.Getter;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -56,7 +56,7 @@ public final class RPCMethodMeta implements RPCPacketHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public void invoke(Object instance, RPCSender sender, RegistryFriendlyByteBuf buf) {
+    public void invoke(Object instance, RPCSender sender, FriendlyByteBuf buf) {
         Object[] args;
         if (isFirstArgSender) {
             args = new Object[argsAccessor.length + 1];
@@ -83,7 +83,7 @@ public final class RPCMethodMeta implements RPCPacketHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public void serializeArgs(RegistryFriendlyByteBuf buf, Object[] args) {
+    public void serializeArgs(FriendlyByteBuf buf, Object[] args) {
         if(argsAccessor.length != args.length) {
             throw new IllegalArgumentException("Invalid number of arguments, expected " + argsAccessor.length + " but got " + args.length);
         }

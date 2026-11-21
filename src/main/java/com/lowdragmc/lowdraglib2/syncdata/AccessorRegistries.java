@@ -34,7 +34,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -278,17 +278,17 @@ public class AccessorRegistries {
         if (!(value instanceof Codec<?> codec)) {
             throw managedCodecError(field, managedCodec.value() + "() returns neither a Codec nor an IAccessor", null);
         }
-        StreamCodec<? super RegistryFriendlyByteBuf, ?> streamCodec;
+        StreamCodec<? super FriendlyByteBuf, ?> streamCodec;
         if (managedCodec.streamCodec().isEmpty()) {
             streamCodec = ByteBufCodecs.fromCodecWithRegistries(codec);
         } else if (callManagedCodecMethod(field, managedCodec, managedCodec.streamCodec(), holder) instanceof StreamCodec<?, ?> named) {
-            streamCodec = (StreamCodec<? super RegistryFriendlyByteBuf, ?>) named;
+            streamCodec = (StreamCodec<? super FriendlyByteBuf, ?>) named;
         } else {
             throw managedCodecError(field, managedCodec.streamCodec() + "() does not return a StreamCodec", null);
         }
         return CustomDirectAccessor.builder((Class<Object>) field.getType(), true)
                 .codec((Codec<Object>) codec)
-                .streamCodec((StreamCodec<? super RegistryFriendlyByteBuf, Object>) streamCodec)
+                .streamCodec((StreamCodec<? super FriendlyByteBuf, Object>) streamCodec)
                 .codecMark()
                 .build();
     }
@@ -517,11 +517,11 @@ public class AccessorRegistries {
                         ResourceLocation.CODEC.fieldOf("id").forGetter(RecipeHolder::id),
                         Recipe.CODEC.fieldOf("recipe").forGetter(RecipeHolder::value)
                 ).apply(instance, RecipeHolder::new)))
-                .streamCodec((StreamCodec<RegistryFriendlyByteBuf, RecipeHolder>) (Object)RecipeHolder.STREAM_CODEC)
+                .streamCodec((StreamCodec<FriendlyByteBuf, RecipeHolder>) (Object)RecipeHolder.STREAM_CODEC)
                 .build());
         registerAccessor(CustomDirectAccessor.builder(Recipe.class, true)
                 .codec((Codec<Recipe>) (Object) Recipe.CODEC)
-                .streamCodec((StreamCodec<RegistryFriendlyByteBuf, Recipe>) (Object)Recipe.STREAM_CODEC)
+                .streamCodec((StreamCodec<FriendlyByteBuf, Recipe>) (Object)Recipe.STREAM_CODEC)
                 .build());
         registerAccessor(CustomDirectAccessor.builder(IResourcePath.class, true)
                 .codec(IResourcePath.CODEC)

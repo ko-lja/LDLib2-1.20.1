@@ -4,7 +4,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 public class BlockUIMenuType {
-    public static final StreamCodec<RegistryFriendlyByteBuf, BlockState> BLOCK_STATE_STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(BlockState.CODEC);
+    public static final StreamCodec<FriendlyByteBuf, BlockState> BLOCK_STATE_STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(BlockState.CODEC);
 
     /**
      * Opens a UI for the specified player at the given block position if the block at that position
@@ -38,7 +38,7 @@ public class BlockUIMenuType {
         return false;
     }
 
-    public static ModularUIContainerMenu create(int windowId, Inventory inv, RegistryFriendlyByteBuf data) {
+    public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
         var player = inv.player;
         var pos = data.readBlockPos();
         var blockstate = BLOCK_STATE_STREAM_CODEC.decode(data);
@@ -121,7 +121,7 @@ public class BlockUIMenuType {
         }
 
         @Override
-        public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buffer) {
+        public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
             buffer.writeBlockPos(pos);
             BLOCK_STATE_STREAM_CODEC.encode(buffer, blockState);
         }

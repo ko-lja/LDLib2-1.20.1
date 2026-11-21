@@ -2,7 +2,7 @@ package com.lowdragmc.lowdraglib2.gui.factory;
 
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.MenuProvider;
@@ -55,14 +55,14 @@ public class PlayerUIMenuType {
 
 
             @Override
-            public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buffer) {
+            public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
                 buffer.writeResourceLocation(id);
             }
         });
         return true;
     }
 
-    public static ModularUIContainerMenu create(int windowId, Inventory inv, RegistryFriendlyByteBuf data) {
+    public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
         var id = data.readResourceLocation();
         var holder = UI_HOLDERS.get(id).apply(inv.player);
         if (holder == null) throw new IllegalArgumentException("No player ui holder found for id " + id);

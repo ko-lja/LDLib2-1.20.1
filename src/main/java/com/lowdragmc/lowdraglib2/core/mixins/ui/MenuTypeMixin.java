@@ -2,7 +2,7 @@ package com.lowdragmc.lowdraglib2.core.mixins.ui;
 
 import com.lowdragmc.lowdraglib2.gui.event.ContainerMenuEvent;
 import com.lowdragmc.lowdraglib2.gui.holder.IModularUIHolder;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -31,9 +31,9 @@ public abstract class MenuTypeMixin<T extends AbstractContainerMenu> {
     }
 
 
-    @Inject(method = "create(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/RegistryFriendlyByteBuf;)Lnet/minecraft/world/inventory/AbstractContainerMenu;",
+    @Inject(method = "create(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/inventory/AbstractContainerMenu;",
             at = @At(value = "RETURN"))
-    private void ldlib2$create2$return(int containerId, Inventory playerInventory, RegistryFriendlyByteBuf extraData, CallbackInfoReturnable<T> cir) {
+    private void ldlib2$create2$return(int containerId, Inventory playerInventory, FriendlyByteBuf extraData, CallbackInfoReturnable<T> cir) {
         var menu = cir.getReturnValue();
         if (this.constructor instanceof net.neoforged.neoforge.network.IContainerFactory) {
             NeoForge.EVENT_BUS.post(new ContainerMenuEvent.Create(playerInventory.player, menu));

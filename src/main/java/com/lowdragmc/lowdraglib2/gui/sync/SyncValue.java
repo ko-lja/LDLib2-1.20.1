@@ -5,7 +5,7 @@ import com.lowdragmc.lowdraglib2.syncdata.ISubscription;
 import com.lowdragmc.lowdraglib2.syncdata.SyncValueHolder;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
@@ -108,13 +108,13 @@ public class SyncValue<T> {
         syncValueHolder.ref.clearSyncDirty();
     }
 
-    public void writeSyncData(RegistryFriendlyByteBuf buffer) {
+    public void writeSyncData(FriendlyByteBuf buffer) {
         notifyListeners(preSyncListeners);
         syncValueHolder.ref.readSyncToStream(buffer);
         notifyListeners(postSyncListeners);
     }
 
-    public void readSyncData(RegistryFriendlyByteBuf buffer) throws IllegalAccessException {
+    public void readSyncData(FriendlyByteBuf buffer) throws IllegalAccessException {
         if (!acceptSync) {
             throw new IllegalAccessException(syncValueHolder.managedKey.getName() + " receive sync data while it does not accept sync.");
         }

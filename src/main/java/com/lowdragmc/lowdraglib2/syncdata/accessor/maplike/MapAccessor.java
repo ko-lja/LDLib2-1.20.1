@@ -11,7 +11,7 @@ import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
 import lombok.Getter;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
@@ -163,7 +163,7 @@ public class MapAccessor<K, V> implements
     // ---------- Network buffer serialization ----------
 
     @Override
-    public void readReadOnlyValueToStream(RegistryFriendlyByteBuf buffer, @NotNull Map<K, V> value) {
+    public void readReadOnlyValueToStream(FriendlyByteBuf buffer, @NotNull Map<K, V> value) {
         buffer.writeVarInt(value.size());
         for (var entry : value.entrySet()) {
             writeChildToStream(buffer, keyAccessor, entry.getKey(), "key");
@@ -172,7 +172,7 @@ public class MapAccessor<K, V> implements
     }
 
     @Override
-    public void writeReadOnlyValueFromStream(RegistryFriendlyByteBuf buffer, @NotNull Map<K, V> value) {
+    public void writeReadOnlyValueFromStream(FriendlyByteBuf buffer, @NotNull Map<K, V> value) {
         int size = buffer.readVarInt();
 
         boolean kDirect = keyAccessor instanceof IDirectAccessor;
@@ -331,7 +331,7 @@ public class MapAccessor<K, V> implements
         return null;
     }
 
-    private void writeChildToStream(RegistryFriendlyByteBuf buffer, IAccessor<?> accessor, Object obj, String role) {
+    private void writeChildToStream(FriendlyByteBuf buffer, IAccessor<?> accessor, Object obj, String role) {
         if (accessor instanceof IDirectAccessor directAccessor) {
             if (obj == null) {
                 buffer.writeBoolean(true);
@@ -351,7 +351,7 @@ public class MapAccessor<K, V> implements
         throw new IllegalArgumentException("Child accessor not managed for map " + role + ": " + accessor);
     }
 
-    private <X> X readChildFromStreamForCreate(RegistryFriendlyByteBuf buffer, IAccessor<?> accessor, Class<?> type, String role) {
+    private <X> X readChildFromStreamForCreate(FriendlyByteBuf buffer, IAccessor<?> accessor, Class<?> type, String role) {
         if (accessor instanceof IDirectAccessor directAccessor) {
             if (buffer.readBoolean()) return null;
             var holder = ManagedHolderVar.ofNull(type);

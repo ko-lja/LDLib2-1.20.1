@@ -3,7 +3,7 @@ package com.lowdragmc.lowdraglib2.gui.factory;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerMenu;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -36,7 +36,7 @@ public class HeldItemUIMenuType {
         return false;
     }
 
-    public static ModularUIContainerMenu create(int windowId, Inventory inv, RegistryFriendlyByteBuf data) {
+    public static ModularUIContainerMenu create(int windowId, Inventory inv, FriendlyByteBuf data) {
         var player = inv.player;
         var hand = data.readEnum(InteractionHand.class);
         var itemstack = ItemStack.OPTIONAL_STREAM_CODEC.decode(data);
@@ -121,7 +121,7 @@ public class HeldItemUIMenuType {
         }
 
         @Override
-        public void writeClientSideData(AbstractContainerMenu menu, RegistryFriendlyByteBuf buffer) {
+        public void writeClientSideData(AbstractContainerMenu menu, FriendlyByteBuf buffer) {
             buffer.writeEnum(hand);
             ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, itemStack);
         }
