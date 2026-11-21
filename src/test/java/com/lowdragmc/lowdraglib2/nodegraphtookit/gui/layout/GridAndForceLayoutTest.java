@@ -74,8 +74,8 @@ class GridAndForceLayoutTest {
     void gridHandlesOneBoxAndNone() {
         var single = boxes(1, 100, 40);
         new GridLayout().layout(single, List.of(), LayoutOptions.defaults());
-        assertEquals(0f, single.getFirst().x, EPSILON);
-        assertEquals(0f, single.getFirst().y, EPSILON);
+        assertEquals(0f, single.get(0).x, EPSILON);
+        assertEquals(0f, single.get(0).y, EPSILON);
 
         var none = new ArrayList<LayoutBox>();
         new GridLayout().layout(none, List.of(), LayoutOptions.defaults());
@@ -151,7 +151,7 @@ class GridAndForceLayoutTest {
     void forceDirectedHandlesOneBoxAndNone() {
         var single = boxes(1, 100, 40);
         new ForceDirectedLayout().layout(single, List.of(), LayoutOptions.defaults());
-        assertEquals(0f, single.getFirst().x, EPSILON);
+        assertEquals(0f, single.get(0).x, EPSILON);
 
         var none = new ArrayList<LayoutBox>();
         new ForceDirectedLayout().layout(none, List.of(), LayoutOptions.defaults());

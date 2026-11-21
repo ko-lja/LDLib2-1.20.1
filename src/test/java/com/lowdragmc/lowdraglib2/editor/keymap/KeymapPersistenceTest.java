@@ -2,6 +2,7 @@ package com.lowdragmc.lowdraglib2.editor.keymap;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -26,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class KeymapPersistenceTest {
     private static final Codec<Keymap.Bindings> BINDINGS_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            KeyChord.CODEC.optionalFieldOf("primary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::primary),
-            KeyChord.CODEC.optionalFieldOf("secondary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::secondary)
+            LDCodecs.optionalFieldOf(KeyChord.CODEC, "primary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::primary),
+            LDCodecs.optionalFieldOf(KeyChord.CODEC, "secondary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::secondary)
     ).apply(instance, Keymap.Bindings::new));
 
     private static final Codec<Map<ResourceLocation, Keymap.Bindings>> CODEC =
@@ -40,8 +41,8 @@ class KeymapPersistenceTest {
         var overrides = new LinkedHashMap<ResourceLocation, Keymap.Bindings>();
         overrides.put(SAVE, Keymap.Bindings.of(KeyChord.ctrl(GLFW.GLFW_KEY_W), KeyChord.key(GLFW.GLFW_KEY_F2)));
 
-        var json = CODEC.encodeStart(JsonOps.INSTANCE, overrides).getOrThrow();
-        var read = CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+        var json = LDCodecs.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, overrides));
+        var read = LDCodecs.getOrThrow(CODEC.parse(JsonOps.INSTANCE, json));
 
         assertEquals(overrides, read);
     }
@@ -50,7 +51,7 @@ class KeymapPersistenceTest {
     void theStoredShapeIsTheOneDocumented() {
         var overrides = Map.of(SAVE, Keymap.Bindings.of(KeyChord.ctrlShift(GLFW.GLFW_KEY_S), KeyChord.UNBOUND));
 
-        var json = CODEC.encodeStart(JsonOps.INSTANCE, overrides).getOrThrow().getAsJsonObject();
+        var json = LDCodecs.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, overrides)).getAsJsonObject();
 
         var entry = json.getAsJsonObject("ldlib2:editor.save");
         assertEquals("ctrl+shift+s", entry.get("primary").getAsString());
@@ -63,7 +64,7 @@ class KeymapPersistenceTest {
     void aFullyClearedActionIsAnEmptyEntryRatherThanNoEntry() {
         var overrides = Map.of(SAVE, Keymap.Bindings.UNBOUND);
 
-        var json = CODEC.encodeStart(JsonOps.INSTANCE, overrides).getOrThrow().getAsJsonObject();
+        var json = LDCodecs.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, overrides)).getAsJsonObject();
 
         assertTrue(json.has("ldlib2:editor.save"), "dropping the entry would let the default come back");
         assertEquals(0, json.getAsJsonObject("ldlib2:editor.save").size());
@@ -73,8 +74,7 @@ class KeymapPersistenceTest {
     void aClearedBindingSurvivesTheRoundTrip() {
         var overrides = Map.of(SAVE, Keymap.Bindings.UNBOUND);
 
-        var read = CODEC.parse(JsonOps.INSTANCE, CODEC.encodeStart(JsonOps.INSTANCE, overrides).getOrThrow())
-                .getOrThrow();
+        var read = LDCodecs.getOrThrow(CODEC.parse(JsonOps.INSTANCE, LDCodecs.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, overrides))));
 
         assertTrue(read.get(SAVE).isUnbound(),
                 "a cleared binding has to come back cleared, or the default would creep back in");
@@ -84,7 +84,7 @@ class KeymapPersistenceTest {
     void aMissingFieldMeansUnbound() {
         var json = JsonParser.parseString("{\"ldlib2:editor.save\": {\"primary\": \"ctrl+w\"}}");
 
-        var read = CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+        var read = LDCodecs.getOrThrow(CODEC.parse(JsonOps.INSTANCE, json));
 
         assertEquals(KeyChord.ctrl(GLFW.GLFW_KEY_W), read.get(SAVE).primary());
         assertEquals(KeyChord.UNBOUND, read.get(SAVE).secondary());
@@ -103,8 +103,8 @@ class KeymapPersistenceTest {
         keymap.register(EditorAction.builder(SAVE).defaultChord(KeyChord.ctrl(GLFW.GLFW_KEY_S))
                 .onAction(() -> {}).build());
 
-        keymap.setOverrides(CODEC.parse(JsonOps.INSTANCE, stored).getOrThrow());
-        var written = CODEC.encodeStart(JsonOps.INSTANCE, keymap.getOverrides()).getOrThrow().getAsJsonObject();
+        keymap.setOverrides(LDCodecs.getOrThrow(CODEC.parse(JsonOps.INSTANCE, stored)));
+        var written = LDCodecs.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, keymap.getOverrides())).getAsJsonObject();
 
         assertTrue(written.has("othermod:editor.frobnicate"),
                 "opening one editor must not wipe another editor's keymap out of the shared file");
@@ -119,13 +119,13 @@ class KeymapPersistenceTest {
 
         // the whole map is one value, so a bad chord fails it - what must not happen is a silent
         // binding to the wrong key
-        assertTrue(result.isError(), "a chord that cannot be read must not decode to something else");
+        assertTrue(result.error().isPresent(), "a chord that cannot be read must not decode to something else");
         assertTrue(result.error().orElseThrow().message().contains("nonsense"));
     }
 
     @Test
     void anEmptyKeymapWritesAnEmptyObject() {
-        var json = CODEC.encodeStart(JsonOps.INSTANCE, Map.<ResourceLocation, Keymap.Bindings>of()).getOrThrow();
+        var json = LDCodecs.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, Map.<ResourceLocation, Keymap.Bindings>of()));
 
         assertEquals(new JsonObject(), json);
     }

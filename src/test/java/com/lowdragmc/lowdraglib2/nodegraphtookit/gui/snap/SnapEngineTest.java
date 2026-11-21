@@ -72,7 +72,7 @@ class SnapEngineTest {
         assertEquals(3f, result.offsetX(), EPSILON);
         assertEquals(0f, result.offsetY(), EPSILON);
         assertEquals(1, result.guides().size());
-        var guide = result.guides().getFirst();
+        var guide = result.guides().get(0);
         assertTrue(guide.vertical());
         assertEquals(103f, guide.position(), EPSILON);
         assertEquals(SnapAnchor.START, guide.anchor());
@@ -86,7 +86,7 @@ class SnapEngineTest {
         var target = rect(152, 100, 40, 30);
         var result = SnapEngine.snap(moving, List.of(target), align(8));
         assertEquals(2f, result.offsetX(), EPSILON);
-        assertEquals(SnapAnchor.END, result.guides().getFirst().anchor());
+        assertEquals(SnapAnchor.END, result.guides().get(0).anchor());
     }
 
     @Test
@@ -95,8 +95,8 @@ class SnapEngineTest {
         var target = rect(110, 100, 34, 30); // centre 127 vs the moving centre 125
         var result = SnapEngine.snap(moving, List.of(target), align(8));
         assertEquals(2f, result.offsetX(), EPSILON);
-        assertEquals(SnapAnchor.CENTER, result.guides().getFirst().anchor());
-        assertEquals(127f, result.guides().getFirst().position(), EPSILON);
+        assertEquals(SnapAnchor.CENTER, result.guides().get(0).anchor());
+        assertEquals(127f, result.guides().get(0).position(), EPSILON);
     }
 
     @Test
@@ -106,7 +106,7 @@ class SnapEngineTest {
         var result = SnapEngine.snap(moving, List.of(target), align(8));
         assertEquals(0f, result.offsetX(), EPSILON);
         assertEquals(-4f, result.offsetY(), EPSILON);
-        assertFalse(result.guides().getFirst().vertical());
+        assertFalse(result.guides().get(0).vertical());
     }
 
     @Test
@@ -189,7 +189,7 @@ class SnapEngineTest {
         var moving = rect(100, 300, 50, 30);
         var targets = List.of(rect(103, 0, 50, 30), rect(103, 500, 50, 30), rect(103, 900, 50, 30));
         var result = SnapEngine.snap(moving, targets, align(8));
-        var guide = result.guides().getFirst();
+        var guide = result.guides().get(0);
         assertEquals(0f, guide.start(), EPSILON);
         assertEquals(930f, guide.end(), EPSILON);
     }
@@ -198,7 +198,7 @@ class SnapEngineTest {
     void aGuideAlwaysCoversTheDraggedRectangleItself() {
         var moving = rect(100, 2000, 50, 30);
         var result = SnapEngine.snap(moving, List.of(rect(103, 1900, 50, 30)), align(8));
-        var guide = result.guides().getFirst();
+        var guide = result.guides().get(0);
         assertEquals(1900f, guide.start(), EPSILON);
         assertEquals(2030f, guide.end(), EPSILON);
     }
@@ -209,7 +209,7 @@ class SnapEngineTest {
         var moving = rect(100, 0, 50, 30);
         var targets = List.of(rect(103, 100, 50, 30), rect(103, 9000, 50, 30));
         var result = SnapEngine.snap(moving, targets, settings);
-        assertEquals(130f, result.guides().getFirst().end(), EPSILON, "the far one is not drawn through");
+        assertEquals(130f, result.guides().get(0).end(), EPSILON, "the far one is not drawn through");
     }
 
     @Test

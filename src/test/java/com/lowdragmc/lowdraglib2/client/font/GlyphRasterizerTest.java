@@ -1,18 +1,14 @@
 package com.lowdragmc.lowdraglib2.client.font;
 
 import org.junit.jupiter.api.Test;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FreeType;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -31,89 +27,43 @@ public class GlyphRasterizerTest {
     private static final int[] EM_SIZES = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 48};
 
     @Test
-    void freeTypeRasterizesEveryGlyphAtEverySizeUsedByTheFontEngine() throws Exception {
+    void stbRasterizesEveryGlyphAtEverySizeUsedByTheFontEngine() throws Exception {
         var bytes = Files.readAllBytes(FONT);
         var data = MemoryUtil.memAlloc(bytes.length);
         data.put(bytes).flip();
-
-        long library;
-        try (var stack = MemoryStack.stackPush()) {
-            PointerBuffer pointer = stack.mallocPointer(1);
-            assertEquals(0, FreeType.FT_Init_FreeType(pointer), "FT_Init_FreeType");
-            library = pointer.get();
-        }
-
-        FT_Face face;
-        try (var stack = MemoryStack.stackPush()) {
-            PointerBuffer pointer = stack.mallocPointer(1);
-            assertEquals(0, FreeType.FT_New_Memory_Face(library, data, 0L, pointer), "FT_New_Memory_Face");
-            face = FT_Face.create(pointer.get());
-        }
-        assertEquals(0, FreeType.FT_Select_Charmap(face, FreeType.FT_ENCODING_UNICODE), "FT_Select_Charmap");
+        var info = STBTTFontinfo.malloc();
+        assertTrue(STBTruetype.stbtt_InitFont(info, data), "stbtt_InitFont");
 
         var rendered = 0;
         for (var em : EM_SIZES) {
-            assertEquals(0, FreeType.FT_Set_Pixel_Sizes(face, em, em), "FT_Set_Pixel_Sizes " + em);
+            var scale = STBTruetype.stbtt_ScaleForMappingEmToPixels(info, em);
             for (int codepoint = 0; codepoint < 0x10000; codepoint++) {
-                var index = FreeType.FT_Get_Char_Index(face, codepoint);
+                var index = STBTruetype.stbtt_FindGlyphIndex(info, codepoint);
                 if (index == 0) continue;
-                if (FreeType.FT_Load_Glyph(face, index, FreeType.FT_LOAD_RENDER) != 0) continue;
-                var slot = face.glyph();
-                if (slot == null) continue;
-                var bitmap = slot.bitmap();
-                var width = bitmap.width();
-                var height = bitmap.rows();
-                if (width <= 0 || height <= 0) continue;
-                // read the pixels out the same way the font engine does, so a bad pitch would show up here
-                var stride = Math.abs(bitmap.pitch());
-                var buffer = bitmap.buffer(stride * height);
-                if (buffer == null) continue;
-                var coverage = new byte[width * height];
-                for (int row = 0; row < height; row++) {
-                    buffer.position(row * stride);
-                    buffer.get(coverage, row * width, width);
-                }
-                rendered++;
-            }
-        }
-
-        FreeType.FT_Done_Face(face);
-        FreeType.FT_Done_Library(library);
-        MemoryUtil.memFree(data);
-        assertTrue(rendered > 1000, "expected the font to render a few thousand glyph/size pairs, got " + rendered);
-    }
-
-    /**
-     * Documents why stb is not used: at the distance field reference size on its own it is fine, which is what
-     * made the crash look intermittent at first.
-     */
-    @Test
-    void stbIsOnlySafeAtTheReferenceSize() throws Exception {
-        var bytes = Files.readAllBytes(FONT);
-        var data = MemoryUtil.memAlloc(bytes.length);
-        data.put(bytes).flip();
-        var info = STBTTFontinfo.calloc();
-        assertTrue(STBTruetype.stbtt_InitFont(info, data), "stbtt_InitFont");
-
-        var scale = STBTruetype.stbtt_ScaleForMappingEmToPixels(info, 48);
-        var rasterized = 0;
-        for (int codepoint = 0; codepoint < 0x10000; codepoint++) {
-            var index = STBTruetype.stbtt_FindGlyphIndex(info, codepoint);
-            if (index == 0) continue;
-            try (var stack = MemoryStack.stackPush()) {
-                var w = stack.mallocInt(1);
-                var h = stack.mallocInt(1);
-                var xo = stack.mallocInt(1);
-                var yo = stack.mallocInt(1);
-                var bitmap = STBTruetype.stbtt_GetGlyphBitmap(info, scale, scale, index, w, h, xo, yo);
-                if (bitmap != null) {
-                    STBTruetype.stbtt_FreeBitmap(bitmap, 0L);
-                    rasterized++;
+                try (var stack = MemoryStack.stackPush()) {
+                    var x0 = stack.mallocInt(1);
+                    var y0 = stack.mallocInt(1);
+                    var x1 = stack.mallocInt(1);
+                    var y1 = stack.mallocInt(1);
+                    STBTruetype.stbtt_GetGlyphBitmapBox(info, index, scale, scale, x0, y0, x1, y1);
+                    var width = x1.get(0) - x0.get(0);
+                    var height = y1.get(0) - y0.get(0);
+                    if (width <= 0 || height <= 0) continue;
+                    var buffer = MemoryUtil.memCalloc(width * height + width + 64);
+                    try {
+                        STBTruetype.stbtt_MakeGlyphBitmap(info, buffer, width, height, width, scale, scale, index);
+                        var coverage = new byte[width * height];
+                        buffer.get(0, coverage);
+                    } finally {
+                        MemoryUtil.memFree(buffer);
+                    }
+                    rendered++;
                 }
             }
         }
+
         info.free();
         MemoryUtil.memFree(data);
-        assertTrue(rasterized > 1000, "expected over a thousand glyphs, got " + rasterized);
+        assertTrue(rendered > 1000, "expected the font to render a few thousand glyph/size pairs, got " + rendered);
     }
 }

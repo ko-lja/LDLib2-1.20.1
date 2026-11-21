@@ -67,7 +67,7 @@ class KeyDisplayTest {
         long t = 0;
         var text = "the quick brown fox jumps over the lazy dog";
         for (char c : text.toCharArray()) display.charTyped(c, t += 50 * MS);
-        var shown = shown(t).getFirst();
+        var shown = shown(t).get(0);
         assertEquals(KeyDisplay.TYPED_TAIL, shown.length());
         assertTrue(shown.startsWith("…") && text.endsWith(shown.substring(1)));
     }
@@ -83,7 +83,7 @@ class KeyDisplayTest {
     @Test
     void keysFadeAndGo() {
         display.keyDown(GLFW.GLFW_KEY_ENTER, 0);
-        var key = display.visible(0).getFirst();
+        var key = display.visible(0).get(0);
         assertEquals(1f, key.alpha(KeyDisplay.LINGER_NANOS - 1), 1e-4);
         assertEquals(0.5f, key.alpha(KeyDisplay.LINGER_NANOS + KeyDisplay.FADE_NANOS / 2), 1e-3);
         assertEquals(List.of(), shown(KeyDisplay.LINGER_NANOS + KeyDisplay.FADE_NANOS));

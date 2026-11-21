@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.nodegraphtookit.gui.wire;
 
+import net.minecraft.util.Mth;
 import org.joml.Vector2f;
 import org.junit.jupiter.api.Test;
 
@@ -39,8 +40,8 @@ class WireRouterTest {
     }
 
     private static void assertEndpoints(List<Vector2f> points, Vector2f from, Vector2f to) {
-        assertTrue(points.getFirst().distance(from) < EPSILON, "route starts at " + points.getFirst() + ", not " + from);
-        assertTrue(points.getLast().distance(to) < EPSILON, "route ends at " + points.getLast() + ", not " + to);
+        assertTrue(points.get(0).distance(from) < EPSILON, "route starts at " + points.get(0) + ", not " + from);
+        assertTrue(points.get(points.size() - 1).distance(to) < EPSILON, "route ends at " + points.get(points.size() - 1) + ", not " + to);
     }
 
     private static float length(List<Vector2f> points) {
@@ -278,7 +279,7 @@ class WireRouterTest {
             var outLength = (float) Math.sqrt(outX * outX + outY * outY);
             if (inLength < EPSILON || outLength < EPSILON) continue;
             var cos = (inX * outX + inY * outY) / (inLength * outLength);
-            worst = Math.max(worst, (float) Math.toDegrees(Math.acos(Math.clamp(cos, -1f, 1f))));
+            worst = Math.max(worst, (float) Math.toDegrees(Math.acos(Mth.clamp(cos, -1f, 1f))));
         }
         return worst;
     }
@@ -295,12 +296,12 @@ class WireRouterTest {
     @Test
     void curvedLeavesAndArrivesAlongThePortAxis() {
         var route = curved(0, 0, 300, 200);
-        var startDx = route.get(1).x - route.getFirst().x;
-        var startDy = route.get(1).y - route.getFirst().y;
+        var startDx = route.get(1).x - route.get(0).x;
+        var startDy = route.get(1).y - route.get(0).y;
         assertTrue(Math.abs(startDy) < Math.abs(startDx) * 0.2f,
                 "the wire should leave the port sideways, not diagonally: d=(%f, %f)".formatted(startDx, startDy));
-        var endDx = route.getLast().x - route.get(route.size() - 2).x;
-        var endDy = route.getLast().y - route.get(route.size() - 2).y;
+        var endDx = route.get(route.size() - 1).x - route.get(route.size() - 2).x;
+        var endDy = route.get(route.size() - 1).y - route.get(route.size() - 2).y;
         assertTrue(Math.abs(endDy) < Math.abs(endDx) * 0.2f,
                 "the wire should arrive sideways too: d=(%f, %f)".formatted(endDx, endDy));
     }
@@ -332,7 +333,7 @@ class WireRouterTest {
             var dy = b.y - a.y;
             var lengthSquared = dx * dx + dy * dy;
             var t = lengthSquared < EPSILON ? 0f : ((target.x - a.x) * dx + (target.y - a.y) * dy) / lengthSquared;
-            t = Math.clamp(t, 0f, 1f);
+            t = Mth.clamp(t, 0f, 1f);
             best = Math.min(best, target.distance(new Vector2f(a.x + t * dx, a.y + t * dy)));
         }
         return best;
@@ -373,8 +374,8 @@ class WireRouterTest {
         var route = WireRouter.route(from, WireRouter.Axis.VERTICAL, to, WireRouter.Axis.VERTICAL,
                 WireRouteStyle.CURVED, WireRouter.DEFAULT_MIN_JOG);
         assertEndpoints(route, from, to);
-        var dx = route.get(1).x - route.getFirst().x;
-        var dy = route.get(1).y - route.getFirst().y;
+        var dx = route.get(1).x - route.get(0).x;
+        var dy = route.get(1).y - route.get(0).y;
         assertTrue(Math.abs(dx) < Math.abs(dy) * 0.2f, "should leave downwards: d=(%f, %f)".formatted(dx, dy));
         assertTrue(dy > 0);
     }

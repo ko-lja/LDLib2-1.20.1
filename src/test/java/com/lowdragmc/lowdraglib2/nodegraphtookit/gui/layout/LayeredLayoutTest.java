@@ -96,8 +96,8 @@ class LayeredLayoutTest {
         var edges = List.of(edge(0, 0), edge(1, 99), edge(-1, 0), edge(0, 1));
         var acyclic = LayeredLayout.removeCycles(2, edges);
         assertEquals(1, acyclic.size());
-        assertEquals(0, acyclic.getFirst().from());
-        assertEquals(1, acyclic.getFirst().to());
+        assertEquals(0, acyclic.get(0).from());
+        assertEquals(1, acyclic.get(0).to());
     }
 
     // endregion
@@ -169,7 +169,7 @@ class LayeredLayoutTest {
         var edges = List.of(edge(0, 1), edge(1, 2), edge(2, 3), edge(3, 4));
         new LayeredLayout().layout(boxes, edges, LayoutOptions.defaults());
         for (var box : boxes) {
-            assertEquals(boxes.getFirst().y, box.y, 0.5f, "nothing pulls a plain chain off its line");
+            assertEquals(boxes.get(0).y, box.y, 0.5f, "nothing pulls a plain chain off its line");
         }
     }
 

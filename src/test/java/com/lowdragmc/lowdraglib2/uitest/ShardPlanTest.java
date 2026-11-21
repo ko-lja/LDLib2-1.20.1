@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.uitest;
 
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -128,7 +129,7 @@ class ShardPlanTest {
         var flat = new LinkedHashMap<String, Long>();
         sorted.forEach(name -> flat.put(name, 1000L));
         var reversed = new LinkedHashMap<String, Long>();
-        sorted.reversed().forEach(name -> reversed.put(name, 1000L));
+        Lists.reverse(sorted).forEach(name -> reversed.put(name, 1000L));
 
         assertEquals(ShardPlan.assign(sorted, flat, 3), ShardPlan.assign(sorted, reversed, 3));
     }
