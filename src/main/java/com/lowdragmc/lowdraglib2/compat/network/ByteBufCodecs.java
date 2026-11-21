@@ -251,12 +251,15 @@ public final class ByteBufCodecs {
     public static final StreamCodec<FriendlyByteBuf, ItemStack> OPTIONAL_ITEM_STACK = new StreamCodec<>() {
         @Override
         public ItemStack decode(FriendlyByteBuf buf) {
-            return buf.readItem();
+            var stack = buf.readItem();
+            if (!stack.isEmpty()) stack.setCount(buf.readVarInt());
+            return stack;
         }
 
         @Override
         public void encode(FriendlyByteBuf buf, ItemStack value) {
             buf.writeItem(value);
+            if (!value.isEmpty()) buf.writeVarInt(value.getCount());
         }
     };
 
