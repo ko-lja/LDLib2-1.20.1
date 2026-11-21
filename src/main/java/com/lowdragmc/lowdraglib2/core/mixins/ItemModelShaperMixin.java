@@ -14,7 +14,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.TriState;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -49,12 +48,12 @@ public abstract class ItemModelShaperMixin {
 
                     @Override
                     public boolean useAmbientOcclusion() {
-                        return r.useAO() == TriState.DEFAULT || r.useAO() == TriState.TRUE;
+                        return r.useAO().orElse(true);
                     }
 
                     @Override
-                    public TriState useAmbientOcclusion(BlockState state, ModelData data, RenderType renderType) {
-                        return r.useAO(state, data, renderType);
+                    public boolean useAmbientOcclusion(BlockState state, RenderType renderType) {
+                        return r.useAO(state, ModelData.EMPTY, renderType).orElse(true);
                     }
 
                     @Override

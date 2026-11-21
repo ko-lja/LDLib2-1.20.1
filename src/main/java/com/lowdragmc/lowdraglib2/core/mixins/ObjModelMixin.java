@@ -27,15 +27,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-@Mixin(targets = "net.neoforged.neoforge.client.model.obj.ObjModel$ModelMesh")
+@Mixin(targets = "net.minecraftforge.client.model.obj.ObjModel$ModelMesh")
 public abstract class ObjModelMixin {
 
-    @Shadow @Final ObjModel this$0;
+    @Shadow(remap = false) @Final ObjModel this$0;
 
-    @Shadow @Nullable public ObjMaterialLibrary.@Nullable Material mat;
+    @Shadow(remap = false) @Nullable public ObjMaterialLibrary.@Nullable Material mat;
 
-    @Inject(method = "bake", at = @At(value = "INVOKE",
-            target = "Lnet/neoforged/neoforge/client/model/obj/ObjModel;makeQuad([[IILorg/joml/Vector4f;Lorg/joml/Vector4f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lcom/mojang/math/Transformation;)Lorg/apache/commons/lang3/tuple/Pair;"))
+    @Inject(method = "bake", remap = false, at = @At(value = "INVOKE", remap = false,
+            target = "Lnet/minecraftforge/client/model/obj/ObjModel;makeQuad([[IILorg/joml/Vector4f;Lorg/joml/Vector4f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lcom/mojang/math/Transformation;)Lorg/apache/commons/lang3/tuple/Pair;"))
     private void ldlib2$bake(CompositeRenderable.PartBuilder<?> builder,
                              IGeometryBakingContext configuration,
                              CallbackInfo ci,
@@ -56,8 +56,8 @@ public abstract class ObjModelMixin {
         }
     }
 
-    @Inject(method = "addQuads", at = @At(value = "INVOKE",
-            target = "Lnet/neoforged/neoforge/client/model/obj/ObjModel;makeQuad([[IILorg/joml/Vector4f;Lorg/joml/Vector4f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lcom/mojang/math/Transformation;)Lorg/apache/commons/lang3/tuple/Pair;"))
+    @Inject(method = "addQuads", remap = false, at = @At(value = "INVOKE", remap = false,
+            target = "Lnet/minecraftforge/client/model/obj/ObjModel;makeQuad([[IILorg/joml/Vector4f;Lorg/joml/Vector4f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lcom/mojang/math/Transformation;)Lorg/apache/commons/lang3/tuple/Pair;"))
     private void ldlib2$addQuads(IGeometryBakingContext owner,
                                  IModelBuilder<?> modelBuilder,
                                  Function<Material, TextureAtlasSprite> spriteGetter,
@@ -65,7 +65,7 @@ public abstract class ObjModelMixin {
                                  CallbackInfo ci,
                                  @Local int[][] faces,
                                  @Local TextureAtlasSprite texture,
-                                 @Local(name = "transform") Transformation transform) {
+                                 @Local(ordinal = 1) Transformation transform) {
         if (this$0 instanceof ObjModelAccessor model) {
             var left = ldlib2$getLeftFaces(faces);
             if (left.length >= 3) {

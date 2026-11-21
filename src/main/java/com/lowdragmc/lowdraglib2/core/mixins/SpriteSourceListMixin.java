@@ -5,7 +5,6 @@ import com.lowdragmc.lowdraglib2.client.renderer.IRenderer;
 import com.lowdragmc.lowdraglib2.editor.resource.IRendererResource;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceList;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -21,7 +20,7 @@ import java.util.*;
  * @date 2023/7/20
  * @implNote SpriteSourceListMixin
  */
-@Mixin(SpriteSourceList.class)
+@Mixin(SpriteResourceLoader.class)
 public abstract class SpriteSourceListMixin {
 
     // try to load all renderer textures

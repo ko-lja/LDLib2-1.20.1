@@ -34,7 +34,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.TriState;
+import com.lowdragmc.lowdraglib2.compat.util.TriState;
 
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.Nullable;
@@ -116,7 +116,7 @@ public class IModelRenderer implements IRenderer {
             synchronized (this) {
                 if (!unbakedModelInitialized) {
                     // fast path: models registered through the RegisterAdditional pipeline
-                    var model = ModelFactory.getTopLevelModel(ModelResourceLocation.standalone(modelLocation));
+                    var model = ModelFactory.getTopLevelModel(modelLocation);
                     if (model == null) {
                         // renderer created after the initial reload: dynamically load & resolve
                         // the model under the bakery lock (see ModelFactory#loadUnbakedModelDynamically)
@@ -132,7 +132,7 @@ public class IModelRenderer implements IRenderer {
 
     @OnlyIn(Dist.CLIENT)
     protected boolean isTopLevelModelMissing() {
-        return ModelFactory.getTopLevelModel(ModelResourceLocation.standalone(modelLocation)) == null;
+        return ModelFactory.getTopLevelModel(modelLocation) == null;
     }
 
     @Override
@@ -205,7 +205,8 @@ public class IModelRenderer implements IRenderer {
                         itemModel = model.bake(
                                 ModelFactory.getModelBaker(),
                                 this::materialMapping,
-                                BlockModelRotation.X0_Y0);
+                                BlockModelRotation.X0_Y0,
+                                modelLocation);
                     }
                     itemModelInitialized = true;
                 }
@@ -240,7 +241,8 @@ public class IModelRenderer implements IRenderer {
         return model.bake(
                 ModelFactory.getModelBaker(),
                 this::materialMapping,
-                modelState);
+                modelState,
+                modelLocation);
     }
 
 
@@ -251,8 +253,8 @@ public class IModelRenderer implements IRenderer {
     
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void onAdditionalModel(Consumer<ModelResourceLocation> registry) {
-        registry.accept(ModelResourceLocation.standalone(modelLocation));
+    public void onAdditionalModel(Consumer<ResourceLocation> registry) {
+        registry.accept(modelLocation);
         clearCache();
     }
 

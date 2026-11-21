@@ -7,6 +7,7 @@ import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 public class RendererBlockEntity extends BlockEntity {
 
@@ -15,5 +16,10 @@ public class RendererBlockEntity extends BlockEntity {
 
     public RendererBlockEntity(BlockPos pos, BlockState blockState) {
         super(CommonProxy.RENDERER_BE_TYPE.get(), pos, blockState);
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return renderer.getRenderBoundingBox(this);
     }
 }

@@ -81,13 +81,12 @@ public class ATESRRendererProvider<T extends BlockEntity> implements BlockEntity
         return false;
     }
 
-    @Override
     public AABB getRenderBoundingBox(T blockEntity) {
         IRenderer renderer = getRenderer(blockEntity);
         if (renderer != null) {
             return renderer.getRenderBoundingBox(blockEntity);
         }
-        return BlockEntityRenderer.super.getRenderBoundingBox(blockEntity);
+        return new AABB(blockEntity.getBlockPos());
     }
 }
 

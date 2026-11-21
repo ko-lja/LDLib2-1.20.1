@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -31,7 +30,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.TriState;
+import com.lowdragmc.lowdraglib2.compat.util.TriState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,7 +83,7 @@ public class UIResourceRenderer implements IRenderer {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void onAdditionalModel(Consumer<ModelResourceLocation> registry) {
+    public void onAdditionalModel(Consumer<ResourceLocation> registry) {
         getInternalRenderer().onAdditionalModel(registry);
     }
 

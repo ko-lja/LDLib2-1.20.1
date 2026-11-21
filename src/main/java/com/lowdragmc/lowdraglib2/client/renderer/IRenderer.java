@@ -26,7 +26,6 @@ import dev.vfyjxf.taffy.style.AlignItems;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -42,6 +41,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -52,7 +52,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.TriState;
+import com.lowdragmc.lowdraglib2.compat.util.TriState;
 import org.appliedenergistics.yoga.YogaEdge;
 
 import javax.annotation.Nonnull;
@@ -78,8 +78,8 @@ public interface IRenderer extends ILDLRegisterClient<IRenderer, Supplier<IRende
     static Codec<IRenderer> createCodec() {
         if (LDLib2.isClient()) {
             return LDLib2Registries.RENDERERS.optionalCodec().dispatch(ILDLRegisterClient::getRegistryHolderOptional,
-                    optional -> optional.map(holder -> PersistedParser.createCodec(holder.value()).fieldOf("data"))
-                            .orElseGet(() -> MapCodec.unit(EMPTY)));
+                    optional -> optional.map(holder -> PersistedParser.createCodec(holder.value()).fieldOf("data").codec())
+                            .orElseGet(() -> MapCodec.<IRenderer>unit(EMPTY).codec()));
         } else {
             return Codec.unit(EMPTY);
         }
@@ -87,11 +87,11 @@ public interface IRenderer extends ILDLRegisterClient<IRenderer, Supplier<IRende
 
     @Nullable
     default CompoundTag serializeWrapper() {
-        return (CompoundTag) CODEC.encodeStart(Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE), this).result().orElse(null);
+        return (CompoundTag) CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, Platform.getFrozenRegistry()), this).result().orElse(null);
     }
 
     static IRenderer deserializeWrapper(Tag tag) {
-        return CODEC.parse(Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE), tag).result().orElse(EMPTY);
+        return CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, Platform.getFrozenRegistry()), tag).result().orElse(EMPTY);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -142,7 +142,7 @@ public interface IRenderer extends ILDLRegisterClient<IRenderer, Supplier<IRende
      * Register additional models here.
      */
     @OnlyIn(Dist.CLIENT)
-    default void onAdditionalModel(Consumer<ModelResourceLocation> registry) {
+    default void onAdditionalModel(Consumer<ResourceLocation> registry) {
 
     }
 
