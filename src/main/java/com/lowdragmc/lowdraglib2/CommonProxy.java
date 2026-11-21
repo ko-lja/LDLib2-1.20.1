@@ -4,7 +4,6 @@ import com.lowdragmc.lowdraglib2.client.renderer.block.RendererBlock;
 import com.lowdragmc.lowdraglib2.client.renderer.block.RendererBlockEntity;
 import com.lowdragmc.lowdraglib2.gui.factory.LDMenuTypes;
 import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
-import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
 import com.lowdragmc.lowdraglib2.networking.LDLNetworking;
 import com.lowdragmc.lowdraglib2.networking.rpc.RPCPacketDistributor;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.api.type.TypeHandles;
@@ -23,6 +22,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -56,7 +56,7 @@ public class CommonProxy {
         BLOCKS.register("renderer_block", () -> RendererBlock.BLOCK);
 
         // used for forge events (ClientProxy + CommonProxy)
-        LDLNetworking.init();
+        eventBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(LDLNetworking::init));
         // init common features
         CommonProxy.init(eventBus);
         // load ldlib2 plugin

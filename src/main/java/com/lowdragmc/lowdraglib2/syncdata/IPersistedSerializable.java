@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.Tag;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.lowdragmc.lowdraglib2.compat.nbt.INBTSerializable;
 import org.jetbrains.annotations.NotNull;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;

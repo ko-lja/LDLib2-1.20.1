@@ -6,7 +6,7 @@ import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.lowdragmc.lowdraglib2.compat.nbt.INBTSerializable;
 
 import javax.annotation.Nonnull;
 

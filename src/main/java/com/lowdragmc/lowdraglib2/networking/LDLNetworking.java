@@ -35,7 +35,7 @@ import java.util.function.BiConsumer;
 public class LDLNetworking {
     public static final String PROTOCOL_VERSION = "1";
 
-    public static SimpleChannel CHANNEL;
+    private static SimpleChannel CHANNEL;
 
     private static final Set<ResourceLocation> REGISTERED = new HashSet<>();
 
@@ -47,6 +47,10 @@ public class LDLNetworking {
     }
 
     private record Registration(ResourceLocation id, Binder binder) {}
+
+    public static SimpleChannel getChannel() {
+        return CHANNEL;
+    }
 
     public static synchronized void init() {
         if (CHANNEL != null) return;

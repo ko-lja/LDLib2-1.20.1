@@ -12,49 +12,49 @@ public final class PacketDistributor {
 
     public static void sendToServer(CustomPacketPayload payload, CustomPacketPayload... payloads) {
         var target = net.minecraftforge.network.PacketDistributor.SERVER.noArg();
-        LDLNetworking.CHANNEL.send(target, payload);
+        LDLNetworking.getChannel().send(target, payload);
         for (var other : payloads) {
-            LDLNetworking.CHANNEL.send(target, other);
+            LDLNetworking.getChannel().send(target, other);
         }
     }
 
     public static void sendToPlayer(ServerPlayer player, CustomPacketPayload payload, CustomPacketPayload... payloads) {
         var target = net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> player);
-        LDLNetworking.CHANNEL.send(target, payload);
+        LDLNetworking.getChannel().send(target, payload);
         for (var other : payloads) {
-            LDLNetworking.CHANNEL.send(target, other);
+            LDLNetworking.getChannel().send(target, other);
         }
     }
 
     public static void sendToAllPlayers(CustomPacketPayload payload, CustomPacketPayload... payloads) {
         var target = net.minecraftforge.network.PacketDistributor.ALL.noArg();
-        LDLNetworking.CHANNEL.send(target, payload);
+        LDLNetworking.getChannel().send(target, payload);
         for (var other : payloads) {
-            LDLNetworking.CHANNEL.send(target, other);
+            LDLNetworking.getChannel().send(target, other);
         }
     }
 
     public static void sendToPlayersInDimension(ServerLevel level, CustomPacketPayload payload, CustomPacketPayload... payloads) {
         var target = net.minecraftforge.network.PacketDistributor.DIMENSION.with(level::dimension);
-        LDLNetworking.CHANNEL.send(target, payload);
+        LDLNetworking.getChannel().send(target, payload);
         for (var other : payloads) {
-            LDLNetworking.CHANNEL.send(target, other);
+            LDLNetworking.getChannel().send(target, other);
         }
     }
 
     public static void sendToPlayersTrackingEntity(Entity entity, CustomPacketPayload payload, CustomPacketPayload... payloads) {
         var target = net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity);
-        LDLNetworking.CHANNEL.send(target, payload);
+        LDLNetworking.getChannel().send(target, payload);
         for (var other : payloads) {
-            LDLNetworking.CHANNEL.send(target, other);
+            LDLNetworking.getChannel().send(target, other);
         }
     }
 
     public static void sendToPlayersTrackingEntityAndSelf(Entity entity, CustomPacketPayload payload, CustomPacketPayload... payloads) {
         var target = net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity);
-        LDLNetworking.CHANNEL.send(target, payload);
+        LDLNetworking.getChannel().send(target, payload);
         for (var other : payloads) {
-            LDLNetworking.CHANNEL.send(target, other);
+            LDLNetworking.getChannel().send(target, other);
         }
     }
 

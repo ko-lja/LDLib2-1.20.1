@@ -13,7 +13,7 @@ issueTrackerURL = "https://github.com/Low-Drag-MC/LDLib2/issues"
 
 [[dependencies.ldlib2_compose]]
 modId = "ldlib2"
-type = "required"
+mandatory = true
 versionRange = "[${ldlib2_min_version},)"
 ordering = "AFTER"
 side = "BOTH"
