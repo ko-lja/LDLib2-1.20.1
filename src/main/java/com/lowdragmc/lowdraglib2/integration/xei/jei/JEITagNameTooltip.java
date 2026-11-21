@@ -10,7 +10,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
-import net.minecraftforge.common.Tags;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -79,9 +80,26 @@ final class JEITagNameTooltip {
         return List.of(
                 Component.translatable("jei.tooltip.recipe.tag", StringUtils.capitalize(registryName))
                         .withStyle(ChatFormatting.GRAY),
-                Component.translatableWithFallback(Tags.getTagTranslationKey(tagKey), "#" + tagKey.location())
+                Component.translatableWithFallback(getTagTranslationKey(tagKey), "#" + tagKey.location())
                         .withStyle(ChatFormatting.GRAY)
         );
+    }
+
+    private static String getTagTranslationKey(TagKey<?> tagKey) {
+        ResourceLocation registry = tagKey.registry().location();
+        ResourceLocation id = tagKey.location();
+        String registryPath = registry.getPath().replace('/', '.');
+        String prefix = registry.getNamespace().equals("minecraft")
+                ? "tag." + registryPath + "."
+                : "tag." + registry.getNamespace() + "." + registryPath + ".";
+        String key = translateId(prefix, id);
+        if (I18n.exists(key)) return key;
+        String fallback = translateId("tag.", id);
+        return I18n.exists(fallback) ? fallback : key;
+    }
+
+    private static String translateId(String prefix, ResourceLocation id) {
+        return prefix + id.getNamespace() + "." + id.getPath().replace('/', '.');
     }
 
     private static Optional<TagKey<?>> getTagKeyEquivalent(IIngredientManager ingredientManager,

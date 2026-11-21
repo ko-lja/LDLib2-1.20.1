@@ -42,7 +42,7 @@ public class ModularUIJEIWidget implements IRecipeWidget, IJeiGuiEventListener {
     @Override
     public void drawWidget(GuiGraphics guiGraphics, double mouseX, double mouseY) {
         guiGraphics.flush();
-        var partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+        var partialTick = Minecraft.getInstance().getFrameTime();
         // get real mouse
         localToWorld = guiGraphics.pose().last().pose().invert(new Matrix4f());
         var realMouse = getWorldMouse((float) mouseX, (float) mouseY);
@@ -108,9 +108,9 @@ public class ModularUIJEIWidget implements IRecipeWidget, IJeiGuiEventListener {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollDelta) {
         var realMouse = getWorldMouse((float) mouseX, (float) mouseY);
-        return modularUI.getWidget().mouseScrolled(realMouse.x, realMouse.y, scrollX, scrollY);
+        return modularUI.getWidget().mouseScrolled(realMouse.x, realMouse.y, scrollDelta);
     }
 
     @Override

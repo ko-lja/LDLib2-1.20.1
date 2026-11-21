@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.integration.xei.jei.handler;
 
+import com.google.common.collect.Lists;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.event.UIEvent;
@@ -26,7 +27,7 @@ public final class JEIRecipeSlotHandler {
         event.target = modularUI.ui.rootElement;
         event.customData = handler;
         UIEventDispatcher.dispatchAllChildren(event);
-        var pendingBindings = new ArrayList<>(handler.bindings.values()).reversed();
+        var pendingBindings = Lists.reverse(new ArrayList<>(handler.bindings.values()));
         var result = new ArrayList<Binding>(pendingBindings.size());
         for (var binding : pendingBindings) {
             result.add(binding.build(result.size()));
