@@ -1,7 +1,5 @@
 package com.lowdragmc.lowdraglib2.syncdata.utils;
 
-import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -14,18 +12,10 @@ public final class StackSnapshots {
     private StackSnapshots() {}
 
     public static ItemStack of(ItemStack stack) {
-        var copy = stack.copy();
-        if (copy.getComponents() instanceof PatchedDataComponentMap components) {
-            components.applyPatch(DataComponentPatch.EMPTY);
-        }
-        return copy;
+        return stack.copy();
     }
 
     public static FluidStack of(FluidStack stack) {
-        var copy = stack.copy();
-        if (!copy.isEmpty()) {
-            copy.getComponents().applyPatch(DataComponentPatch.EMPTY);
-        }
-        return copy;
+        return stack.copy();
     }
 }

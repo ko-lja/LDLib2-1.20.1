@@ -63,9 +63,13 @@ public class ItemStackAccessor extends TypesAccessor<ItemStack> {
         group.inlineContainer.getLayout().flexDirection(FlexDirection.ROW);
         group.inlineContainer.addChildren(slot, new UIElement().layout(l -> l.flex(1)), inventoryButton);
         var defaultValue = defaultValue(field);
-        var componentsConfigurator = new DataComponentConfigurator(safeStack(supplier).getItem().components(),
-                () -> safeStack(supplier).getComponentsPatch(),
-                patch -> updater.accept(new ItemStack(safeStack(supplier).getItem().builtInRegistryHolder(), safeStack(supplier).getCount(), patch)), forceUpdate);
+        var componentsConfigurator = new DataComponentConfigurator(null,
+                () -> safeStack(supplier).getTag(),
+                tag -> {
+                    var copy = safeStack(supplier).copy();
+                    copy.setTag(tag == null || tag.isEmpty() ? null : tag);
+                    updater.accept(copy);
+                }, forceUpdate);
         inventoryButton.setOnClick(event -> {
             // open player inventory to select item
             if (!LDLib2.isClient()) return;
@@ -102,7 +106,7 @@ public class ItemStackAccessor extends TypesAccessor<ItemStack> {
             dialog.addButton(new Button()
                     .setOnClick(e -> {
                         updater.accept(selectedStack[0].copy());
-                        componentsConfigurator.setPrototype(selectedStack[0].getItem().components());
+                        componentsConfigurator.setPrototype(null);
                         group.notifyChanges();
                         dialog.close();
                     })
@@ -118,10 +122,11 @@ public class ItemStackAccessor extends TypesAccessor<ItemStack> {
         var itemConfigurator = new RegistrySearchComponent.Item("configurator.item",
                 () -> safeStack(supplier).getItem(),
                 item -> {
-                    updater.accept(new ItemStack(item.builtInRegistryHolder(),
-                            Math.max(safeStack(supplier).getCount(), 1),
-                            safeStack(supplier).getComponentsPatch()));
-                    componentsConfigurator.setPrototype(item.components());
+                    var next = new ItemStack(item, Math.max(safeStack(supplier).getCount(), 1));
+                    var currentTag = safeStack(supplier).getTag();
+                    if (currentTag != null) next.setTag(currentTag.copy());
+                    updater.accept(next);
+                    componentsConfigurator.setPrototype(null);
                 },
                 defaultValue.getItem(), forceUpdate);
         var countConfigurator = new NumberConfigurator("ldlib.gui.editor.configurator.count",
@@ -134,21 +139,21 @@ public class ItemStackAccessor extends TypesAccessor<ItemStack> {
         if (LDLib2.isJeiLoaded()) {
             RegistrySearchComponent.JEISupport.ghostItem(group, Predicates.alwaysTrue(), itemStack -> {
                 updater.accept(itemStack);
-                componentsConfigurator.setPrototype(itemStack.getItem().components());
+                componentsConfigurator.setPrototype(null);
                 group.notifyChanges();
             });
         }
         if (LDLib2.isReiLoaded()) {
             RegistrySearchComponent.REISupport.ghostItem(group, Predicates.alwaysTrue(), itemStack -> {
                 updater.accept(itemStack);
-                componentsConfigurator.setPrototype(itemStack.getItem().components());
+                componentsConfigurator.setPrototype(null);
                 group.notifyChanges();
             });
         }
         if (LDLib2.isEmiLoaded()) {
             RegistrySearchComponent.EMISupport.ghostItem(group, Predicates.alwaysTrue(), itemStack -> {
                 updater.accept(itemStack);
-                componentsConfigurator.setPrototype(itemStack.getItem().components());
+                componentsConfigurator.setPrototype(null);
                 group.notifyChanges();
             });
         }

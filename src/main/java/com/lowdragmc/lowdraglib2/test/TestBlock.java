@@ -17,17 +17,16 @@ import dev.vfyjxf.taffy.style.AlignContent;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -81,7 +80,7 @@ public class TestBlock extends Block implements EntityBlock, IBlockRendererProvi
     IRenderer renderer = new IModelRenderer(LDLib2.id("block/cube"));
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         } else if (player instanceof ServerPlayer serverPlayer){
@@ -118,33 +117,34 @@ public class TestBlock extends Block implements EntityBlock, IBlockRendererProvi
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (!level.isClientSide) {
             if (level.getBlockEntity(pos) instanceof IPersistManagedHolder persistManagedHolder) {
-                Optional.ofNullable(stack.get(DataComponents.CUSTOM_DATA)).ifPresent(customData -> {
-                    persistManagedHolder.loadManagedPersistentData(level.registryAccess(), customData.copyTag());
+                Optional.ofNullable(stack.getTag()).ifPresent(customData -> {
+                    persistManagedHolder.loadManagedPersistentData(level.registryAccess(), customData.copy());
                 });
             }
         }
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         var opt = Optional.ofNullable(params.getOptionalParameter(LootContextParams.BLOCK_ENTITY));
-        if (opt.isPresent() && opt.get() instanceof IPersistManagedHolder persistManagedHolder && opt.get().getLevel() instanceof Level level) {
+        if (opt.isPresent() && opt.get() instanceof IPersistManagedHolder persistManagedHolder && opt.get().getLevel() != null) {
+            var level = opt.get().getLevel();
             var drop = new ItemStack(this);
             var tag = new CompoundTag();
             persistManagedHolder.saveManagedPersistentData(level.registryAccess(), tag, true);
-            drop.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            drop.setTag(tag);
             return List.of(drop);
         }
         return super.getDrops(state, params);
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+    public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
         if (level.getBlockEntity(pos) instanceof IPersistManagedHolder persistManagedHolder) {
             var clone = new ItemStack(this);
             var tag = new CompoundTag();
-            persistManagedHolder.saveManagedPersistentData(level.registryAccess(), tag, true);
-            clone.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            persistManagedHolder.saveManagedPersistentData(level instanceof Level realLevel ? realLevel.registryAccess() : Platform.getFrozenRegistry(), tag, true);
+            clone.setTag(tag);
             return clone;
         }
         return super.getCloneItemStack(state, target, level, pos, player);

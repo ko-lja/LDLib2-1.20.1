@@ -1,6 +1,5 @@
 package com.lowdragmc.lowdraglib2.utils;
 
-import com.google.gson.JsonParser;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
 import com.lowdragmc.lowdraglib2.gui.ui.UI;
@@ -8,11 +7,8 @@ import com.lowdragmc.lowdraglib2.integration.kjs.KJSBindings;
 import com.lowdragmc.lowdraglib2.utils.data.BlockInfo;
 import com.lowdragmc.lowdraglib2.utils.data.EntityInfo;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.serialization.JsonOps;
 import lombok.experimental.UtilityClass;
-import lombok.val;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -213,21 +209,9 @@ public class XmlUtils {
         return new CompoundTag();
     }
 
-    public static DataComponentMap getComponents(Element element) {
-        NodeList nodeList = element.getChildNodes();
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            String text = node.getTextContent().replaceAll("\\h*\\R+\\h*", " ");
-            if (!text.isEmpty() && text.charAt(0) == ' ') {
-                text = text.substring(1);
-            }
-            builder.append(text);
-        }
-        if (!builder.isEmpty()) {
-            return DataComponentMap.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(builder.toString())).result().orElse(DataComponentMap.EMPTY);
-        }
-        return DataComponentMap.EMPTY;
+    @Deprecated
+    public static CompoundTag getComponents(Element element) {
+        return getCompoundTag(element);
     }
 
     public static ItemStack getItemStack(Element element) {
@@ -290,8 +274,9 @@ public class XmlUtils {
                 ItemStack itemStack = new ItemStack(item, count);
                 NodeList nodeList = element.getChildNodes();
                 for (int i = 0; i < nodeList.getLength(); i++) {
-                    if (nodeList.item(i) instanceof Element subElement && subElement.getNodeName().equals("components")) {
-                        itemStack.applyComponents(getComponents(subElement));
+                    if (nodeList.item(i) instanceof Element subElement && subElement.getNodeName().equals("nbt")) {
+                        var parsed = getCompoundTag(subElement);
+                        if (!parsed.isEmpty()) itemStack.setTag(parsed);
                         break;
                     }
                 }
@@ -312,8 +297,9 @@ public class XmlUtils {
                 fluidStack = new FluidStack(fluid, amount);
                 var nodeList = element.getChildNodes();
                 for (int i = 0; i < nodeList.getLength(); i++) {
-                    if (nodeList.item(i) instanceof Element subElement && subElement.getNodeName().equals("components")) {
-                        fluidStack.applyComponents(getComponents(subElement));
+                    if (nodeList.item(i) instanceof Element subElement && subElement.getNodeName().equals("nbt")) {
+                        var parsed = getCompoundTag(subElement);
+                        if (!parsed.isEmpty()) fluidStack.setTag(parsed);
                         break;
                     }
                 }
@@ -328,7 +314,7 @@ public class XmlUtils {
             Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(element.getAttribute("block")));
             if (block != Blocks.AIR) {
                 var blockState = block.defaultBlockState();
-                val nodeList = element.getChildNodes();
+                var nodeList = element.getChildNodes();
                 CompoundTag tag = new CompoundTag();
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     var node = nodeList.item(i);

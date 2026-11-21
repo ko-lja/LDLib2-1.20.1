@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.utils;
 
+import com.google.gson.JsonElement;
 import com.lowdragmc.lowdraglib2.Platform;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
@@ -11,8 +12,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.inventory.RecipeHolder;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraftforge.fluids.FluidStack;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
@@ -43,18 +46,18 @@ public final class LDLibExtraCodecs {
 
     public final static Codec<UUID> UUID = Codec.STRING.xmap(java.util.UUID::fromString, java.util.UUID::toString);
 
-    public final static Codec<Tag> TAG = ExtraCodecs(NbtOps.INSTANCE);
+    public final static Codec<Tag> TAG = Codec.PASSTHROUGH.xmap(dynamic -> dynamic.convert(NbtOps.INSTANCE).getValue(), value -> new Dynamic<>(NbtOps.INSTANCE, value));
 
-    public final static Codec<RecipeHolder> RECIPE_HOLDER_ID = ResourceLocation.CODEC.flatXmap(id -> {
+    public final static Codec<Recipe<?>> RECIPE_HOLDER_ID = ResourceLocation.CODEC.flatXmap(id -> {
         if (Platform.getMinecraftServer() != null) {
-            return Platform.getMinecraftServer().getRecipeManager().byKey(id).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown recipe: " + id));
+            return Platform.getMinecraftServer().getRecipeManager().byKey(id).<DataResult<Recipe<?>>>map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown recipe: " + id));
         } else if (Platform.isClient()){
             var level = Minecraft.getInstance().level;
             if (level == null) return DataResult.error(() -> "No recipe manager available");
-            return level.getRecipeManager().byKey(id).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown recipe: " + id));
+            return level.getRecipeManager().byKey(id).<DataResult<Recipe<?>>>map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown recipe: " + id));
         }
         return DataResult.error(() -> "No recipe manager available");
-    }, recipeHolder -> DataResult.success(recipeHolder));
+    }, recipe -> DataResult.success(recipe.getId()));
 
     public final static PrimitiveCodec<Character> CHAR = new PrimitiveCodec<>() {
         public <T> DataResult<Character> read(DynamicOps<T> ops, T input) {
@@ -79,7 +82,7 @@ public final class LDLibExtraCodecs {
                 else if (tag instanceof FloatTag floatTag) return floatTag.getAsFloat();
                 else if (tag instanceof DoubleTag doubleTag) return doubleTag.getAsDouble();
                 else if (tag == null) return null;
-                else throw new IllegalArgumentException("Invalid tag type: " + tag.getClass().getName())
+                else throw new IllegalArgumentException("Invalid tag type: " + tag.getClass().getName());
             },
             number -> {
                 if (number instanceof Integer value) return IntTag.valueOf(value);
@@ -114,34 +117,34 @@ public final class LDLibExtraCodecs {
                     vec2i -> List.of(vec2i.x, vec2i.y)
             );
 
-    public static final Codec<ItemStack> ITEM_STACK = new Codec<>() {
-        @Override
-        public <T> DataResult<Pair<ItemStack, T>> decode(DynamicOps<T> ops, T input) {
-            var result = ItemStack.OPTIONAL_CODEC.decode(ops, input);
-            if (result.isSuccess()) return result;
+    public static final Codec<JsonElement> JSON = Codec.PASSTHROUGH.xmap(
+            dynamic -> dynamic.convert(JsonOps.INSTANCE).getValue(),
+            json -> new Dynamic<>(JsonOps.INSTANCE, json));
 
-            var realOp = Platform.getClientRegistryAccess().createSerializationContext(ops);
-            result = ItemStack.OPTIONAL_CODEC.decode(realOp, input);
-            if (result.isSuccess()) return result;
-
-            realOp = Platform.getServerRegistryAccess().createSerializationContext(ops);
-            return ItemStack.OPTIONAL_CODEC.decode(realOp, input);
+    public static final Codec<Ingredient> INGREDIENT = JSON.flatXmap(json -> {
+        try {
+            return DataResult.success(Ingredient.fromJson(json));
+        } catch (RuntimeException e) {
+            return DataResult.error(() -> "Invalid ingredient: " + e.getMessage());
         }
+    }, ingredient -> DataResult.success(ingredient.toJson()));
 
-        @Override
-        public <T> DataResult<T> encode(ItemStack input, DynamicOps<T> ops, T prefix) {
-            var result = ItemStack.OPTIONAL_CODEC.encode(input, ops, prefix);
-            if (result.isSuccess()) return result;
+    public static final Codec<FluidStack> FLUID_STACK = CompoundTag.CODEC.xmap(
+            FluidStack::loadFluidStackFromNBT,
+            stack -> stack.writeToNBT(new CompoundTag()));
 
-            var realOp = Platform.getClientRegistryAccess().createSerializationContext(ops);
-            result = ItemStack.OPTIONAL_CODEC.encode(input, realOp, prefix);
-            if (result.isSuccess()) return result;
-            
-            realOp = Platform.getServerRegistryAccess().createSerializationContext(ops);
-            return ItemStack.OPTIONAL_CODEC.encode(input, realOp, prefix);
-        }
-    };
-
+    public static final Codec<ItemStack> ITEM_STACK = CompoundTag.CODEC.xmap(
+            tag -> {
+                var stack = ItemStack.of(tag);
+                if (tag.contains("LDCount", 99)) stack.setCount(tag.getInt("LDCount"));
+                return stack;
+            },
+            stack -> {
+                if (stack.isEmpty()) return new CompoundTag();
+                var tag = stack.save(new CompoundTag());
+                if (stack.getCount() > Byte.MAX_VALUE) tag.putInt("LDCount", stack.getCount());
+                return tag;
+            });
 
     /**
      * This codec use an empty encoder and a decoder that always return an error
@@ -193,12 +196,12 @@ public final class LDLibExtraCodecs {
         }
         if (outdated.length == 1) {
             return Codec.either(latest, outdated[0]).xmap(
-                    Either::unwrap,
+                    either -> either.map(value -> value, value -> value),
                     Either::left
             );
         }
         return Codec.either(latest, compat(outdated[0], Arrays.copyOfRange(outdated, 1, outdated.length))).xmap(
-                Either::unwrap,
+                either -> either.map(value -> value, value -> value),
                 Either::left
         );
     }

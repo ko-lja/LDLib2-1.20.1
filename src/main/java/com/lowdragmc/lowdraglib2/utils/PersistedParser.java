@@ -3,6 +3,9 @@ package com.lowdragmc.lowdraglib2.utils;
 import com.google.common.base.Strings;
 import com.lowdragmc.lowdraglib2.Platform;
 import com.lowdragmc.lowdraglib2.configurator.annotation.ConfigSetter;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
+import com.lowdragmc.lowdraglib2.compat.network.ByteBufCodecs;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
 import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
 import com.lowdragmc.lowdraglib2.core.mixins.accessor.DelegatingOpsAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.IPersistedSerializable;
@@ -17,9 +20,7 @@ import lombok.experimental.UtilityClass;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryOps;
-import net.minecraftforge.common.CommonHooks;
 import net.minecraftforge.common.util.INBTSerializable;
 
 import java.lang.reflect.Field;
@@ -29,6 +30,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * This is a tool class to serialize and deserialize the object fields with {@link Persisted} or {@link Configurable} annotation.
@@ -89,7 +91,34 @@ public final class PersistedParser {
      * @return A {@link MapCodec} for the specified type.
      */
     public static <T> MapCodec<T> createMapCodec(Supplier<T> creator) {
-        return MapCodec.assumeMapUnsafe(createCodec(creator));
+        var codec = createCodec(creator);
+        return new MapCodec<>() {
+            @Override
+            public <T1> Stream<T1> keys(DynamicOps<T1> ops) {
+                return Stream.empty();
+            }
+
+            @Override
+            public <T1> DataResult<T> decode(DynamicOps<T1> ops, MapLike<T1> input) {
+                return codec.decode(ops, ops.createMap(input.entries())).map(Pair::getFirst);
+            }
+
+            @Override
+            public <T1> RecordBuilder<T1> encode(T input, DynamicOps<T1> ops, RecordBuilder<T1> prefix) {
+                var encoded = codec.encode(input, ops, ops.empty());
+                var entries = encoded.result().flatMap(value -> ops.getMapValues(value).result());
+                if (entries.isEmpty()) {
+                    return prefix.withErrorsFrom(encoded);
+                }
+                entries.get().forEach(entry -> prefix.add(entry.getFirst(), entry.getSecond()));
+                return prefix;
+            }
+
+            @Override
+            public String toString() {
+                return "PersistedMapCodec";
+            }
+        };
     }
 
     /**
@@ -103,7 +132,7 @@ public final class PersistedParser {
                 T instance = creator.get();
                 HolderLookup.Provider provider = Platform.getFrozenRegistry();
                 if (ops instanceof RegistryOps<T1> registryOps) {
-                    provider = CommonHooks.extractLookupProvider(registryOps);
+                    provider = Platform.getFrozenRegistry();
                 }
                 if (instance instanceof IPersistedSerializable persistedSerializable) {
                     CompoundTag tag;
@@ -123,7 +152,7 @@ public final class PersistedParser {
             public <T1> DataResult<T1> encode(T input, DynamicOps<T1> ops, T1 prefix) {
                 HolderLookup.Provider provider = Platform.getFrozenRegistry();
                 if (ops instanceof RegistryOps<T1> registryOps) {
-                    provider = CommonHooks.extractLookupProvider(registryOps);
+                    provider = Platform.getFrozenRegistry();
                 }
                 if (input instanceof IPersistedSerializable persistedSerializable) {
                     try {
@@ -177,14 +206,14 @@ public final class PersistedParser {
      * This method is used to serial the specific type data to the object fields with {@link Persisted} or {@link Configurable} annotation.
      */
     public static CompoundTag serializeNBT(Object object, HolderLookup.Provider provider) {
-        return (CompoundTag) serialize(provider.createSerializationContext(NbtOps.INSTANCE), object, provider).result().orElse(new CompoundTag());
+        return (CompoundTag) serialize(RegistryOps.create(NbtOps.INSTANCE, provider), object, provider).result().orElse(new CompoundTag());
     }
 
     /**
      * This method is used to deserialize the NBT data to the object fields with {@link Persisted} or {@link Configurable} annotation.
      */
     public static void deserializeNBT(CompoundTag tag, Object object, HolderLookup.Provider provider) {
-        deserialize(provider.createSerializationContext(NbtOps.INSTANCE), tag, object, provider);
+        deserialize(RegistryOps.create(NbtOps.INSTANCE, provider), tag, object, provider);
     }
 
     /**
@@ -203,7 +232,7 @@ public final class PersistedParser {
      */
     public static void writeBuff(ByteBuf buf, Object object) {
         var provider = buf instanceof FriendlyByteBuf registryBuf ?
-                registryBuf.registryAccess() : Platform.getFrozenRegistry();
+                Platform.getFrozenRegistry() : Platform.getFrozenRegistry();
         var registryBuf = buf instanceof FriendlyByteBuf rb ?
                 rb : new FriendlyByteBuf(buf);
         writeStreamBuffInternal(true, registryBuf, object.getClass(), object, provider);
@@ -213,7 +242,7 @@ public final class PersistedParser {
      * This method is used to deserialize the specific type data to the object fields with {@link Persisted} or {@link Configurable} annotation.
      */
     public static <T> void deserialize(DynamicOps<T> op, T data, Object object, HolderLookup.Provider provider) {
-        op.getMap(data).ifSuccess(map -> deserializeInternal(true, map, op, new HashMap<>(), object.getClass(), object, provider));
+        op.getMap(data).result().ifPresent(map -> deserializeInternal(true, map, op, new HashMap<>(), object.getClass(), object, provider));
     }
 
     /**
@@ -225,7 +254,7 @@ public final class PersistedParser {
      */
     public static void readBuff(ByteBuf buf, Object object) {
         var provider = buf instanceof FriendlyByteBuf registryBuf ?
-                registryBuf.registryAccess() : Platform.getFrozenRegistry();
+                Platform.getFrozenRegistry() : Platform.getFrozenRegistry();
         var registryBuf = buf instanceof FriendlyByteBuf rb ?
                 rb : new FriendlyByteBuf(buf);
         readStreamBuffInternal(true, registryBuf, new HashMap<>(), object.getClass(), object, provider);
@@ -301,12 +330,12 @@ public final class PersistedParser {
                     if (value != null) {
                         if (value instanceof INBTSerializable<?> serializable) {
                             var subData = (op == NbtOps.INSTANCE || op instanceof DelegatingOpsAccessor<?> accessor && accessor.getDelegate() == NbtOps.INSTANCE) ?
-                                    (T) serializable.serializeNBT(provider) : 
-                                    NbtOps.INSTANCE.convertTo(op, serializable.serializeNBT(provider));
+                                    (T) serializable.serializeNBT() : 
+                                    NbtOps.INSTANCE.convertTo(op, serializable.serializeNBT());
                             if (subFlatten) {
                                 var mapResult = op.getMap(subData);
-                                if (mapResult.isSuccess()) {
-                                    mapResult.getOrThrow().entries().forEachOrdered(entry ->
+                                if (mapResult.result().isPresent()) {
+                                    mapResult.result().get().entries().forEachOrdered(entry ->
                                             recordBuilder.add(entry.getFirst(), entry.getSecond())
                                     );
                                 } else {
@@ -319,7 +348,7 @@ public final class PersistedParser {
                             var builder = subFlatten ? recordBuilder : op.mapBuilder();
                             serializeInternal(true, builder, op, new HashMap<>(), ReflectionUtils.getRawType(field.getGenericType()), value, provider);
                             if (!subFlatten) {
-                                data = builder.build(op.empty()).getOrThrow();
+                                data = LDCodecs.getOrThrow(builder.build(op.empty()));
                             }
                         }
                     }
@@ -402,20 +431,20 @@ public final class PersistedParser {
                         if (data != null) {
                             if (value instanceof INBTSerializable serializable) {
                                 if (op == NbtOps.INSTANCE || op instanceof DelegatingOpsAccessor<?> accessor && accessor.getDelegate() == NbtOps.INSTANCE) {
-                                    serializable.deserializeNBT(provider, (Tag) data);
+                                    serializable.deserializeNBT((Tag) data);
                                 } else {
-                                    serializable.deserializeNBT(provider, op.convertTo(NbtOps.INSTANCE, data));
+                                    serializable.deserializeNBT(op.convertTo(NbtOps.INSTANCE, data));
                                 }
                             } else {
-                                op.getMap(data).ifSuccess(mapData -> deserializeInternal(true, mapData, op,
+                                op.getMap(data).result().ifPresent(mapData -> deserializeInternal(true, mapData, op,
                                         new HashMap<>(), ReflectionUtils.getRawType(field.getGenericType()), value, provider));
                             }
                         } else if (subFlatten) {
                             if (value instanceof INBTSerializable serializable) {
                                 if (op == NbtOps.INSTANCE || op instanceof DelegatingOpsAccessor<?> accessor && accessor.getDelegate() == NbtOps.INSTANCE) {
-                                    serializable.deserializeNBT(provider, (Tag) op.createMap(map.entries()));
+                                    serializable.deserializeNBT((Tag) op.createMap(map.entries()));
                                 } else {
-                                    serializable.deserializeNBT(provider, op.convertTo(NbtOps.INSTANCE, op.createMap(map.entries())));
+                                    serializable.deserializeNBT(op.convertTo(NbtOps.INSTANCE, op.createMap(map.entries())));
                                 }
                             } else {
                                 deserializeInternal(true, map, op,
@@ -486,8 +515,7 @@ public final class PersistedParser {
                     if (value != null) {
                         buf.writeBoolean(true);
                         if (value instanceof INBTSerializable<?> serializable) {
-                            var tag = serializable.serializeNBT(provider);
-                            buf.writeNbt(tag);
+                            ByteBufCodecs.TRUSTED_TAG.encode(buf, serializable.serializeNBT());
                         } else {
                             writeStreamBuffInternal(true, buf, ReflectionUtils.getRawType(field.getGenericType()), value, provider);
                         }
@@ -504,7 +532,7 @@ public final class PersistedParser {
             var additional = serializable.serializeAdditionalNBT(provider);
             if (additional != null && additional != EndTag.INSTANCE) {
                 buf.writeBoolean(true);
-                buf.writeNbt(additional);
+                ByteBufCodecs.TRUSTED_TAG.encode(buf, additional);
             } else {
                 buf.writeBoolean(false);
             }
@@ -555,7 +583,7 @@ public final class PersistedParser {
                     var value = field.get(object);
                     if (buf.readBoolean() && value != null) {
                         if (value instanceof INBTSerializable serializable) {
-                            serializable.deserializeNBT(provider, buf.readNbt(NbtAccounter.unlimitedHeap()));
+                            serializable.deserializeNBT(ByteBufCodecs.TRUSTED_TAG.decode(buf));
                         } else {
                             readStreamBuffInternal(true, buf, new HashMap<>(), ReflectionUtils.getRawType(field.getGenericType()), value, provider);
                         }
@@ -578,7 +606,7 @@ public final class PersistedParser {
 
         if (root && object instanceof IPersistedSerializable serializable) {
             if (buf.readBoolean()) {
-                var tag = buf.readNbt(NbtAccounter.unlimitedHeap());
+                var tag = ByteBufCodecs.TRUSTED_TAG.decode(buf);
                 if (tag == null) return;
                 serializable.deserializeAdditionalNBT(tag, provider);
             }

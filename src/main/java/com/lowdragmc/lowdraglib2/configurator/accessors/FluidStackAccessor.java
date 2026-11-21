@@ -8,7 +8,6 @@ import com.lowdragmc.lowdraglib2.configurator.ui.*;
 import com.lowdragmc.lowdraglib2.gui.sync.bindings.impl.SupplierDataSource;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.FluidSlot;
 import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegisterClient;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.material.Fluids;
@@ -46,17 +45,31 @@ public class FluidStackAccessor extends TypesAccessor<FluidStack> {
         };
         group.inlineContainer.addChild(slot);
         var defaultValue = defaultValue(field);
-        var componentsConfigurator = new DataComponentConfigurator(DataComponentMap.EMPTY,
-                () -> supplier.get().getComponentsPatch(),
-                patch -> updater.accept(new FluidStack(supplier.get().getFluid().builtInRegistryHolder(), supplier.get().getAmount(), patch)), forceUpdate);
+        var componentsConfigurator = new DataComponentConfigurator(null,
+                () -> supplier.get().getTag(),
+                tag -> {
+                    var copy = supplier.get().copy();
+                    if (copy.getRawFluid() == Fluids.EMPTY) return;
+                    copy.setTag(tag == null || tag.isEmpty() ? null : tag);
+                    updater.accept(copy);
+                }, forceUpdate);
         var fluidConfigurator = new RegistrySearchComponent.Fluid("configurator.fluid",
                 () -> supplier.get().getFluid(),
-                fluid -> updater.accept(new FluidStack(fluid.builtInRegistryHolder(),
-                        Math.max(supplier.get().getAmount(), 1),
-                        supplier.get().getComponentsPatch())),
+                fluid -> {
+                    var next = new FluidStack(fluid, Math.max(supplier.get().getAmount(), 1));
+                    var currentTag = supplier.get().getTag();
+                    if (currentTag != null) next.setTag(currentTag.copy());
+                    updater.accept(next);
+                    componentsConfigurator.setPrototype(null);
+                },
                 defaultValue.getFluid(), forceUpdate);
         var countConfigurator = new NumberConfigurator("ldlib.gui.editor.configurator.amount",
-                () -> supplier.get().getAmount(), count -> updater.accept(supplier.get().copyWithAmount(count.intValue())),
+                () -> supplier.get().getAmount(), count -> {
+                    var copy = supplier.get().copy();
+                    if (copy.getRawFluid() == Fluids.EMPTY) return;
+                    copy.setAmount(count.intValue());
+                    updater.accept(copy);
+                },
                 defaultValue.getAmount(), forceUpdate)
                 .setType(ConfigNumber.Type.INTEGER)
                 .setRange(0, Integer.MAX_VALUE)
