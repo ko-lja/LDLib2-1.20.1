@@ -604,8 +604,8 @@ public class ResourceView extends View {
     @Nullable
     private Tab ownTabDrag(UIEvent event) {
         if (event.dragHandler == null) return null;
-        return event.dragHandler.getDraggingObject() instanceof TabDrag(ResourceView view, Tab tab) && view == this
-                ? tab : null;
+        return event.dragHandler.getDraggingObject() instanceof TabDrag dragging && dragging.view() == this
+                ? dragging.tab() : null;
     }
 
     /**

@@ -23,12 +23,15 @@ public final class ReflectionUtils {
     }
 
     public static Class<?> getRawType(Type type) {
-        return switch (type) {
-            case Class<?> aClass -> aClass;
-            case GenericArrayType genericArrayType -> getRawType(genericArrayType.getGenericComponentType());
-            case ParameterizedType parameterizedType -> getRawType(parameterizedType.getRawType());
-            case null, default -> null;
-        };
+        if (type instanceof Class<?> aClass) {
+            return aClass;
+        } else if (type instanceof GenericArrayType genericArrayType) {
+            return getRawType(genericArrayType.getGenericComponentType());
+        } else if (type instanceof ParameterizedType parameterizedType) {
+            return getRawType(parameterizedType.getRawType());
+        } else {
+            return null;
+        }
     }
 
     public static <A extends Annotation> void findAnnotationClasses(Class<A> annotationClass,

@@ -71,9 +71,9 @@ public class TextArea extends BindableUIElement<String[]> {
     public record History(String[] lines, Cursor cursor) {
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof History(String[] lines1, Cursor cursor1) &&
-                    Arrays.deepEquals(lines1, lines) &&
-                    Objects.equals(cursor1, cursor);
+            return obj instanceof History history &&
+                    Arrays.deepEquals(history.lines(), lines) &&
+                    Objects.equals(history.cursor(), cursor);
         }
     }
 
@@ -745,7 +745,8 @@ public class TextArea extends BindableUIElement<String[]> {
     }
 
     protected void onDragSource(UIEvent event) {
-        if (event.dragHandler.draggingObject instanceof CursorDragStart(Cursor anchor)) {
+        if (event.dragHandler.draggingObject instanceof CursorDragStart dragging) {
+            Cursor anchor = dragging.anchor();
             var localMouse = getLocalMouse(event.x, event.y);
             var pos = getCursorUnderMouse(localMouse.x, localMouse.y);
             setCursor(pos.line(), pos.col());

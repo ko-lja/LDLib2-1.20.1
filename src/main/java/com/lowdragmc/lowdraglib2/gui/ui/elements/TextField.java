@@ -297,7 +297,8 @@ public class TextField extends BindableUIElement<String> {
     /// events
     protected void onDragSource(UIEvent event) {
         if (isNumberField()) {
-            if (event.dragHandler.draggingObject instanceof NumberStart(double numberStart)) {
+            if (event.dragHandler.draggingObject instanceof NumberStart dragging) {
+                double numberStart = dragging.value();
                 var localMouse = getLocalMouse(event.x, event.y);
                 var localStart = getLocalMouse(event.dragStartX, event.dragStartY);
                 if (Mth.abs(localMouse.x - localStart.x) < 4) {
@@ -308,7 +309,8 @@ public class TextField extends BindableUIElement<String> {
                     handleNumber(value, false);
                 }
             }
-        } else if (event.dragHandler.draggingObject instanceof CursorStart(int cursorStart)) {
+        } else if (event.dragHandler.draggingObject instanceof CursorStart dragging) {
+            int cursorStart = dragging.value();
             var cursor = getCursorUnderMouseX(getLocalMouse(event.x, event.y).x);
             if (cursor != -1) {
                 setCursor(cursor);

@@ -363,24 +363,28 @@ public class MapAccessor<K, V> implements
 
     private Object obtainChildMark(DynamicOps<?> op, IAccessor<?> accessor, Object obj) {
         if (obj == null) return null;
-        return switch (accessor) {
-            case IMarkFunction markFunction -> markFunction.obtainManagedMark(obj);
-            case IDirectAccessor directAccessor -> directAccessor.readDirectVar((DynamicOps) op, ManagedHolderVar.of(obj));
-            case IReadOnlyAccessor readOnlyAccessor -> readOnlyAccessor.readReadOnlyValue((DynamicOps) op, obj);
-            case null, default -> throw new IllegalArgumentException("Unsupported child accessor: " + accessor);
-        };
+        if (accessor instanceof IMarkFunction markFunction) {
+            return markFunction.obtainManagedMark(obj);
+        } else if (accessor instanceof IDirectAccessor directAccessor) {
+            return directAccessor.readDirectVar((DynamicOps) op, ManagedHolderVar.of(obj));
+        } else if (accessor instanceof IReadOnlyAccessor readOnlyAccessor) {
+            return readOnlyAccessor.readReadOnlyValue((DynamicOps) op, obj);
+        } else {
+            throw new IllegalArgumentException("Unsupported child accessor: " + accessor);
+        }
     }
 
     private boolean childMarkDiffers(DynamicOps<?> op, IAccessor<?> accessor, Object mark, Object obj) {
         if (obj == null) return mark != null;
         if (mark == null) return true;
-        return switch (accessor) {
-            case IMarkFunction markFunction -> markFunction.areDifferent(mark, obj);
-            case IDirectAccessor directAccessor ->
-                    !directAccessor.readDirectVar((DynamicOps) op, ManagedHolderVar.of(obj)).equals(mark);
-            case IReadOnlyAccessor readOnlyAccessor ->
-                    !readOnlyAccessor.readReadOnlyValue((DynamicOps) op, obj).equals(mark);
-            case null, default -> throw new IllegalArgumentException("Unsupported child accessor: " + accessor);
-        };
+        if (accessor instanceof IMarkFunction markFunction) {
+            return markFunction.areDifferent(mark, obj);
+        } else if (accessor instanceof IDirectAccessor directAccessor) {
+            return !directAccessor.readDirectVar((DynamicOps) op, ManagedHolderVar.of(obj)).equals(mark);
+        } else if (accessor instanceof IReadOnlyAccessor readOnlyAccessor) {
+            return !readOnlyAccessor.readReadOnlyValue((DynamicOps) op, obj).equals(mark);
+        } else {
+            throw new IllegalArgumentException("Unsupported child accessor: " + accessor);
+        }
     }
 }

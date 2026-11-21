@@ -216,12 +216,12 @@ public final class FlexIcons {
 
     public static SpriteTexture getAlignSelfIcon(FlexDirection flexDirection, AlignItems alignSelf) {
         var isRow = flexDirection == FlexDirection.ROW || flexDirection == FlexDirection.ROW_REVERSE;
-        return isRow ? switch (alignSelf) {
+        return isRow ? alignSelf == null ? AUTO_ROW : switch (alignSelf) {
             case FLEX_START, START -> ALIGN_SELF_FLEX_START_ROW;
             case FLEX_END, END -> ALIGN_SELF_FLEX_END_ROW;
             case CENTER -> ALIGN_SELF_CENTER_ROW;
             case STRETCH -> ALIGN_SELF_STRETCH_ROW;
-            case null, default -> AUTO_ROW;
+            default -> AUTO_ROW;
         } : switch (alignSelf) {
             case FLEX_START, START -> ALIGN_SELF_FLEX_START_COLUMN;
             case FLEX_END, END -> ALIGN_SELF_FLEX_END_COLUMN;

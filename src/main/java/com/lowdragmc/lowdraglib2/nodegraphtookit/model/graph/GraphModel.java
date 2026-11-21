@@ -704,49 +704,36 @@ public abstract class GraphModel extends GraphElementModel implements IGraphElem
      */
     protected void removeElements(Collection<? extends GraphElementModel> elements) {
         for (var element : elements) {
-            switch (element) {
-                case IPlaceHolder placeHolder:
-                    removePlaceholder(placeHolder);
-                    break;
-                case StickyNoteModel stickyNoteModel:
-                    removeStickyNote(stickyNoteModel);
-                    break;
-                case PlacematModel placematModel:
-                    removePlacemat(placematModel);
-                    break;
-                case VariableDeclarationModelBase variableDeclarationModel:
-                    removeVariableDeclaration(variableDeclarationModel);
-                    break;
-                case WireModel wireModel:
-                    removeWire(wireModel);
-                    break;
-                case WireReroutePointModel reroutePoint:
-                    removeWireReroutePoint(reroutePoint);
-                    break;
-                case com.lowdragmc.lowdraglib2.nodegraphtookit.model.node.BlockNodeModel blockNodeModel:
-                    // Blocks live inside a context, not in the top-level nodeModels list.
-                    // Route through the parent so its block list and wires stay consistent.
-                    if (blockNodeModel.getContextNodeModel() != null) {
-                        blockNodeModel.getContextNodeModel().removeBlock(blockNodeModel);
-                    } else {
-                        unregisterBlockNode(blockNodeModel);
-                    }
-                    break;
-                case AbstractNodeModel nodeModel:
-                    removeNode(nodeModel);
-                    break;
-                case PortModel portModel:
-                    unregisterPort(portModel);
-                    break;
-                case SectionModel sectionModel:
-                    removeSection(sectionModel);
-                    break;
-                case GroupModel groupModel:
-                    removeGroup(groupModel);
-                    break;
-                default:
-                    unregisterElement(element);
-                    break;
+            if (element instanceof IPlaceHolder placeHolder) {
+                removePlaceholder(placeHolder);
+            } else if (element instanceof StickyNoteModel stickyNoteModel) {
+                removeStickyNote(stickyNoteModel);
+            } else if (element instanceof PlacematModel placematModel) {
+                removePlacemat(placematModel);
+            } else if (element instanceof VariableDeclarationModelBase variableDeclarationModel) {
+                removeVariableDeclaration(variableDeclarationModel);
+            } else if (element instanceof WireModel wireModel) {
+                removeWire(wireModel);
+            } else if (element instanceof WireReroutePointModel reroutePoint) {
+                removeWireReroutePoint(reroutePoint);
+            } else if (element instanceof BlockNodeModel blockNodeModel) {
+                // Blocks live inside a context, not in the top-level nodeModels list.
+                // Route through the parent so its block list and wires stay consistent.
+                if (blockNodeModel.getContextNodeModel() != null) {
+                    blockNodeModel.getContextNodeModel().removeBlock(blockNodeModel);
+                } else {
+                    unregisterBlockNode(blockNodeModel);
+                }
+            } else if (element instanceof AbstractNodeModel nodeModel) {
+                removeNode(nodeModel);
+            } else if (element instanceof PortModel portModel) {
+                unregisterPort(portModel);
+            } else if (element instanceof SectionModel sectionModel) {
+                removeSection(sectionModel);
+            } else if (element instanceof GroupModel groupModel) {
+                removeGroup(groupModel);
+            } else {
+                unregisterElement(element);
             }
         }
     }

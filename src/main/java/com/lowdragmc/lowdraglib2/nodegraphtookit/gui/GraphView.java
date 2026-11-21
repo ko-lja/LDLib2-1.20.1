@@ -703,15 +703,13 @@ public class GraphView extends UIElement {
         graphModel.getCurrentGraphChangeDescription().clear();
         // placeholders
         for (var placeholder : graphModel.getPlaceholders()) {
-            switch (placeholder) {
-                case DeclarationModel declarationModel: continue;
-                case WirePlaceHolder wirePlaceHolder:
-                    createWireUI(wirePlaceHolder);
-                    continue;
-                case NodePlaceholder nodePlaceholder:
-                    createAndAddModelElement(nodePlaceholder);
-                    break;
-                default: break;
+            if (placeholder instanceof DeclarationModel declarationModel) {
+                continue;
+            } else if (placeholder instanceof WirePlaceHolder wirePlaceHolder) {
+                createWireUI(wirePlaceHolder);
+                continue;
+            } else if (placeholder instanceof NodePlaceholder nodePlaceholder) {
+                createAndAddModelElement(nodePlaceholder);
             }
         }
 
@@ -1380,7 +1378,10 @@ public class GraphView extends UIElement {
     }
 
     protected void onDragEnd(UIEvent event) {
-        if (event.dragHandler.draggingObject instanceof DragMove(var targetWasSelected, var target, var movables)) {
+        if (event.dragHandler.draggingObject instanceof DragMove dragging) {
+            var targetWasSelected = dragging.targetWasSelected();
+            var target = dragging.target();
+            var movables = dragging.movables();
             var offset = new Vector2f(event.x - event.dragStartX, event.y - event.dragStartY);
             clearSnapGuides();
             if (offset.lengthSquared() < 1f) {
@@ -1538,7 +1539,8 @@ public class GraphView extends UIElement {
     }
 
     protected void onGraphViewDragSourceUpdate(UIEvent event) {
-        if (event.dragHandler.getDraggingObject() instanceof DragRegionSelection(var selectionRect)) {
+        if (event.dragHandler.getDraggingObject() instanceof DragRegionSelection dragging) {
+            var selectionRect = dragging.selectionRect();
             var minX = Math.min(event.dragStartX, event.x);
             var minY = Math.min(event.dragStartY, event.y);
             var localMouse = graphView.getLocalMouse(minX, minY);
@@ -1560,7 +1562,8 @@ public class GraphView extends UIElement {
     }
 
     protected void onGraphViewDragEnd(UIEvent event) {
-        if (event.dragHandler.getDraggingObject() instanceof DragRegionSelection(var selectionRect)) {
+        if (event.dragHandler.getDraggingObject() instanceof DragRegionSelection dragging) {
+            var selectionRect = dragging.selectionRect();
             selectionRect.removeSelf();
             if (dragRegionSelection != null) {
                 batchSelection(() -> {

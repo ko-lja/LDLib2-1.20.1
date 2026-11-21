@@ -134,7 +134,7 @@ public class UIHierarchy extends UIElement {
                         lastClickTime = 0;
                     });
                     nodeUI.addEventListener(UIEvents.DRAG_ENTER, e -> {
-                        if (e.dragHandler.getDraggingObject() instanceof DraggingUINode(var dragged) && dragged != node) {
+                        if (e.dragHandler.getDraggingObject() instanceof DraggingUINode dragging && dragging.draggedNode() != node) {
                             var mode = TreeList.isMouseOverNodeAbove(e) ? 0 : TreeList.isMouseOverNodeCenter(e) ? 1 : TreeList.isMouseOverNodeBelow(e) ? 2 : -1;
                             e.currentElement.style(style -> style.overlayTexture(TreeList.createDraggingOverlay(mode)));
                         }
@@ -146,7 +146,7 @@ public class UIHierarchy extends UIElement {
                         e.currentElement.style(style -> style.overlayTexture(IGuiTexture.EMPTY));
                     });
                     nodeUI.addEventListener(UIEvents.DRAG_UPDATE, e -> {
-                        if (e.dragHandler.getDraggingObject() instanceof DraggingUINode(var dragged) && dragged != node) {
+                        if (e.dragHandler.getDraggingObject() instanceof DraggingUINode dragging && dragging.draggedNode() != node) {
                             var mode = TreeList.isMouseOverNodeAbove(e) ? 0 : TreeList.isMouseOverNodeCenter(e) ? 1 : TreeList.isMouseOverNodeBelow(e) ? 2 : -1;
                             e.currentElement.style(style -> style.overlayTexture(TreeList.createDraggingOverlay(mode)));
                         } else {
@@ -155,7 +155,8 @@ public class UIHierarchy extends UIElement {
                     });
                     nodeUI.addEventListener(UIEvents.DRAG_PERFORM, e -> {
                         e.currentElement.style(style -> style.overlayTexture(IGuiTexture.EMPTY));
-                        if (e.dragHandler.getDraggingObject() instanceof DraggingUINode(var dragged) && dragged != node) {
+                        if (e.dragHandler.getDraggingObject() instanceof DraggingUINode dragging && dragging.draggedNode() != node) {
+                            var dragged = dragging.draggedNode();
                             var from = Placement.of(dragged.getKey());
                             moveNode(dragged.getKey(), node.getKey(), e);
                             recordMoved(from);
@@ -409,7 +410,8 @@ public class UIHierarchy extends UIElement {
         var nodes = treeList.getSelected();
         if (nodes.size() != 1) return;
         var parent = nodes.iterator().next().getKey();
-        if (ClipboardManager.INSTANCE.paste() instanceof NodeCopy(List<CompoundTag> copiedNodes)) {
+        if (ClipboardManager.INSTANCE.paste() instanceof NodeCopy nodeCopy) {
+            List<CompoundTag> copiedNodes = nodeCopy.copiedNodes();
             var added = new ArrayList<UIElement>();
             copiedNodes.forEach(tag -> {
                 CODEC.parse(Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE), tag).result().ifPresent(element -> {

@@ -413,7 +413,9 @@ public class GraphView extends UIElement {
     }
 
     protected void onDragSourceUpdate(UIEvent event) {
-        if (event.dragHandler.draggingObject instanceof DragOffset(float startOffsetX, float startOffsetY)) {
+        if (event.dragHandler.draggingObject instanceof DragOffset dragging) {
+            float startOffsetX = dragging.startOffsetX();
+            float startOffsetY = dragging.startOffsetY();
             float invS = 1f / Math.max(0.0001f, Mth.clamp(scale, graphViewStyle.minScale(), graphViewStyle.maxScale()));
             var localMouse = getLocalMouse(event.x, event.y);
             var localStart = getLocalMouse(event.dragStartX, event.dragStartY);

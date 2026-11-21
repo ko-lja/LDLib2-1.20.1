@@ -181,15 +181,15 @@ public class CollectionAccessor<TYPE> implements
             if (v == null) {
                 return null;
             }
-            return switch (childAccessor) {
-                case IMarkFunction markFunction -> markFunction.obtainManagedMark(v);
-                case IDirectAccessor<TYPE> directAccessor ->
-                        directAccessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), ManagedHolderVar.of(v));
-                case IReadOnlyAccessor<TYPE> readOnlyAccessor ->
-                        readOnlyAccessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), v);
-                case null, default ->
-                        throw new IllegalArgumentException("Child accessor %s is not managed for collection accessor".formatted(childAccessor));
-            };
+            if (childAccessor instanceof IMarkFunction markFunction) {
+                return markFunction.obtainManagedMark(v);
+            } else if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
+                return directAccessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), ManagedHolderVar.of(v));
+            } else if (childAccessor instanceof IReadOnlyAccessor<TYPE> readOnlyAccessor) {
+                return readOnlyAccessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), v);
+            } else {
+                throw new IllegalArgumentException("Child accessor %s is not managed for collection accessor".formatted(childAccessor));
+            }
         }).toArray();
     }
 
@@ -207,24 +207,20 @@ public class CollectionAccessor<TYPE> implements
                 }
                 continue;
             }
-            switch (childAccessor) {
-                case IMarkFunction markFunction -> {
-                    if (markFunction.areDifferent(mark, v)) {
-                        return true;
-                    }
+            if (childAccessor instanceof IMarkFunction markFunction) {
+                if (markFunction.areDifferent(mark, v)) {
+                    return true;
                 }
-                case IDirectAccessor<TYPE> directAccessor -> {
-                    if (!directAccessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), ManagedHolderVar.of(v)).equals(mark)) {
-                        return true;
-                    }
+            } else if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
+                if (!directAccessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), ManagedHolderVar.of(v)).equals(mark)) {
+                    return true;
                 }
-                case IReadOnlyAccessor<TYPE> readOnlyAccessor -> {
-                    if (!readOnlyAccessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), v).equals(mark)) {
-                        return true;
-                    }
+            } else if (childAccessor instanceof IReadOnlyAccessor<TYPE> readOnlyAccessor) {
+                if (!readOnlyAccessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), v).equals(mark)) {
+                    return true;
                 }
-                case null, default ->
-                        throw new IllegalArgumentException("Child accessor %s is not managed for collection accessor".formatted(childAccessor));
+            } else {
+                throw new IllegalArgumentException("Child accessor %s is not managed for collection accessor".formatted(childAccessor));
             }
         }
         return false;
