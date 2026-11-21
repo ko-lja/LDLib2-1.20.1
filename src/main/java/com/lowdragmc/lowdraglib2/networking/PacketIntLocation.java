@@ -3,7 +3,7 @@ package com.lowdragmc.lowdraglib2.networking;
 import lombok.NoArgsConstructor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import com.lowdragmc.lowdraglib2.compat.network.CustomPacketPayload;
 
 /**
  * a packet that contains a BlockPos

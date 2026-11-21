@@ -8,12 +8,12 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import com.lowdragmc.lowdraglib2.compat.network.ByteBufCodecs;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.network.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.network.handling.IPayloadContext;
+import com.lowdragmc.lowdraglib2.compat.network.IPayloadContext;
 
 import java.util.ArrayList;
 import java.util.BitSet;

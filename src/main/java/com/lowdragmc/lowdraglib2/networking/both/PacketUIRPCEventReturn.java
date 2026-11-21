@@ -5,10 +5,10 @@ import com.lowdragmc.lowdraglib2.gui.sync.IUISyncManagerHolder;
 import com.lowdragmc.lowdraglib2.utils.ByteBufUtil;
 import lombok.NoArgsConstructor;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.network.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.handling.IPayloadContext;
+import com.lowdragmc.lowdraglib2.compat.network.IPayloadContext;
 
 import javax.annotation.Nonnull;
 
@@ -40,7 +40,7 @@ public class PacketUIRPCEventReturn implements CustomPacketPayload {
             if (syncManager == null) return;
             ByteBufUtil.readCustomData(packet.returnData,
                     syncManager::handEventReturn,
-                    context.player().registryAccess());
+                    context.player().level().registryAccess());
         }
     }
 

@@ -5,8 +5,6 @@ import lombok.experimental.UtilityClass;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.FriendlyByteBuf;
 
-import net.minecraftforge.network.ConnectionType;
-
 import java.util.function.Consumer;
 
 @UtilityClass
@@ -19,7 +17,7 @@ public final class ByteBufUtil {
      * @param registryAccess The registry access used by registry dependent writers on the buffer
      */
     public static void readCustomData(byte[] data, Consumer<FriendlyByteBuf> dataWriter, RegistryAccess registryAccess) {
-        final FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data), registryAccess, ConnectionType.NEOFORGE);
+        final FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(data));
         try {
             dataWriter.accept(buf);
         } finally {

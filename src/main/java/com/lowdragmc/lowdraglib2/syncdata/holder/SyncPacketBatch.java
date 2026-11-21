@@ -2,6 +2,10 @@ package com.lowdragmc.lowdraglib2.syncdata.holder;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.async.AsyncThreadData;
+import com.lowdragmc.lowdraglib2.compat.network.ClientboundCustomPayloadPacket;
+import com.lowdragmc.lowdraglib2.compat.network.CustomPacketPayload;
+import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
+import com.lowdragmc.lowdraglib2.networking.LDLNetworking;
 import com.lowdragmc.lowdraglib2.networking.s2c.SPacketAutoSyncBlockEntities;
 import com.lowdragmc.lowdraglib2.networking.s2c.SPacketAutoSyncBlockEntity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -10,9 +14,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -148,18 +149,18 @@ public final class SyncPacketBatch implements AsyncThreadData.PeriodTask {
     public interface Receiver {
         boolean hasChannel(CustomPacketPayload.Type<?> type);
 
-        void send(Packet<?> packet);
+        void send(ClientboundCustomPayloadPacket packet);
     }
 
     private record PlayerReceiver(ServerPlayer player) implements Receiver {
         @Override
         public boolean hasChannel(CustomPacketPayload.Type<?> type) {
-            return player.connection.hasChannel(type);
+            return LDLNetworking.hasChannel(player, type);
         }
 
         @Override
-        public void send(Packet<?> packet) {
-            player.connection.send(packet);
+        public void send(ClientboundCustomPayloadPacket packet) {
+            PacketDistributor.sendToPlayer(player, packet.payload());
         }
     }
 
