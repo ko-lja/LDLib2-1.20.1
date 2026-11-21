@@ -91,7 +91,8 @@ public class NodeOptionsInspector extends ModelElement {
             // NodeElement#onSelectionInspect is what surfaces it instead.
             if (!nodeOption.getVisibility().showInNode()) continue;
             if (!portModel.isConfiguratorEnabled()) continue; // else it'd render as a label with nothing beside it
-            if (portModel instanceof IFieldValueConfigurable configurable) {
+            if (portModel != null) {
+                IFieldValueConfigurable configurable = portModel;
                 var inspector = new FieldValueInspector();
                 inspector.setFieldName(portModel.getDisplayName());
                 if (getGraphView() != null) inspector.setHistoryStack(getGraphView().getHistoryStack());

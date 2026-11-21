@@ -90,7 +90,7 @@ public class TestSerialization implements IScreenTest {
 
         public TestData() {
             itemStack = new ItemStack(Items.DIAMOND_PICKAXE);
-            itemStack.enchant(Platform.getFrozenRegistry().lookup(Registries.ENCHANTMENT).get().get(Enchantments.POWER).orElseThrow(), 1);
+            itemStack.enchant(Enchantments.POWER_ARROWS, 1);
         }
 
         public Configurator buildTestGroupConfigurator(Supplier<TestGroup> getter, Consumer<TestGroup> setter) {

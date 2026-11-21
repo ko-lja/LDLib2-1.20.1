@@ -19,7 +19,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import me.shedaniel.rei.api.common.entry.type.VanillaEntryTypes;
 import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.neoforge.NeoForgeTypes;
+import mezz.jei.api.forge.ForgeTypes;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -205,7 +205,7 @@ public class RegistrySearchComponent<T> extends SearchComponentConfigurator<T> {
         @Nullable
         public net.minecraft.world.entity.EntityType<?> getTypeFromEgg(ItemStack itemStack) {
             if (itemStack.getItem() instanceof SpawnEggItem eggItem) {
-                return eggItem.getType(itemStack);
+                return eggItem.getType(itemStack.getTag());
             }
             return null;
         }
@@ -219,7 +219,7 @@ public class RegistrySearchComponent<T> extends SearchComponentConfigurator<T> {
         }
 
         public static void ghostFluid(UIElement element, Predicate<FluidStack> filter, Consumer<FluidStack> setter) {
-            LDLibJEIPlugin.ghostIngredient(element, NeoForgeTypes.FLUID_STACK,
+            LDLibJEIPlugin.ghostIngredient(element, ForgeTypes.FLUID_STACK,
                     ingredient -> filter.test(ingredient.getIngredient()),
                     setter);
         }
@@ -291,20 +291,20 @@ public class RegistrySearchComponent<T> extends SearchComponentConfigurator<T> {
         public static void ghostFluid(UIElement element, Predicate<FluidStack> filter, Consumer<FluidStack> setter) {
             LDLibEMIPlugin.renderDragHandler(element,
                     dragged -> dragged instanceof FluidEmiStack fluid && filter.test(new FluidStack(
-                            ((net.minecraft.world.level.material.Fluid) fluid.getKey()).builtInRegistryHolder(),
+                            (net.minecraft.world.level.material.Fluid) fluid.getKey(),
                             Math.max(1000, (int) fluid.getAmount()),
-                            fluid.getComponentChanges())));
+                            fluid.getNbt())));
             LDLibEMIPlugin.dropStackHandler(element,
                     dragged -> dragged instanceof FluidEmiStack fluid && filter.test(new FluidStack(
-                            ((net.minecraft.world.level.material.Fluid) fluid.getKey()).builtInRegistryHolder(),
+                            (net.minecraft.world.level.material.Fluid) fluid.getKey(),
                             Math.max(1000, (int) fluid.getAmount()),
-                            fluid.getComponentChanges())),
+                            fluid.getNbt())),
                     dragged -> {
                         if (dragged instanceof FluidEmiStack fluid) {
                             var fluidstack = new FluidStack(
-                                    ((net.minecraft.world.level.material.Fluid) fluid.getKey()).builtInRegistryHolder(),
+                                    (net.minecraft.world.level.material.Fluid) fluid.getKey(),
                                     Math.max(1000, (int) fluid.getAmount()),
-                                    fluid.getComponentChanges());
+                                    fluid.getNbt());
                             setter.accept(fluidstack);
                         }
                     });

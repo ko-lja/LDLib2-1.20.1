@@ -116,12 +116,13 @@ public class ShaderTexture extends TransformTexture implements AutoCloseable {
             );
             RenderSystem.disableDepthTest();
             var mat = graphics.pose().last().pose();
-            BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            buffer.addVertex(mat, x, y + height, 0).setUv(0, 0).setColor(color);
-            buffer.addVertex(mat, x + width, y + height, 0).setUv(1, 0).setColor(color);
-            buffer.addVertex(mat, x + width, y, 0).setUv(1, 1).setColor(color);
-            buffer.addVertex(mat, x, y, 0).setUv(0, 1).setColor(color);
-            BufferUploader.drawWithShader(buffer.buildOrThrow());
+            BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+            buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            buffer.vertex(mat, x, y + height, 0).uv(0, 0).color(color).endVertex();
+            buffer.vertex(mat, x + width, y + height, 0).uv(1, 0).color(color).endVertex();
+            buffer.vertex(mat, x + width, y, 0).uv(1, 1).color(color).endVertex();
+            buffer.vertex(mat, x, y, 0).uv(0, 1).color(color).endVertex();
+            BufferUploader.drawWithShader(buffer.end());
 
             shaderHolder.removeDynamicUniform("U_GuiRect");
             shaderHolder.removeDynamicUniform("U_GuiMouse");

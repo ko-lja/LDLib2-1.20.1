@@ -34,7 +34,7 @@ public interface ISceneRendering extends ISceneObject {
     @OnlyIn(Dist.CLIENT)
     default void draw(PoseStack poseStack, MultiBufferSource bufferSource, float partialTicks){
         poseStack.pushPose();
-        poseStack.mulPose(transform().localToWorldMatrix());
+        poseStack.mulPoseMatrix(transform().localToWorldMatrix());
         drawInternal(poseStack, bufferSource, partialTicks);
         poseStack.popPose();
     }

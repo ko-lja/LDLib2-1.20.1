@@ -9,7 +9,9 @@ import com.lowdragmc.lowdraglib2.syncdata.utils.TypeFabricator;
 import com.lowdragmc.lowdraglib2.syncdata.var.ManagedHolderVar;
 import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
+import net.minecraft.resources.RegistryOps;
 import lombok.Getter;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +66,7 @@ public class MapAccessor<K, V> implements
 
     @Override
     public <T> void writeReadOnlyValue(DynamicOps<T> op, Map<K, V> value, T payload) {
-        var list = op.getStream(payload).getOrThrow().toList();
+        var list = LDCodecs.getOrThrow(op.getStream(payload)).toList();
         if ((list.size() & 1) != 0) {
             throw new IllegalArgumentException(
                     "Map payload must contain an even number of [k,v] elements, got " + list.size());
@@ -263,7 +265,7 @@ public class MapAccessor<K, V> implements
 
     @Override
     public Object[] obtainManagedMark(@NotNull Map<K, V> value) {
-        var op = Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE);
+        var op = RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry());
         var marks = new Object[value.size() * 2];
         int i = 0;
         for (var entry : value.entrySet()) {
@@ -276,7 +278,7 @@ public class MapAccessor<K, V> implements
     @Override
     public boolean areDifferent(Object[] managedMark, @NotNull Map<K, V> value) {
         if (managedMark.length != value.size() * 2) return true;
-        var op = Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE);
+        var op = RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry());
         int i = 0;
         for (var entry : value.entrySet()) {
             if (childMarkDiffers(op, keyAccessor, managedMark[i++], entry.getKey())) return true;

@@ -336,7 +336,7 @@ public class Blackboard extends BlackboardElement implements IGraphTool {
         // was meant, the way Unreal asks for the same gesture. Everything else drops a getter, which
         // is what this always did — several at once, a drop onto a port, or a graph that only reads.
         if (variables.size() == 1 && e.target.getFirstAncestorOfType(PortElement.class) == null) {
-            var variable = variables.getFirst();
+            var variable = variables.get(0);
             NodeModelLibraryItem setter = graphView.getGraph() == null ? null
                     : graphView.getGraph().graphModel.createVariableSetterItem(variable);
             if (setter != null) {
@@ -442,7 +442,7 @@ public class Blackboard extends BlackboardElement implements IGraphTool {
         if (!supportedTypes.isEmpty()
                 && !typeHandle.isCustomTypeHandle()
                 && !supportedTypes.contains(typeHandle)) {
-            typeHandle = supportedTypes.getFirst();
+            typeHandle = supportedTypes.get(0);
         }
 
         graphView.dispatchCommand(new VariableDeclarationCommands.CreateGraphVariableDeclarationCommand(

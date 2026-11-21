@@ -855,7 +855,7 @@ fun FluidSlot(
     toElement = { it },
     layout, style, classes, id, enabled, visible, focusable, events,
     widgetStyle = slotStyle?.let { block -> { getSlotStyle().apply(block) } },
-    same = { a, b -> FluidStack.matches(a, b) },
+    same = { a, b -> a.isFluidStackIdentical(b) },
     configure = { write(capacity) { setCapacity(it) } },
 )
 

@@ -408,7 +408,7 @@ final class MPServerRunner {
     /** The lazily-created report for a SERVER_WAIT segment, shared across its re-evaluations. */
     private RunReport.StepReport currentSegmentStepReport(MPSegment segment) {
         if (!currentReport.steps.isEmpty()) {
-            var last = currentReport.steps.getLast();
+            var last = currentReport.steps.get(currentReport.steps.size() - 1);
             if (last.index == segment.index + 1) return last;
         }
         return newStepReport(segment);

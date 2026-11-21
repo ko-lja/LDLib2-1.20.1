@@ -1366,14 +1366,16 @@ public abstract class GraphModel extends GraphElementModel implements IGraphElem
             }
 
             // Remove missing port with no connections.
-            if (wireModel.getToPort() instanceof PortModel to && to.getPortType().equals(PortType.MISSING_PORT) && to.getConnectedWires().isEmpty()) {
+            var to = wireModel.getToPort();
+            if (to != null && to.getPortType().equals(PortType.MISSING_PORT) && to.getConnectedWires().isEmpty()) {
                 var nodeModel = to.getNodeModel();
                 if (nodeModel != null) {
                     nodeModel.removeUnusedMissingPort(to);
                 }
             }
 
-            if (wireModel.getFromPort() instanceof PortModel from && from.getPortType().equals(PortType.MISSING_PORT) && from.getConnectedWires().isEmpty()) {
+            var from = wireModel.getFromPort();
+            if (from != null && from.getPortType().equals(PortType.MISSING_PORT) && from.getConnectedWires().isEmpty()) {
                 var nodeModel = from.getNodeModel();
                 if (nodeModel != null) {
                     nodeModel.removeUnusedMissingPort(from);
@@ -1403,10 +1405,12 @@ public abstract class GraphModel extends GraphElementModel implements IGraphElem
             if (wireToDelete instanceof WirePlaceHolder placeHolder) {
                 removePlaceholder(placeHolder);
             } else {
-                if (wireToDelete.getToPort() instanceof PortModel port && port.getNodeModel() instanceof NodeModel nodeModel) {
+                var toPort = wireToDelete.getToPort();
+                if (toPort != null && toPort.getNodeModel() instanceof NodeModel nodeModel) {
                     nodeModel.onDisconnection(wireToDelete.getToPort(), wireToDelete.getFromPort());
                 }
-                if (wireToDelete.getFromPort() instanceof PortModel port && port.getNodeModel() instanceof NodeModel nodeModel) {
+                var fromPort = wireToDelete.getFromPort();
+                if (fromPort != null && fromPort.getNodeModel() instanceof NodeModel nodeModel) {
                     nodeModel.onDisconnection(wireToDelete.getFromPort(), wireToDelete.getToPort());
                 }
 

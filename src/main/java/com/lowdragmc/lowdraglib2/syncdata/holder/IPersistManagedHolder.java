@@ -6,6 +6,7 @@ import com.lowdragmc.lowdraglib2.utils.TagUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 
 /**
  * Interface for block entities that automatically save and load managed data.
@@ -16,7 +17,7 @@ public interface IPersistManagedHolder extends IManagedHolder {
     default void saveManagedPersistentData(HolderLookup.Provider provider, CompoundTag tag, boolean forDrop) {
         var persistedFields = getRootStorage().getPersistedFields();
         var managedTag = new CompoundTag();
-        var ctx = provider.createSerializationContext(NbtOps.INSTANCE);
+        var ctx = RegistryOps.create(NbtOps.INSTANCE, provider);
         for (var persistedField : persistedFields) {
             if (forDrop && !persistedField.getKey().isDrop()) {
                 continue;
@@ -41,7 +42,7 @@ public interface IPersistManagedHolder extends IManagedHolder {
     default void loadManagedPersistentData(HolderLookup.Provider provider, CompoundTag tag) {
         var refs = getRootStorage().getPersistedFields();
         var managedTag = tag.getCompound("managed");
-        var ctx = provider.createSerializationContext(NbtOps.INSTANCE);
+        var ctx = RegistryOps.create(NbtOps.INSTANCE, provider);
         for (var ref : refs) {
             var key = ref.getPersistedKey();
             var data = TagUtils.getTagExtended(managedTag, key);

@@ -17,24 +17,22 @@ public class SearchEngine<T> {
 
     // TODO shall we add a method to schedule searching on the main thread?
     public void searchWord(String word) {
-        Thread virtualThread = Thread.ofVirtual()
-                .name("search-" + word.hashCode())
-                .unstarted(() -> {
-                    try {
-                        search.search(word, value -> {
-                            Thread current = Thread.currentThread();
-                            if (current == currentThread.get() && !current.isInterrupted()) {
-                                result.accept(value);
-                            }
-                        });
-                    } catch (Exception e) {
-                        if (!Thread.currentThread().isInterrupted()) {
-                            LDLib2.LOGGER.error("Search failed for word '{}'", word, e);
-                        }
-                    } finally {
-                        currentThread.compareAndSet(Thread.currentThread(), null);
+        Thread virtualThread = unstartedDaemon("search-" + word.hashCode(), () -> {
+            try {
+                search.search(word, value -> {
+                    Thread current = Thread.currentThread();
+                    if (current == currentThread.get() && !current.isInterrupted()) {
+                        result.accept(value);
                     }
                 });
+            } catch (Exception e) {
+                if (!Thread.currentThread().isInterrupted()) {
+                    LDLib2.LOGGER.error("Search failed for word '{}'", word, e);
+                }
+            } finally {
+                currentThread.compareAndSet(Thread.currentThread(), null);
+            }
+        });
         Thread previousThread = currentThread.getAndSet(virtualThread);
         if (previousThread != null && previousThread.isAlive()) {
             previousThread.interrupt();
@@ -45,6 +43,12 @@ public class SearchEngine<T> {
     public boolean isSearching() {
         Thread thread = currentThread.get();
         return thread != null && thread.isAlive();
+    }
+
+    private static Thread unstartedDaemon(String n, Runnable r) {
+        Thread t = new Thread(r, n);
+        t.setDaemon(true);
+        return t;
     }
 
     public void dispose() {

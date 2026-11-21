@@ -71,7 +71,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
-import org.apache.commons.lang3.function.Consumers;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -248,7 +247,7 @@ public class GraphView extends UIElement {
         addEventListener(UIEvents.VALIDATE_COMMAND, this::onValidateCommand);
         addEventListener(UIEvents.EXECUTE_COMMAND, this::onExecuteCommand);
 
-        setEnforceFocus(Consumers.nop());
+        setEnforceFocus(e -> {});
 
         // ItemLibrary is hidden until explicitly shown — popup visibility is state-driven.
         Style.importantPipeline(itemLibrary.getLayout(), l -> l.display(TaffyDisplay.NONE));
@@ -575,7 +574,7 @@ public class GraphView extends UIElement {
             return;
         }
 
-        var first = graphLogEntries.getFirst();
+        var first = graphLogEntries.get(0);
         graphLogSummary.setText(formatGraphLogEntry(first));
         Style.importantPipeline(graphLogSummary.getTextStyle(), s -> s.textColor(graphLogLevelColor(first.level())));
         graphLogCount.setText(graphLogEntries.size() > 1
@@ -1977,7 +1976,8 @@ public class GraphView extends UIElement {
             var allModels = new ArrayList<>(changeset.getNewModels());
             allModels.addAll(changeset.getDeletedModels());
             for (var uid : allModels) {
-                if (graphModel.getModel(uid) instanceof GraphElementModel model && model.getContainer() instanceof GraphElementModel container) {
+                var uidModel = graphModel.getModel(uid);
+                if (uidModel != null && uidModel.getContainer() instanceof GraphElementModel container) {
                     // Whatever change hint was there is superseded by Unspecified.
                     changedModels.put(container.getUid(), ChangeHintList.UNSPECIFIED);
                 }

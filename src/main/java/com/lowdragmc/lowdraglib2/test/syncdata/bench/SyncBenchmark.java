@@ -12,14 +12,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.VarInt;
-import net.minecraft.network.codec.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.network.VarInt;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
-import net.minecraftforge.network.connection.ConnectionType;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -348,7 +347,7 @@ public class SyncBenchmark {
     }
 
     private static <T> long wireBytes(ServerLevel level, StreamCodec<FriendlyByteBuf, T> codec, T payload, ResourceLocation channel) {
-        var buf = new FriendlyByteBuf(Unpooled.buffer(), level.registryAccess(), ConnectionType.NEOFORGE);
+        var buf = new FriendlyByteBuf(Unpooled.buffer());
         try {
             codec.encode(buf, payload);
             int id = channel.toString().length();
@@ -400,8 +399,8 @@ public class SyncBenchmark {
         if (!(THREADS instanceof com.sun.management.ThreadMXBean sun)) return result;
         for (var thread : Thread.getAllStackTraces().keySet()) {
             if (thread.getName().startsWith("LDLib Async Thread")) {
-                long bytes = sun.getThreadAllocatedBytes(thread.threadId());
-                if (bytes >= 0) result.put(thread.threadId(), bytes);
+                long bytes = sun.getThreadAllocatedBytes(thread.getId());
+                if (bytes >= 0) result.put(thread.getId(), bytes);
             }
         }
         return result;
@@ -411,8 +410,8 @@ public class SyncBenchmark {
         var result = new HashMap<Long, Long>();
         for (var thread : Thread.getAllStackTraces().keySet()) {
             if (thread.getName().startsWith("LDLib Async Thread")) {
-                long cpu = THREADS.getThreadCpuTime(thread.threadId());
-                if (cpu >= 0) result.put(thread.threadId(), cpu);
+                long cpu = THREADS.getThreadCpuTime(thread.getId());
+                if (cpu >= 0) result.put(thread.getId(), cpu);
             }
         }
         return result;

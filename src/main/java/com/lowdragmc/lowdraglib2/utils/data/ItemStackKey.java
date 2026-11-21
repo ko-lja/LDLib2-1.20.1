@@ -3,6 +3,7 @@ package com.lowdragmc.lowdraglib2.utils.data;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public final class ItemStackKey {
     private final ItemStack[] itemStack;
@@ -51,7 +52,7 @@ public final class ItemStackKey {
         for (ItemStack stack : itemStack) {
             itemsHash += stack.getItem().hashCode();
             itemsHash += stack.getDamageValue();
-            itemsHash += stack.getComponents().hashCode();
+            itemsHash += Objects.hashCode(stack.getTag());
         }
         return itemsHash;
     }

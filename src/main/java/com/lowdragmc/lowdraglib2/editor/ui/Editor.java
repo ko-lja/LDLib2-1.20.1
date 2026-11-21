@@ -1095,7 +1095,7 @@ public abstract class Editor extends UIElement implements EditorHost {
                     .setOverflowVisible(false)
                     .layout(layout -> layout.flex(1)));
             dialog.show(this.getModularUI());
-            if (dialog.buttonContainer.getChildren().getFirst() instanceof Button button) {
+            if (dialog.buttonContainer.getChildren().get(0) instanceof Button button) {
                 button.setText("ldlib.gui.editor.menu.save");
             }
             return;

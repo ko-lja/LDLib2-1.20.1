@@ -20,6 +20,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.vfyjxf.taffy.style.AlignItems;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 
 /**
  * A tooltip in a UI hosted by its own OS window has to be kept inside <em>that</em> window.
@@ -233,6 +234,6 @@ public class WindowTooltipBoundsScenario implements UIScenario {
     }
 
     private static int clamp(int value, int limit) {
-        return Math.clamp(value, 0, limit);
+        return Mth.clamp(value, 0, limit);
     }
 }

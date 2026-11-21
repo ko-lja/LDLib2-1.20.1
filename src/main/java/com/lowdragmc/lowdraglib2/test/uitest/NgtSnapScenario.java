@@ -137,7 +137,7 @@ public class NgtSnapScenario implements UIScenario {
                             .step("a guide is showing through the column", ctx -> {
                                 var guides = graphView(ctx).getSnapGuides();
                                 ctx.check("exactly one guide", guides.size() == 1, 1, guides.size());
-                                var guide = guides.getFirst();
+                                var guide = guides.get(0);
                                 ctx.check("it is vertical", guide.vertical());
                                 ctx.check("it runs through the neighbour's left edge",
                                         Math.abs(guide.position() - node(ctx, ANCHOR).getPosition().x) < 0.5f,

@@ -11,8 +11,8 @@ import com.lowdragmc.lowdraglib2.gui.ui.style.BasicStyle
 import com.lowdragmc.lowdraglib2.gui.ui.style.animation.StyleAnimationDsl
 import dev.vfyjxf.taffy.style.AlignItems
 import dev.vfyjxf.taffy.style.FlexDirection
-import org.apache.commons.lang3.function.Consumers
-import org.apache.commons.lang3.function.Suppliers
+import java.util.function.Consumer
+import java.util.function.Supplier
 import kotlin.reflect.KMutableProperty0
 
 /**
@@ -408,7 +408,7 @@ inline fun <reified T> bindingsS2C(
     noinline getter: () -> T,
     initialValue: T? = null,
 ): DataBindingBuilder<T> {
-    return DataBindingBuilder.create(getter, Consumers.nop())
+    return DataBindingBuilder.create(getter, Consumer<T> { })
         .syncType(T::class.java)
         .c2sStrategy(SyncStrategy.NONE)
         .initialValue(initialValue)
@@ -418,7 +418,7 @@ inline fun <reified T> bindingsC2S(
     noinline setter: (T) -> Unit,
     initialValue: T? = null,
 ): DataBindingBuilder<T> {
-    return DataBindingBuilder.create(Suppliers.nul<T>(), setter)
+    return DataBindingBuilder.create(Supplier<T> { null as T }, setter)
         .syncType(T::class.java)
         .s2cStrategy(SyncStrategy.NONE)
         .initialValue(initialValue)

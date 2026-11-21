@@ -169,7 +169,7 @@ public class AssetBrowserUnownedEditScenario implements UIScenario {
     @Nullable
     private static CompoundTag read(File file) {
         try {
-            return NbtIo.read(file.toPath());
+            return NbtIo.read(file);
         } catch (Exception e) {
             return null;
         }

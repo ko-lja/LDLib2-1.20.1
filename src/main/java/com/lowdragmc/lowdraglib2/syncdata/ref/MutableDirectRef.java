@@ -5,7 +5,8 @@ import com.lowdragmc.lowdraglib2.syncdata.accessor.direct.IDirectAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.field.ManagedKey;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.IMarkFunction;
 import com.lowdragmc.lowdraglib2.syncdata.var.IVar;
-import com.mojang.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.serialization.JavaOps;
+import net.minecraft.resources.RegistryOps;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +29,7 @@ public final class MutableDirectRef<TYPE> extends DirectRef<TYPE> {
         oldValueMark = value == null ? null :
                 accessor instanceof IMarkFunction markFunction ?
                 markFunction.obtainManagedMark(getField().value()) :
-                        accessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), field);
+                        accessor.readDirectVar(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), field);
     }
 
     @Override
@@ -55,10 +56,10 @@ public final class MutableDirectRef<TYPE> extends DirectRef<TYPE> {
             }
         } else if (accessor instanceof IDirectAccessor) {
             if (oldValueMark == null) {
-                oldValueMark = accessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), field);
+                oldValueMark = accessor.readDirectVar(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), field);
                 markAsDirty();
             } else {
-                var newValueMark = accessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), field);
+                var newValueMark = accessor.readDirectVar(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), field);
                 if (!oldValueMark.equals(newValueMark)) {
                     oldValueMark = newValueMark;
                     markAsDirty();

@@ -200,9 +200,9 @@ public class DebugScreen extends ModularUIScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (!super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
-            return isTargetLocal() && targetUI.getWidget().mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        if (!super.mouseScrolled(mouseX, mouseY, delta)) {
+            return isTargetLocal() && targetUI.getWidget().mouseScrolled(mouseX, mouseY, delta);
         }
         return true;
     }

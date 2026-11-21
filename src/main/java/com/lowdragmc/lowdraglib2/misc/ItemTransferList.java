@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.lowdragmc.lowdraglib2.compat.nbt.INBTSerializable;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.NotNull;
@@ -123,8 +123,8 @@ public class ItemTransferList implements IItemHandlerModifiable, INBTSerializabl
         var tag = new CompoundTag();
         var list = new ListTag();
         for (var transfer : transfers) {
-            if (transfer instanceof INBTSerializable<?> serializable) {
-                list.add(serializable.serializeNBT(provider));
+            if (transfer instanceof net.minecraftforge.common.util.INBTSerializable<?> serializable) {
+                list.add(serializable.serializeNBT());
             } else {
                 LDLib2.LOGGER.warn("[ItemTransferList] internal container doesn't support serialization");
             }
@@ -138,8 +138,8 @@ public class ItemTransferList implements IItemHandlerModifiable, INBTSerializabl
     public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
         var list = nbt.getList("slots", nbt.getByte("type"));
         for (int i = 0; i < list.size(); i++) {
-            if (transfers[i] instanceof INBTSerializable serializable) {
-                serializable.deserializeNBT(provider, list.get(i));
+            if (transfers[i] instanceof net.minecraftforge.common.util.INBTSerializable serializable) {
+                serializable.deserializeNBT(list.get(i));
             } else {
                 LDLib2.LOGGER.warn("[ItemTransferList] internal container doesn't support serialization");
             }

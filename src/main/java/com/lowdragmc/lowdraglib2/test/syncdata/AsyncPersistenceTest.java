@@ -28,7 +28,7 @@ public class AsyncPersistenceTest {
     public static void changesFoundInOnePeriodMarkTheBlockEntityChangedOnce(GameTestHelper helper) {
         var pos = new BlockPos(1, 2, 1);
         helper.setBlock(pos, SyncBenchBlock.BLOCK);
-        SyncBenchBlockEntity be = helper.getBlockEntity(pos);
+        SyncBenchBlockEntity be = (SyncBenchBlockEntity) helper.getBlockEntity(pos);
         var step = new int[1];
         var since = new long[]{System.nanoTime()};
         helper.onEachTick(() -> {
@@ -70,7 +70,7 @@ public class AsyncPersistenceTest {
     public static void unwatchedChangesWaitUnsentButArePersisted(GameTestHelper helper) {
         var pos = new BlockPos(3, 2, 1);
         helper.setBlock(pos, SyncBenchBlock.BLOCK);
-        SyncBenchBlockEntity be = helper.getBlockEntity(pos);
+        SyncBenchBlockEntity be = (SyncBenchBlockEntity) helper.getBlockEntity(pos);
         var chunk = helper.getLevel().getChunkAt(be.getBlockPos());
         var step = new int[1];
         var since = new long[]{System.nanoTime()};

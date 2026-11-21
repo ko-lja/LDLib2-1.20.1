@@ -271,7 +271,7 @@ public class ItemLibrary extends ItemLibraryPanel<ItemLibraryItem> {
      */
     protected List<PortModel> getCompatiblePorts(ItemLibraryItem item) {
         if (portModels == null || portModels.isEmpty()) return List.of();
-        return getCompatiblePorts(item, portModels.getFirst());
+        return getCompatiblePorts(item, portModels.get(0));
     }
 
     /** As {@link #getCompatiblePorts(ItemLibraryItem)}, for an explicit source port. */
@@ -364,7 +364,7 @@ public class ItemLibrary extends ItemLibraryPanel<ItemLibraryItem> {
             var ports = getCompatiblePorts(nodeItem);
             if (ports.isEmpty()) return;
             owner = nodeItem;
-            portToConnect = ports.getFirst();
+            portToConnect = ports.get(0);
         } else return;
         var model = getTestModel(owner);
         if (model != null) {
@@ -481,12 +481,12 @@ public class ItemLibrary extends ItemLibraryPanel<ItemLibraryItem> {
         testModels.clear();
         this.portModels = portModels;
         attachPortChildren();
-        setPortRecommendation(portModels.getFirst());
+        setPortRecommendation(portModels.get(0));
         show(mouseX, mouseY, onFinished);
         // AFTER show(), which puts the generic "add a node" title up. This one names the type the
         // dragged wire carries, and setting it first meant it was overwritten before anyone saw it.
         title.setText(Component.translatable("graph.library.choose",
-                Component.translatable(portModels.getFirst().getDataTypeHandle().getFriendlyName())));
+                Component.translatable(portModels.get(0).getDataTypeHandle().getFriendlyName())));
     }
 
     @Override

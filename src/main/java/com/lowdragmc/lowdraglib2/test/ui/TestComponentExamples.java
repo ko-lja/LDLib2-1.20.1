@@ -168,7 +168,7 @@ public class TestComponentExamples implements IScreenTest {
             layout.widthPercent(100);
             layout.height(THEME_SCROLLER_HEIGHT);
         });
-        container.addChildAt(scroller, container.getChildren().indexOf(toggles.getFirst()));
+        container.addChildAt(scroller, container.getChildren().indexOf(toggles.get(0)));
         for (var toggle : toggles) {
             container.removeChild(toggle);
             scroller.addScrollViewChild(toggle);

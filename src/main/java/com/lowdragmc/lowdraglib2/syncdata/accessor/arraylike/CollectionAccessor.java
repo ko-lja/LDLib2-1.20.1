@@ -8,7 +8,9 @@ import com.lowdragmc.lowdraglib2.syncdata.utils.TypeFabricator;
 import com.lowdragmc.lowdraglib2.syncdata.var.ManagedHolderVar;
 import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
+import net.minecraft.resources.RegistryOps;
 import lombok.Getter;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
@@ -61,7 +63,7 @@ public class CollectionAccessor<TYPE> implements
 
     @Override
     public <T> void writeReadOnlyValue(DynamicOps<T> op, Collection<TYPE> value, T payload) {
-        var stream = op.getStream(payload).getOrThrow();
+        var stream = LDCodecs.getOrThrow(op.getStream(payload));
         if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
             value.clear();
             stream.map(p -> {
@@ -184,9 +186,9 @@ public class CollectionAccessor<TYPE> implements
             if (childAccessor instanceof IMarkFunction markFunction) {
                 return markFunction.obtainManagedMark(v);
             } else if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
-                return directAccessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), ManagedHolderVar.of(v));
+                return directAccessor.readDirectVar(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), ManagedHolderVar.of(v));
             } else if (childAccessor instanceof IReadOnlyAccessor<TYPE> readOnlyAccessor) {
-                return readOnlyAccessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), v);
+                return readOnlyAccessor.readReadOnlyValue(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), v);
             } else {
                 throw new IllegalArgumentException("Child accessor %s is not managed for collection accessor".formatted(childAccessor));
             }
@@ -212,11 +214,11 @@ public class CollectionAccessor<TYPE> implements
                     return true;
                 }
             } else if (childAccessor instanceof IDirectAccessor<TYPE> directAccessor) {
-                if (!directAccessor.readDirectVar(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), ManagedHolderVar.of(v)).equals(mark)) {
+                if (!directAccessor.readDirectVar(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), ManagedHolderVar.of(v)).equals(mark)) {
                     return true;
                 }
             } else if (childAccessor instanceof IReadOnlyAccessor<TYPE> readOnlyAccessor) {
-                if (!readOnlyAccessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), v).equals(mark)) {
+                if (!readOnlyAccessor.readReadOnlyValue(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), v).equals(mark)) {
                     return true;
                 }
             } else {

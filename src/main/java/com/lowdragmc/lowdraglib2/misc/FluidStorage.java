@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.lowdragmc.lowdraglib2.compat.nbt.INBTSerializable;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +54,7 @@ public class FluidStorage extends FluidTank implements INBTSerializable<Compound
     public CompoundTag serializeNBT(@NotNull HolderLookup.Provider provider) {
         var tag = new CompoundTag();
         if (!fluid.isEmpty()) {
-            tag.put("fluid", fluid.save(provider));
+            tag.put("fluid", fluid.writeToNBT(new CompoundTag()));
         }
         tag.putInt("capacity", capacity);
         return tag;
@@ -64,7 +64,7 @@ public class FluidStorage extends FluidTank implements INBTSerializable<Compound
     public void deserializeNBT(@NotNull HolderLookup.Provider provider, CompoundTag nbt) {
         capacity = nbt.getInt("capacity");
         if (nbt.contains("fluid")) {
-            setFluid(FluidStack.parseOptional(provider, nbt.getCompound("fluid")));
+            setFluid(FluidStack.loadFluidStackFromNBT(nbt.getCompound("fluid")));
         } else {
             setFluid(FluidStack.EMPTY);
         }

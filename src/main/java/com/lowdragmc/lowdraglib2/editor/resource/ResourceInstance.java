@@ -20,7 +20,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.util.INBTSerializable;
+import com.lowdragmc.lowdraglib2.compat.nbt.INBTSerializable;
 
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +68,7 @@ public class ResourceInstance<T> implements INBTSerializable<CompoundTag> {
         buildBuiltin();
         var metaFile = new File(LDLib2.getAssetsDir(), "ldlib2/resources/" + resource.getName() + ".meta.nbt");
         try {
-            var data = NbtIo.read(metaFile.toPath());
+            var data = NbtIo.read(metaFile);
             if (data != null) {
                 deserializeNBT(Platform.getFrozenRegistry(), data);
             }
@@ -89,7 +89,7 @@ public class ResourceInstance<T> implements INBTSerializable<CompoundTag> {
                 }
             }
             var data = serializeNBT(Platform.getFrozenRegistry());
-            NbtIo.write(data, metaFile.toPath());
+            NbtIo.write(data, metaFile);
         } catch (Exception e) {
             LDLib2.LOGGER.error("Failed to save resource {} meta file", resource, e);
         }
@@ -506,7 +506,7 @@ public class ResourceInstance<T> implements INBTSerializable<CompoundTag> {
                 entry -> entry.provider().getType().getIcon(),
                 entry -> Component.literal(entry.getResourceName())
                         .append(Component.literal(" (%s)".formatted(entry.provider().getName()))
-                                .withColor(ColorPattern.GRAY.color))));
+                                .withStyle(s -> s.withColor(ColorPattern.GRAY.color)))));
         searchComponent.getLayout().widthPercent(100);
         searchComponent.style(style -> style.tooltips(Component.translatable("resource.selector.search")));
         // refresh the snapshot on the main thread each time the search begins.

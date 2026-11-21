@@ -343,7 +343,7 @@ public class ComposeWidgetsScenario implements UIScenario {
      * returns elements in the order they were first attached, which a reorder does not change.
      */
     private static List<String> tabHeaders(TestContext ctx) {
-        var header = ctx.query().type(Tab.class).list().getFirst().as(UIElement.class);
+        var header = ctx.query().type(Tab.class).list().get(0).as(UIElement.class);
         var row = header.getParent();
         return row == null ? List.of() : row.getChildren().stream().filter(Tab.class::isInstance).map(Texts::of).toList();
     }

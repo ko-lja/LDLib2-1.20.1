@@ -25,7 +25,7 @@ final class Captions {
     /** Ends the language's current caption at {@code seconds} and, unless {@code text} is empty, starts this one. */
     void caption(String language, String text, double seconds) {
         var cues = tracks.computeIfAbsent(language, key -> new ArrayList<>());
-        if (!cues.isEmpty() && cues.getLast().end < 0) cues.getLast().end = seconds;
+        if (!cues.isEmpty() && cues.get(cues.size() - 1).end < 0) cues.get(cues.size() - 1).end = seconds;
         if (!text.isEmpty()) cues.add(new Cue(seconds, text));
     }
 

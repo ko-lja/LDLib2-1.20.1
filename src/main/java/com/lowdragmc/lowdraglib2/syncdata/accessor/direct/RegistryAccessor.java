@@ -13,8 +13,9 @@ import lombok.Getter;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.network.ByteBufCodecs;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import org.jetbrains.annotations.NotNull;
 
 @Getter
@@ -42,7 +43,7 @@ public final class RegistryAccessor<TYPE> implements IDirectAccessor<TYPE>, IMar
 
     @Override
     public <T> T readDirectVar(DynamicOps<T> op, IVar<TYPE> var) {
-        return codec.encodeStart(op, var.value()).getOrThrow();
+        return LDCodecs.getOrThrow(codec.encodeStart(op, var.value()));
     }
 
     @Override

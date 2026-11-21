@@ -4,8 +4,9 @@ import com.lowdragmc.lowdraglib2.Platform;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.readonly.IReadOnlyAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.field.ManagedKey;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.IMarkFunction;
+import com.lowdragmc.lowdraglib2.compat.serialization.JavaOps;
 import com.lowdragmc.lowdraglib2.syncdata.var.ReadOnlyVar;
-import com.mojang.serialization.JavaOps;
+import net.minecraft.resources.RegistryOps;
 
 import java.util.Objects;
 
@@ -47,7 +48,7 @@ public class ReadOnlyRef<TYPE> extends ReadOnlyManagedRef<TYPE> {
     private static <T> Object obtainValueMark(IReadOnlyAccessor<T> accessor, T value) {
         return accessor instanceof IMarkFunction markFunction ?
                 markFunction.obtainManagedMark(value) :
-                accessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), value);
+                accessor.readReadOnlyValue(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), value);
     }
 
     public IReadOnlyAccessor<TYPE> getAccessor() {
@@ -79,7 +80,7 @@ public class ReadOnlyRef<TYPE> extends ReadOnlyManagedRef<TYPE> {
                 markAsDirty();
             }
         } else {
-            var newValueMark = accessor.readReadOnlyValue(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), value);
+            var newValueMark = accessor.readReadOnlyValue(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), value);
             if (!oldValueMark.equals(newValueMark)) {
                 oldValueMark = newValueMark;
                 markAsDirty();

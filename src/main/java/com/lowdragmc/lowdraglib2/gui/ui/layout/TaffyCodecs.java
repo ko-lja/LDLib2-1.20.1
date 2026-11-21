@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.gui.ui.layout;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.gui.ui.data.*;
 import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
 import com.mojang.serialization.Codec;
@@ -20,7 +21,7 @@ public final class TaffyCodecs {
     public static final Codec<LengthPercentage> LP_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LDLibExtraCodecs.enumCodec(LengthPercentage.Type.class, LengthPercentage.Type.LENGTH)
                     .fieldOf("type").forGetter(LengthPercentage::getType),
-            Codec.FLOAT.optionalFieldOf("value", 0f).forGetter(LengthPercentage::getValue)
+            LDCodecs.optionalFieldOf(Codec.FLOAT, "value", 0f).forGetter(LengthPercentage::getValue)
     ).apply(instance, (type, value) -> switch (type) {
         case LENGTH -> LengthPercentage.length(value);
         case PERCENT -> LengthPercentage.percent(value);
@@ -101,7 +102,7 @@ public final class TaffyCodecs {
     public static final Codec<GridRepetition> GRID_REPETITION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LDLibExtraCodecs.enumCodec(GridRepetition.RepetitionType.class, GridRepetition.RepetitionType.COUNT)
                     .fieldOf("type").forGetter(GridRepetition::getType),
-            Codec.INT.optionalFieldOf("count", 0).forGetter(GridRepetition::getCount),
+            LDCodecs.optionalFieldOf(Codec.INT, "count", 0).forGetter(GridRepetition::getCount),
             TRACK_SIZING_FUNCTION_CODEC.listOf().fieldOf("tracks").forGetter(GridRepetition::getTracks)
     ).apply(instance, (type, count, tracks) -> switch (type) {
         case COUNT -> GridRepetition.count(count, tracks);
@@ -113,8 +114,8 @@ public final class TaffyCodecs {
     public static final Codec<GridTemplateComponent> GRID_TEMPLATE_COMPONENT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LDLibExtraCodecs.enumCodec(GridTemplateComponent.Type.class, GridTemplateComponent.Type.SINGLE)
                     .fieldOf("type").forGetter(GridTemplateComponent::getType),
-            TRACK_SIZING_FUNCTION_CODEC.optionalFieldOf("single").forGetter(component -> Optional.ofNullable(component.getSingle())),
-            GRID_REPETITION_CODEC.optionalFieldOf("repeat").forGetter(component -> Optional.ofNullable(component.getRepeat()))
+            LDCodecs.optionalFieldOf(TRACK_SIZING_FUNCTION_CODEC, "single").forGetter(component -> Optional.ofNullable(component.getSingle())),
+            LDCodecs.optionalFieldOf(GRID_REPETITION_CODEC, "repeat").forGetter(component -> Optional.ofNullable(component.getRepeat()))
     ).apply(instance, (type, single, repeat) -> switch (type) {
         case SINGLE -> GridTemplateComponent.single(single.orElseThrow());
         case REPEAT -> GridTemplateComponent.repeat(repeat.orElseThrow());
@@ -144,7 +145,7 @@ public final class TaffyCodecs {
     public static final Codec<LengthPercentageAuto> LPA_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LDLibExtraCodecs.enumCodec(LengthPercentageAuto.Type.class, LengthPercentageAuto.Type.AUTO)
                     .fieldOf("type").forGetter(LengthPercentageAuto::getType),
-            Codec.FLOAT.optionalFieldOf("value", 0f).forGetter(LengthPercentageAuto::getValue)
+            LDCodecs.optionalFieldOf(Codec.FLOAT, "value", 0f).forGetter(LengthPercentageAuto::getValue)
     ).apply(instance, (type, value) -> switch (type) {
         case LENGTH -> LengthPercentageAuto.length(value);
         case PERCENT -> LengthPercentageAuto.percent(value);
@@ -180,9 +181,9 @@ public final class TaffyCodecs {
     public static final Codec<GridPlacement> GRID_PLACEMENT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LDLibExtraCodecs.enumCodec(GridPlacement.Type.class, GridPlacement.Type.AUTO)
                     .fieldOf("type").forGetter(GridPlacement::getType),
-            Codec.INT.optionalFieldOf("value", 0).forGetter(GridPlacement::getValue),
-            Codec.STRING.optionalFieldOf("lineName").forGetter(placement -> Optional.ofNullable(placement.getLineName())),
-            Codec.INT.optionalFieldOf("nthIndex", 0).forGetter(GridPlacement::getNthIndex)
+            LDCodecs.optionalFieldOf(Codec.INT, "value", 0).forGetter(GridPlacement::getValue),
+            LDCodecs.optionalFieldOf(Codec.STRING, "lineName").forGetter(placement -> Optional.ofNullable(placement.getLineName())),
+            LDCodecs.optionalFieldOf(Codec.INT, "nthIndex", 0).forGetter(GridPlacement::getNthIndex)
     ).apply(instance, (type, value, lineName, nthIndex) -> switch (type) {
         case AUTO -> GridPlacement.auto();
         case LINE -> GridPlacement.line(value);
@@ -214,7 +215,7 @@ public final class TaffyCodecs {
     public static final Codec<TaffyDimension> DIMENSION_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LDLibExtraCodecs.enumCodec(TaffyDimension.Type.class, TaffyDimension.Type.AUTO)
                     .fieldOf("type").forGetter(TaffyDimension::getType),
-            Codec.FLOAT.optionalFieldOf("value", 0f).forGetter(TaffyDimension::getValue)
+            LDCodecs.optionalFieldOf(Codec.FLOAT, "value", 0f).forGetter(TaffyDimension::getValue)
     ).apply(instance, (((type, value) -> switch (type) {
         case LENGTH -> TaffyDimension.length(value);
         case PERCENT -> TaffyDimension.percent(value);

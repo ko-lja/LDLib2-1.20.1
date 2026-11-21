@@ -573,7 +573,8 @@ public abstract class NodeModel extends InputOutputPortsNodeModel implements INo
 
         // Now constants for NodeOptions have NodeOption.k_OptionIdPrefix in their id. We need to migrate constants with no prefix to the new id.
         if (!isNodeOptionConstantsMigrated() && !inputConstantsById.containsKey(portId)) {
-            if (inputConstantsById.remove(optionId) instanceof Constant oldConstant) {
+            var oldConstant = inputConstantsById.remove(optionId);
+            if (oldConstant != null) {
                 inputConstantsById.put(portId, oldConstant);
             }
         }
@@ -614,7 +615,8 @@ public abstract class NodeModel extends InputOutputPortsNodeModel implements INo
         }
 
         Constant newConstant = null;
-        if (inputConstantsById.get(id) instanceof Constant existingConstant) {
+        var existingConstant = inputConstantsById.get(id);
+        if (existingConstant != null) {
             if (graphModel != null) {
                 newConstant = graphModel.createConstantValue(inputPort.dataTypeHandle);
             }
@@ -719,8 +721,9 @@ public abstract class NodeModel extends InputOutputPortsNodeModel implements INo
         PortModel portModel = null;
         if (graphModel != null && graphModel.getModel(uid) instanceof PortModel found) {
             portModel = found;
-        } else if (ports != null && ports.get(PortModel.computeUniqueName(portId, parentPort == null ? null : parentPort.getUniqueName())) instanceof PortModel found) {
-            portModel = found;
+        } else if (ports != null) {
+            var previousPort = ports.get(PortModel.computeUniqueName(portId, parentPort == null ? null : parentPort.getUniqueName()));
+            if (previousPort != null) portModel = previousPort;
         }
         if (portModel != null) {
             var oldType = portModel.getDataTypeHandle();
@@ -755,7 +758,8 @@ public abstract class NodeModel extends InputOutputPortsNodeModel implements INo
     public PortModel getOrCreateTypeConflictPlaceholder(PortDirection direction, String basePortId) {
         var id = basePortId.endsWith(TYPE_CONFLICT_SUFFIX) ? basePortId : basePortId + TYPE_CONFLICT_SUFFIX;
         var infos = getPortInfos(direction);
-        if (infos.portsById.get(id) instanceof PortModel existing) return existing;
+        var existing = infos.portsById.get(id);
+        if (existing != null) return existing;
         return addMissingPort(direction, id, null);
     }
 
@@ -782,14 +786,12 @@ public abstract class NodeModel extends InputOutputPortsNodeModel implements INo
     }
 
     private void reviveTypeConflictPlaceholders(PortInfos infos) {
-        for (var candidate : new ArrayList<>(infos.portsById.values())) {
-            if (!(candidate instanceof PortModel placeholder)
-                    || !placeholder.getPortType().equals(PortType.MISSING_PORT)) continue;
+        for (var placeholder : new ArrayList<>(infos.portsById.values())) {
+            if (placeholder == null || !placeholder.getPortType().equals(PortType.MISSING_PORT)) continue;
             var id = placeholder.getPortId();
             if (!id.endsWith(TYPE_CONFLICT_SUFFIX)) continue;
-            var base = infos.portsById.get(id.substring(0, id.length() - TYPE_CONFLICT_SUFFIX.length()));
-            if (!(base instanceof PortModel basePort)
-                    || basePort.getPortType().equals(PortType.MISSING_PORT)) continue;
+            var basePort = infos.portsById.get(id.substring(0, id.length() - TYPE_CONFLICT_SUFFIX.length()));
+            if (basePort == null || basePort.getPortType().equals(PortType.MISSING_PORT)) continue;
             for (var wire : new ArrayList<>(placeholder.getConnectedWires())) {
                 var other = wire.getFromPort() == placeholder ? wire.getToPort() : wire.getFromPort();
                 if (other == null || other.getPortType().equals(PortType.MISSING_PORT)) continue;
@@ -880,18 +882,21 @@ public abstract class NodeModel extends InputOutputPortsNodeModel implements INo
     public void onPortUniqueNameChanged(PortModel portModel, String oldUniqueName, String newUniqueName) {
         if (portModel.getDirection() == PortDirection.INPUT) {
             inputPortInfos.portsById.changePortName(portModel, oldUniqueName);
-            if (inputConstantsById.remove(oldUniqueName) instanceof Constant constant) {
+            var constant = inputConstantsById.remove(oldUniqueName);
+            if (constant != null) {
                 if (!inputConstantsById.containsKey(newUniqueName)) {
                     inputConstantsById.put(newUniqueName, constant);
                 }
             }
-            if (inputPortInfos.expandedPortsById.remove(oldUniqueName) instanceof PortModel expandedPort) {
+            var expandedPort = inputPortInfos.expandedPortsById.remove(oldUniqueName);
+            if (expandedPort != null) {
                 inputPortInfos.expandedPortsById.putIfAbsent(newUniqueName, expandedPort);
             }
         } else {
             outputPortInfos.portsById.changePortName(portModel, oldUniqueName);
 
-            if (outputPortInfos.expandedPortsById.remove(oldUniqueName) instanceof PortModel expandedPort) {
+            var expandedPort = outputPortInfos.expandedPortsById.remove(oldUniqueName);
+            if (expandedPort != null) {
                 outputPortInfos.expandedPortsById.put(newUniqueName, expandedPort);
             }
         }

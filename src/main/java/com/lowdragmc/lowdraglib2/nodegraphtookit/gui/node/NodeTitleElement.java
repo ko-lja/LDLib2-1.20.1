@@ -82,7 +82,8 @@ public class NodeTitleElement extends ModelElement {
      */
     public void startInlineRename() {
         if (inlineRenameField != null) return;
-        if (!(nodeModel instanceof IHasName named) || !nodeModel.isRenamable()) return;
+        if (nodeModel == null || !nodeModel.isRenamable()) return;
+        IHasName named = nodeModel;
         // The rename command would be refused, so the field would only take the keystrokes and lose them.
         if (isGraphReadOnly()) return;
 

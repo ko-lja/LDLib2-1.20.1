@@ -83,7 +83,7 @@ public class SyntheticInputDriver extends InputDriver {
         placeCursor(x, y);
         var screen = screen();
         if (screen != null) {
-            screen.mouseScrolled(x, y, 0d, amount);
+            screen.mouseScrolled(x, y, amount);
         }
         if (listener != null) listener.scroll(x, y, amount);
     }

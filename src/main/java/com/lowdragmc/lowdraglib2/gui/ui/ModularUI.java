@@ -2,7 +2,6 @@ package com.lowdragmc.lowdraglib2.gui.ui;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
-import com.lowdragmc.lowdraglib2.core.mixins.accessor.MinecraftAccessor;
 import com.lowdragmc.lowdraglib2.gui.ColorPattern;
 import com.lowdragmc.lowdraglib2.gui.holder.DebugScreen;
 import com.lowdragmc.lowdraglib2.gui.ui.debugger.UIDebugger;
@@ -362,7 +361,7 @@ public class ModularUI {
     public UIElement getElementById(@Nullable String id) {
         if (id == null || id.isEmpty()) return null;
         List<UIElement> elements = elementsById.get(id);
-        return elements != null && !elements.isEmpty() ? elements.getFirst() : null;
+        return elements != null && !elements.isEmpty() ? elements.get(0) : null;
     }
 
     /**
@@ -1336,14 +1335,14 @@ public class ModularUI {
         }
 
         @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
             var current = getLastHoveredElement();
             if (current != null) {
                 var event = UIEvent.create(UIEvents.MOUSE_WHEEL);
                 event.x = (float) mouseX;
                 event.y = (float) mouseY;
-                event.deltaX = (float) scrollX;
-                event.deltaY = (float) scrollY;
+                event.deltaX = 0f;
+                event.deltaY = (float) delta;
                 event.target = current;
                 UIEventDispatcher.dispatchEvent(event);
                 return event.hasHandler;
@@ -1621,8 +1620,8 @@ public class ModularUI {
 
         private void renderFrame(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, UISurface surface) {
             // update tick
-            if (tickWhileRending && Minecraft.getInstance() instanceof MinecraftAccessor accessor) {
-                var currentTick = accessor.ldlib2$getClientTickCount();
+            if (tickWhileRending) {
+                var currentTick = Minecraft.getInstance().gui.getGuiTicks();
                 if (currentTick != lastTick) {
                     tick();
                     lastTick = currentTick;
@@ -1699,7 +1698,7 @@ public class ModularUI {
             var transform = element.getLocalToWorldPose();
             graphics.pose().pushPose();
             graphics.pose().setIdentity();
-            graphics.pose().mulPose(transform);
+            graphics.pose().mulPoseMatrix(transform);
             var posX = element.getPositionX();
             var posY = element.getPositionY();
             var sizeX = element.getSizeWidth();

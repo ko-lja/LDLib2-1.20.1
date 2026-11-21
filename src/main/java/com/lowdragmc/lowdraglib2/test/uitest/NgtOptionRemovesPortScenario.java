@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Property;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -39,7 +38,7 @@ public class NgtOptionRemovesPortScenario implements UIScenario {
 
     private static final List<String> ERRORS = new CopyOnWriteArrayList<>();
     private static final AbstractAppender APPENDER = new AbstractAppender("ngt_option_removes_port", null, null,
-            true, Property.EMPTY_ARRAY) {
+            true) {
         @Override
         public void append(LogEvent event) {
             // the graph view ticks on the render thread; an error from any other is not this scenario's

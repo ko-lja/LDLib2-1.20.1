@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.syncdata.accessor.direct;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.IMarkFunction;
 import com.lowdragmc.lowdraglib2.syncdata.field.ManagedKey;
 import com.lowdragmc.lowdraglib2.syncdata.var.FieldVar;
@@ -64,7 +65,7 @@ public class EnumAccessor implements IDirectAccessor<Enum<?>>, IMarkFunction.LAZ
 
     @Override
     public <T> void writeDirectVar(DynamicOps<T> op, IVar<Enum<?>> var, T payload) {
-        var.set(getEnum(var.getType(), op.getStringValue(payload).getOrThrow()));
+        var.set(getEnum(var.getType(), LDCodecs.getOrThrow(op.getStringValue(payload))));
     }
 
     @Override

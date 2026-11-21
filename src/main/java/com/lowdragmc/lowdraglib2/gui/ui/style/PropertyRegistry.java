@@ -13,7 +13,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.style.values.*;
 import com.mojang.serialization.Codec;
 import lombok.experimental.UtilityClass;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -129,7 +129,7 @@ public final class PropertyRegistry {
     }
 
     public static Property<Component> create(String name, Component initialValue) {
-        return create(name, Component.class, ComponentSerialization.CODEC, initialValue, ComponentValue::new);
+        return create(name, Component.class, LDCodecs.COMPONENT, initialValue, ComponentValue::new);
     }
 
     public static Property<ResourceLocation> create(String name, ResourceLocation initialValue) {

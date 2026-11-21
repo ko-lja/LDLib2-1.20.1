@@ -85,7 +85,7 @@ public record UIDebuggerWindowState(int x, int y, int width, int height, boolean
         var file = file();
         if (!file.exists()) return Optional.empty();
         try {
-            var tag = NbtIo.read(file.toPath());
+            var tag = NbtIo.read(file);
             if (tag == null) return Optional.empty();
             return Optional.of(new UIDebuggerWindowState(
                     tag.contains("x") ? tag.getInt("x") : UNPLACED,
@@ -110,7 +110,7 @@ public record UIDebuggerWindowState(int x, int y, int width, int height, boolean
         tag.putInt("height", state.height);
         tag.putBoolean("alwaysOnTop", state.alwaysOnTop);
         try {
-            NbtIo.write(tag, file().toPath());
+            NbtIo.write(tag, file());
         } catch (Exception e) {
             LDLib2.LOGGER.warn("[ui-debugger] could not save the debugger window's position", e);
         }

@@ -50,7 +50,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import net.minecraft.util.StringUtil;
+import net.minecraft.SharedConstants;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -823,7 +823,7 @@ public class TextField extends BindableUIElement<String> {
 
     protected void onCharTyped(UIEvent event) {
         if (!isEditable()) return;
-        if (StringUtil.isAllowedChatCharacter(event.codePoint) && charValidator.test(event.codePoint)) {
+        if (SharedConstants.isAllowedChatCharacter(event.codePoint) && charValidator.test(event.codePoint)) {
             this.insertText(Character.toString(event.codePoint));
         }
     }
@@ -1069,7 +1069,7 @@ public class TextField extends BindableUIElement<String> {
             if (lines.isEmpty()) {
                 formattedLineCache = new Tuple<>(FormattedCharSequence.EMPTY, 0f);
             } else {
-                formattedLineCache = lines.getFirst();
+                formattedLineCache = lines.get(0);
             }
         }
         return formattedLineCache;

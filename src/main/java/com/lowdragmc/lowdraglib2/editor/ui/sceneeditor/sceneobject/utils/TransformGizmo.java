@@ -840,7 +840,7 @@ public class TransformGizmo extends SceneObject implements ISceneRendering, ISce
     public void draw(PoseStack poseStack, MultiBufferSource bufferSource, float partialTicks) {
         if (targetTransform == null) return;
         poseStack.pushPose();
-        poseStack.mulPose(gizmoMatrix());
+        poseStack.mulPoseMatrix(gizmoMatrix());
         drawInternal(poseStack, bufferSource, partialTicks);
         poseStack.popPose();
     }
@@ -969,7 +969,7 @@ public class TransformGizmo extends SceneObject implements ISceneRendering, ISce
         // The ball's outline, the outer ring and the angle indicator all face the camera rather than the
         // gizmo, so they are built in world space with the gizmo matrix undone.
         poseStack.pushPose();
-        poseStack.mulPose(gizmoMatrix().invert());
+        poseStack.mulPoseMatrix(gizmoMatrix().invert());
         drawBallOutline(poseStack, bufferSource);
         if (isScreenRingVisible()) {
             drawScreenRing(poseStack, bufferSource);

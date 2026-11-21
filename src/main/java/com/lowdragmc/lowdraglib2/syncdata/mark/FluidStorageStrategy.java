@@ -29,6 +29,6 @@ final class FluidStorageStrategy implements IMarkStrategy<FluidStorage, FluidSto
 
     @Override
     public boolean areDifferent(@NotNull Mark managedMark, @NotNull FluidStorage value) {
-        return managedMark.capacity != value.getCapacity() || !FluidStack.matches(managedMark.fluid, value.getFluid());
+        return managedMark.capacity != value.getCapacity() || !managedMark.fluid.isFluidStackIdentical(value.getFluid());
     }
 }

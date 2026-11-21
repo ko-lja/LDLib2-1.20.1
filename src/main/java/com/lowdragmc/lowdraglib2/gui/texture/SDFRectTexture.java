@@ -137,8 +137,8 @@ public class SDFRectTexture extends TransformTexture {
         var mat = pose.last().pose();
 
         var modelView = RenderSystem.getModelViewStack();
-        modelView.pushMatrix();
-        modelView.mul(mat);
+        modelView.pushPose();
+        modelView.mulPoseMatrix(mat);
         RenderSystem.applyModelViewMatrix();
 
         RenderSystem.enableBlend();
@@ -163,20 +163,21 @@ public class SDFRectTexture extends TransformTexture {
             shader.safeGetUniform("BorderColor").set(borderVec);
         }
 
-        var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, POSITION);
+        var buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.QUADS, POSITION);
 
         // a margin past the shape, so the anti-aliased edge has pixels to fade out on
         var quadHalfWidth = halfWidth + AA_MARGIN;
         var quadHalfHeight = halfHeight + AA_MARGIN;
-        buffer.addVertex(-quadHalfWidth, quadHalfHeight, 0);
-        buffer.addVertex(quadHalfWidth, quadHalfHeight, 0);
-        buffer.addVertex(quadHalfWidth, -quadHalfHeight, 0);
-        buffer.addVertex(-quadHalfWidth, -quadHalfHeight, 0);
-        BufferUploader.drawWithShader(buffer.buildOrThrow());
+        buffer.vertex(-quadHalfWidth, quadHalfHeight, 0).endVertex();
+        buffer.vertex(quadHalfWidth, quadHalfHeight, 0).endVertex();
+        buffer.vertex(quadHalfWidth, -quadHalfHeight, 0).endVertex();
+        buffer.vertex(-quadHalfWidth, -quadHalfHeight, 0).endVertex();
+        BufferUploader.drawWithShader(buffer.end());
         // back to what the GUI draws with: a blit after this one sets no blend function of its own
         RenderSystem.defaultBlendFunc();
 
-        modelView.popMatrix();
+        modelView.popPose();
         RenderSystem.applyModelViewMatrix();
         pose.popPose();
     }

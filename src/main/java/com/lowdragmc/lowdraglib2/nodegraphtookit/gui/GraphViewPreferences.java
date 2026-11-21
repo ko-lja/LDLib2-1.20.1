@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.nodegraphtookit.gui;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.google.gson.JsonParser;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.gui.wire.WireRouteStyle;
@@ -72,10 +73,10 @@ public final class GraphViewPreferences {
          * preference nobody set is not a preference.</p>
          */
         public static final Codec<Entry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Codec.BOOL.optionalFieldOf("snap_to_grid", DEFAULTS.snapToGrid()).forGetter(Entry::snapToGrid),
-                Codec.FLOAT.optionalFieldOf("grid_size", DEFAULTS.gridSnapSize()).forGetter(Entry::gridSnapSize),
-                Codec.BOOL.optionalFieldOf("snap_to_elements", DEFAULTS.snapToElements()).forGetter(Entry::snapToElements),
-                WIRE_STYLE.optionalFieldOf("wire_style", DEFAULTS.wireStyle()).forGetter(Entry::wireStyle)
+                LDCodecs.optionalFieldOf(Codec.BOOL, "snap_to_grid", DEFAULTS.snapToGrid()).forGetter(Entry::snapToGrid),
+                LDCodecs.optionalFieldOf(Codec.FLOAT, "grid_size", DEFAULTS.gridSnapSize()).forGetter(Entry::gridSnapSize),
+                LDCodecs.optionalFieldOf(Codec.BOOL, "snap_to_elements", DEFAULTS.snapToElements()).forGetter(Entry::snapToElements),
+                LDCodecs.optionalFieldOf(WIRE_STYLE, "wire_style", DEFAULTS.wireStyle()).forGetter(Entry::wireStyle)
         ).apply(instance, Entry::new));
     }
 

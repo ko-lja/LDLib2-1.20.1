@@ -137,7 +137,7 @@ public class ResourceProviderFromFolderScenario implements UIScenario {
 
                 .group("the sort menu orders the grid by name", g -> g
                         .step("open the sort menu", ctx -> {
-                            var button = grid(ctx).toolbar.getChildren().getFirst();
+                            var button = grid(ctx).toolbar.getChildren().get(0);
                             var x = button.getPositionX() + button.getSizeWidth() / 2f;
                             var y = button.getPositionY() + button.getSizeHeight() / 2f;
                             ctx.input().moveTo(x, y);
@@ -274,7 +274,7 @@ public class ResourceProviderFromFolderScenario implements UIScenario {
     }
 
     private static String labelOf(UIElement cell) {
-        return cell.getChildren().isEmpty() || !(cell.getChildren().getLast() instanceof TextElement label)
+        return cell.getChildren().isEmpty() || !(cell.getChildren().get(cell.getChildren().size() - 1) instanceof TextElement label)
                 ? "" : label.getText().getString();
     }
 

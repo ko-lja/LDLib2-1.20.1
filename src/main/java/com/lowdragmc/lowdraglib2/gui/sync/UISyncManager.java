@@ -11,8 +11,7 @@ import com.lowdragmc.lowdraglib2.utils.IdentityMap;
 import lombok.Getter;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.PacketDistributor;
-import org.apache.commons.lang3.function.Consumers;
+import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -143,7 +142,7 @@ public class UISyncManager {
     }
 
     public void sendEvent(RPCEvent event, Object... args) {
-        sendEvent(event, Consumers.nop(), args);
+        sendEvent(event, (Consumer<Object>) x -> {}, args);
     }
 
     public <T> void sendEvent(RPCEvent event, Consumer<T> responseCallback, Object... args) {

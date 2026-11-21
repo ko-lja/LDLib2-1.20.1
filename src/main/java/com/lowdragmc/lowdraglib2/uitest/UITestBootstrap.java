@@ -5,7 +5,7 @@ import com.lowdragmc.lowdraglib2.Platform;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.client.event.RenderFrameEvent;
+import net.minecraftforge.event.TickEvent;
 
 /**
  * The frame pump, plus a watchdog so a hung game still produces a report.
@@ -26,7 +26,8 @@ public final class UITestBootstrap {
      * captures taken from it are valid.
      */
     @SubscribeEvent
-    public static void onFrameRendered(RenderFrameEvent.Post event) {
+    public static void onFrameRendered(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         // The scenario registry only exists in a dev environment, so outside one this hook can never
         // have anything to do — do not even class-load the runner on a production client.
         if (!Platform.isDevEnv()) return;

@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.syncdata.ref;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.IAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.field.ManagedKey;
 import com.lowdragmc.lowdraglib2.syncdata.var.IReadOnlyManagedVar;
@@ -7,6 +8,7 @@ import com.lowdragmc.lowdraglib2.syncdata.var.ReadOnlyVar;
 import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
 import com.mojang.serialization.DynamicOps;
 import lombok.Getter;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -91,7 +93,9 @@ public abstract class ReadOnlyManagedRef<TYPE> extends Ref<TYPE> {
                 buffer.writeBoolean(true);
             } else {
                 buffer.writeBoolean(false);
-                buffer.writeNbt(getReadOnlyVar().getManagedVar().serializeUid(value));
+                var uidWrapper = new CompoundTag();
+                uidWrapper.put("uid", getReadOnlyVar().getManagedVar().serializeUid(value));
+                buffer.writeNbt(uidWrapper);
                 readReadOnlySyncToStream(buffer);
             }
         } else {
@@ -111,7 +115,7 @@ public abstract class ReadOnlyManagedRef<TYPE> extends Ref<TYPE> {
             if (buffer.readBoolean()) {
                 field.set(null);
             } else {
-                var uid = buffer.readNbt(NbtAccounter.unlimitedHeap());
+                var uid = buffer.readNbt(NbtAccounter.UNLIMITED).get("uid");
                 var value = readRaw();
                 var managedVar = field.getManagedVar();
                 if (value == null || !managedVar.serializeUid(value).equals(uid)) {
@@ -139,10 +143,10 @@ public abstract class ReadOnlyManagedRef<TYPE> extends Ref<TYPE> {
             }
             var field = getReadOnlyVar();
             assert field.getManagedVar() != null;
-            return op.mapBuilder()
+            return LDCodecs.getOrThrow(op.mapBuilder()
                     .add("uid", NbtOps.INSTANCE.convertTo(op, field.getManagedVar().serializeUid(value)))
                     .add("payload", readReadOnlySync(op))
-                    .build(op.empty()).getOrThrow();
+                    .build(op.empty()));
         } else {
             return readReadOnlySync(op);
         }
@@ -187,10 +191,10 @@ public abstract class ReadOnlyManagedRef<TYPE> extends Ref<TYPE> {
             if (value == null) {
                 return LDLibExtraCodecs.createStringNull(op);
             }
-            return op.mapBuilder()
+            return LDCodecs.getOrThrow(op.mapBuilder()
                     .add("uid", NbtOps.INSTANCE.convertTo(op, field.getManagedVar().serializeUid(value)))
                     .add("payload", readReadOnlyPersisted(op))
-                    .build(op.empty()).getOrThrow();
+                    .build(op.empty()));
         } else {
             return readReadOnlyPersisted(op);
         }

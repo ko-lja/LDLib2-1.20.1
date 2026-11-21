@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.syncdata.ref;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.syncdata.IManaged;
 import com.lowdragmc.lowdraglib2.syncdata.accessor.readonly.IManagedObjectAccessor;
 import com.lowdragmc.lowdraglib2.syncdata.field.ManagedKey;
@@ -85,7 +86,7 @@ public class IManagedReadOnlyRef extends ReadOnlyRef<IManaged> {
     @Override
     public <T> void writeReadOnlyPersisted(DynamicOps<T> op, T payload) {
         var persistedFields = getManaged().getSyncStorage().getPersistedFields();
-        var map = op.getMap(payload).getOrThrow();
+        var map = LDCodecs.getOrThrow(op.getMap(payload));
         for (IRef<?> persistedField : persistedFields) {
             var key = persistedField.getPersistedKey();
             var data = map.get(op.createString(key));
@@ -108,7 +109,7 @@ public class IManagedReadOnlyRef extends ReadOnlyRef<IManaged> {
     @Override
     public <T> void writeReadOnlySync(DynamicOps<T> op, T payload) {
         var syncedFields = getManaged().getSyncStorage().getSyncFields();
-        var list = op.getStream(payload).getOrThrow().toList();
+        var list = LDCodecs.getOrThrow(op.getStream(payload)).toList();
         if (list.size() != syncedFields.length) {
             throw new IllegalArgumentException("Size of list does not match size of synced fields");
         }

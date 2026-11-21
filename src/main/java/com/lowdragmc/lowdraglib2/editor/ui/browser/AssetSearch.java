@@ -48,7 +48,19 @@ public final class AssetSearch {
         this.query = query.toLowerCase(Locale.ROOT);
         this.resourceExtensions = List.copyOf(resourceExtensions);
         this.limit = limit;
-        this.thread = async ? Thread.ofVirtual().name("ldlib2-asset-search").start(this::run) : null;
+        this.thread = async ? startDaemon("ldlib2-asset-search", this::run) : null;
+    }
+
+    private static Thread startDaemon(String name, Runnable runnable) {
+        Thread thread = unstartedDaemon(name, runnable);
+        thread.start();
+        return thread;
+    }
+
+    private static Thread unstartedDaemon(String name, Runnable runnable) {
+        Thread thread = new Thread(runnable, name);
+        thread.setDaemon(true);
+        return thread;
     }
 
     /**

@@ -59,7 +59,7 @@ public class UIEditorHistoryScenario implements UIScenario {
                         .step("focus the editor", ctx -> view(ctx).focus())
                         .key(GLFW.GLFW_KEY_Z, Keys.MOD_CONTROL)
                         .checkEquals("undo puts a back first", List.of("a", "b", "c"), UIEditorHistoryScenario::panelIds)
-                        .check("as the same element", ctx -> panel(ctx).getChildren().getFirst() == ctx.get(A))
+                        .check("as the same element", ctx -> panel(ctx).getChildren().get(0) == ctx.get(A))
                         .key(GLFW.GLFW_KEY_Y, Keys.MOD_CONTROL)
                         .checkEquals("redo removes it again", List.of("b", "c"), UIEditorHistoryScenario::panelIds)
                         .key(GLFW.GLFW_KEY_Z, Keys.MOD_CONTROL)
@@ -73,7 +73,7 @@ public class UIEditorHistoryScenario implements UIScenario {
                         .step("paste into the panel", ctx -> {
                             view(ctx).focusElement(panel(ctx));
                             view(ctx).hierarchy.pasteToSelected();
-                            ctx.put(PASTED, panel(ctx).getChildren().getLast());
+                            ctx.put(PASTED, panel(ctx).getChildren().get(panel(ctx).getChildren().size() - 1));
                         })
                         .checkEquals("the copy is appended", List.of("a", "b", "c", "b"), UIEditorHistoryScenario::panelIds)
                         .step("focus the editor", ctx -> view(ctx).focus())
@@ -81,7 +81,7 @@ public class UIEditorHistoryScenario implements UIScenario {
                         .checkEquals("undo takes the copy out", List.of("a", "b", "c"), UIEditorHistoryScenario::panelIds)
                         .check("and leaves the original children in place", ctx -> sameChildren(ctx, A, B, C))
                         .key(GLFW.GLFW_KEY_Y, Keys.MOD_CONTROL)
-                        .check("redo brings the same copy back", ctx -> panel(ctx).getChildren().getLast() == ctx.get(PASTED))
+                        .check("redo brings the same copy back", ctx -> panel(ctx).getChildren().get(panel(ctx).getChildren().size() - 1) == ctx.get(PASTED))
                         .key(GLFW.GLFW_KEY_Z, Keys.MOD_CONTROL))
 
                 .group("a property edit on the container and a structural edit undo and redo together", g -> g
@@ -165,7 +165,7 @@ public class UIEditorHistoryScenario implements UIScenario {
                             var tabs = tabs(ctx);
                             view(ctx).focusElement(tabs);
                             view(ctx).hierarchy.pasteToSelected();
-                            var pasted = tabs.tabScroller.viewContainer.getChildren().getLast();
+                            var pasted = tabs.tabScroller.viewContainer.getChildren().get(tabs.tabScroller.viewContainer.getChildren().size() - 1);
                             ctx.put(PASTED_TAB, pasted);
                             ctx.put(PASTED_CONTENT, tabs.getTabContents().get(pasted));
                         })
@@ -201,7 +201,7 @@ public class UIEditorHistoryScenario implements UIScenario {
 
     private static UIElement panel(TestContext ctx) {
         var root = view(ctx).getCurrentUI().rootElement;
-        return root.getChildren().getFirst();
+        return root.getChildren().get(0);
     }
 
     private static TabView tabs(TestContext ctx) {

@@ -15,6 +15,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
@@ -104,7 +105,7 @@ public class TypeConstant extends Constant {
                 tag.putString("type", constant.getTypeHandle().getIdentification());
             }
             if (!constant.isSerializationEnabled()) return tag;
-            var ops = provider.createSerializationContext(NbtOps.INSTANCE);
+            var ops = RegistryOps.create(NbtOps.INSTANCE, provider);
             if (constant.getValue() != null) {
                 encodeField(constant, ops, constant.getValue(), "value").ifPresent(t -> tag.put("value", t));
             }
@@ -196,7 +197,7 @@ public class TypeConstant extends Constant {
     private static void decodeFieldsInto(Constant target, HolderLookup.Provider provider, CompoundTag tag) {
         DynamicOps<Tag> ops;
         try {
-            ops = provider.createSerializationContext(NbtOps.INSTANCE);
+            ops = RegistryOps.create(NbtOps.INSTANCE, provider);
         } catch (Exception e) {
             LDLib2.LOGGER.error("Could not build serialization context for constant decode", e);
             target.setDeserializeFailed(true);
@@ -254,7 +255,7 @@ public class TypeConstant extends Constant {
         try {
             var holder = new SyncValueHolder<>(fieldName, constant.getType(), value);
             var serialized = holder.ref.readPersisted(ops);
-            return serialized instanceof Tag nbtTag ? Optional.of(nbtTag) : Optional.empty();
+            return serialized != null ? Optional.of(serialized) : Optional.empty();
         } catch (Exception e) {
             LDLib2.LOGGER.error("Failed to serialize constant {} of type {}", fieldName, safeTypeName(constant), e);
             return Optional.empty();

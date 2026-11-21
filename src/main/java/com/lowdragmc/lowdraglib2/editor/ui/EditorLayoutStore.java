@@ -95,7 +95,7 @@ public final class EditorLayoutStore {
                 floatingScales.forEach(scales::putInt);
                 tag.put(FLOATING_SCALES_KEY, scales);
             }
-            NbtIo.write(tag, getFile(projectTypeName).toPath());
+            NbtIo.write(tag, getFile(projectTypeName));
         } catch (Exception ignored) {}
     }
 
@@ -159,7 +159,7 @@ public final class EditorLayoutStore {
         var file = getFile(projectTypeName);
         if (!file.exists()) return Optional.empty();
         try {
-            return Optional.ofNullable(NbtIo.read(file.toPath()));
+            return Optional.ofNullable(NbtIo.read(file));
         } catch (Exception e) {
             return Optional.empty();
         }

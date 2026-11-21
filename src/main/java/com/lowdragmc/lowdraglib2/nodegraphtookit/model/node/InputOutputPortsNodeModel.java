@@ -104,6 +104,6 @@ public abstract class InputOutputPortsNodeModel extends PortNodeModel {
     @Override
     public PortModel getPortFitToConnectTo(PortModel portModel) {
         var compatiblePorts = getPortsFitToConnectTo(portModel);
-        return compatiblePorts.isEmpty() ? null : compatiblePorts.getFirst();
+        return compatiblePorts.isEmpty() ? null : compatiblePorts.get(0);
     }
 }

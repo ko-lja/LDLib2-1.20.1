@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.uitest.record;
 
+import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,12 +25,11 @@ final class ServerPace {
 
     void await(@Nullable MinecraftServer server, boolean paused, double videoSeconds) {
         if (server == null) return;
-        var rate = server.tickRateManager();
-        if (baseTicks < 0 || paused || rate.isFrozen() || rate.isSprinting()) {
+        if (baseTicks < 0 || paused) {
             rebase(server, videoSeconds);
             return;
         }
-        long expected = baseTicks + (long) ((videoSeconds - baseSeconds) * rate.tickrate());
+        long expected = baseTicks + (long) ((videoSeconds - baseSeconds) * SharedConstants.TICKS_PER_SECOND);
         if (expected - server.getTickCount() > MAX_BEHIND) {
             rebase(server, videoSeconds);
             return;

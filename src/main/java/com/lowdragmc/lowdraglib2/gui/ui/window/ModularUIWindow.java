@@ -19,7 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.ClientHooks;
+import net.minecraftforge.client.ForgeHooksClient;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
@@ -432,7 +432,7 @@ public class ModularUIWindow implements OsWindowHost {
             }
         } else if (event instanceof OsWindowEvent.Scroll scroll) {
             modularUI.refreshHoveredElementAtScreen(mouseX, mouseY);
-            widget.mouseScrolled(mouseX, mouseY, scroll.deltaX(), scroll.deltaY());
+            widget.mouseScrolled(mouseX, mouseY, scroll.deltaY());
         } else if (event instanceof OsWindowEvent.Key key) {
             if (key.action() == GLFW.GLFW_RELEASE) {
                 widget.keyReleased(key.key(), key.scancode(), key.mods());
@@ -715,14 +715,14 @@ public class ModularUIWindow implements OsWindowHost {
             RenderSystem.disableBlend();
 
             // The gui projection Minecraft sets up for its own frame, against our target's size.
-            var farPlane = ClientHooks.getGuiFarPlane();
+            var farPlane = ForgeHooksClient.getGuiFarPlane();
             var projection = new Matrix4f().setOrtho(0f,
                     (float) (target.width / guiScale),
                     (float) (target.height / guiScale),
                     0f, 1000f, farPlane);
             RenderSystem.setProjectionMatrix(projection, VertexSorting.ORTHOGRAPHIC_Z);
-            modelView.pushMatrix();
-            modelView.translation(0f, 0f, 10000f - farPlane);
+            modelView.pushPose();
+            modelView.last().pose().translation(0f, 0f, 10000f - farPlane);
             RenderSystem.applyModelViewMatrix();
             Lighting.setupFor3DItems();
 
@@ -730,7 +730,7 @@ public class ModularUIWindow implements OsWindowHost {
             renderContents(graphics, partialTick);
             graphics.flush();
 
-            modelView.popMatrix();
+            modelView.popPose();
             RenderSystem.applyModelViewMatrix();
         } finally {
             RenderSystem.restoreProjectionMatrix();

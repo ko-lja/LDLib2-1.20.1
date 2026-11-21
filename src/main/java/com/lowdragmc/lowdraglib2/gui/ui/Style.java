@@ -11,6 +11,7 @@ import lombok.Setter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -255,7 +256,7 @@ public abstract class Style implements IConfigurable, IPersistedSerializable {
         for (Property<?> property : getProperties()) {
             var inline = getInline(property);
             if (inline != null) {
-                tag.put(property.name, property.codec.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), cast(inline)).result().orElseThrow());
+                tag.put(property.name, property.codec.encodeStart(RegistryOps.create(NbtOps.INSTANCE, provider), cast(inline)).result().orElseThrow());
             }
         }
         return tag;
@@ -266,7 +267,7 @@ public abstract class Style implements IConfigurable, IPersistedSerializable {
         IPersistedSerializable.super.deserializeNBT(provider, tag);
         for (Property<?> property : getProperties()) {
             if (!tag.contains(property.name)) continue;
-            property.codec.parse(provider.createSerializationContext(NbtOps.INSTANCE), tag.get(property.name)).result()
+            property.codec.parse(RegistryOps.create(NbtOps.INSTANCE, provider), tag.get(property.name)).result()
                     .ifPresent(value -> set(property, cast(value)));
         }
     }

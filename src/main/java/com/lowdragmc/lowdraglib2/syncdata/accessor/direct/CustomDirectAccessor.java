@@ -11,10 +11,12 @@ import com.lowdragmc.lowdraglib2.syncdata.var.FieldVar;
 import com.lowdragmc.lowdraglib2.syncdata.var.IVar;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.serialization.JavaOps;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
+import net.minecraft.resources.RegistryOps;
 import lombok.Getter;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,12 +58,12 @@ public class CustomDirectAccessor<TYPE> implements IDirectAccessor<TYPE>, IMarkF
 
     @Override
     public <T> T readDirectVar(DynamicOps<T> op, IVar<TYPE> var) {
-        return codec.encodeStart(op, var.value()).getOrThrow();
+        return LDCodecs.getOrThrow(codec.encodeStart(op, var.value()));
     }
 
     @Override
     public <T> void writeDirectVar(DynamicOps<T> op, IVar<TYPE> var, T payload) {
-        var.set(codec.parse(op, payload).getOrThrow());
+        var.set(LDCodecs.getOrThrow(codec.parse(op, payload)));
     }
 
     @Override
@@ -109,7 +111,7 @@ public class CustomDirectAccessor<TYPE> implements IDirectAccessor<TYPE>, IMarkF
         private static final Object EMPTY = new Object();
 
         private Object encode(T value) {
-            var encoded = codec.encodeStart(Platform.getFrozenRegistry().createSerializationContext(JavaOps.INSTANCE), value).getOrThrow();
+            var encoded = LDCodecs.getOrThrow(codec.encodeStart(RegistryOps.create(JavaOps.INSTANCE, Platform.getFrozenRegistry()), value));
             return encoded == null ? EMPTY : encoded;
         }
 

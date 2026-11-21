@@ -13,9 +13,10 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraftforge.network.PacketDistributor;
+import com.lowdragmc.lowdraglib2.compat.network.CustomPacketPayload;
+import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
 
 import java.util.BitSet;
 import java.util.concurrent.RejectedExecutionException;
@@ -128,7 +129,7 @@ public interface ISyncMangedHolder extends IManagedHolder, IAsyncLogic {
 
         var list = new ListTag();
         var syncedFields = getRootStorage().getSyncFields();
-        var ctx = provider.createSerializationContext(NbtOps.INSTANCE);
+        var ctx = RegistryOps.create(NbtOps.INSTANCE, provider);
         for (IRef<?> syncedField : syncedFields) {
             list.add(TagBuilder.compound().add("d", syncedField.readInitialSync(ctx)).build());
         }
@@ -150,7 +151,7 @@ public interface ISyncMangedHolder extends IManagedHolder, IAsyncLogic {
         if (syncedFields.length != list.size()) {
             throw new IllegalStateException("Synced fields count mismatch");
         }
-        var ctx = provider.createSerializationContext(NbtOps.INSTANCE);
+        var ctx = RegistryOps.create(NbtOps.INSTANCE, provider);
         for (int i = 0; i < list.size(); i++) {
             var data = list.getCompound(i).get("d");
             syncedFields[i].writeInitialSync(ctx, data);

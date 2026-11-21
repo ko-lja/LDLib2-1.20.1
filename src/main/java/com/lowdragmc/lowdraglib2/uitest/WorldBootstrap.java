@@ -84,8 +84,7 @@ public final class WorldBootstrap {
         minecraft.createWorldOpenFlows().createFreshLevel(worldName, settings,
                 new WorldOptions(0L, false, false),
                 registryAccess -> registryAccess.registryOrThrow(Registries.WORLD_PRESET)
-                        .getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions(),
-                null);
+                        .getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions());
     }
 
     /**

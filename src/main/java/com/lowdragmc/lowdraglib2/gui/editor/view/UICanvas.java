@@ -87,7 +87,7 @@ public class UICanvas extends UIElement {
 
     protected void onMouseWheel(UIEvent event) {
         if (this.canvasModularUI == null) return;
-        this.canvasModularUI.getWidget().mouseScrolled(event.x, event.y, event.deltaX, event.deltaY);
+        this.canvasModularUI.getWidget().mouseScrolled(event.x, event.y, event.deltaY);
         event.stopPropagation();
     }
 

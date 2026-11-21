@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.nodegraphtookit.model.node;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.api.port.PortDirection;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.api.type.TypeHandle;
 import com.lowdragmc.lowdraglib2.nodegraphtookit.api.type.TypeHandles;
@@ -78,9 +79,9 @@ public class VariableNodeModel extends NodeModel implements ISingleInputPortNode
     public DeclarationModel getDeclarationModel() {
         if (declarationModel == null) {
             var result = PlaceholderModelHelper.tryGetPlaceholderGraphElementModel(graphModel, declarationModelUid);
-            if (result.isSuccess()) {
+            if (result.result().isPresent()) {
                 PlaceholderModelHelper.setPlaceholderCapabilities(this);
-                return (DeclarationModel) result.getOrThrow();
+                return (DeclarationModel) LDCodecs.getOrThrow(result);
             }
         }
         return declarationModel;

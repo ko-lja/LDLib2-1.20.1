@@ -98,7 +98,7 @@ public class SceneEditor extends UIElement implements IScene {
         });
         this.scene.setAfterWorldRender(scene -> {
             var mc = Minecraft.getInstance();
-            var partialTicks = mc.getTimer().getGameTimeDeltaPartialTick(false);
+            var partialTicks = mc.getFrameTime();
             SceneEditor.this.renderAfterWorld(mc.renderBuffers().bufferSource(), partialTicks);
         });
 

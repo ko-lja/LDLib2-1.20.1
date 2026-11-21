@@ -326,7 +326,7 @@ public class DirectFileResolutionTest {
         var tag = new CompoundTag();
         tag.putString("type", type);
         tag.put("data", IntTag.valueOf(value));
-        NbtIo.write(tag, file.toPath());
+        NbtIo.write(tag, file);
     }
 
     private static void deleteRecursively(File file) {

@@ -14,6 +14,7 @@ import com.lowdragmc.lowdraglib2.uitest.capture.FrameCapture;
 import com.lowdragmc.lowdraglib2.uitest.input.Keys;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 import static com.lowdragmc.lowdraglib2.test.uitest.UIDebuggerScenario.*;
@@ -234,6 +235,6 @@ public class UIDebuggerWindowScenario implements UIScenario {
     }
 
     private static int clamp(int value, int limit) {
-        return Math.clamp(value, 0, limit - 1);
+        return Mth.clamp(value, 0, limit - 1);
     }
 }

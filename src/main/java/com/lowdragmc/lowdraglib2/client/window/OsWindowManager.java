@@ -8,6 +8,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import org.lwjgl.glfw.GLFW;
@@ -132,9 +133,10 @@ public final class OsWindowManager {
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
-    public static void onFrameRendered(RenderFrameEvent.Post event) {
+    public static void onFrameRendered(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
         if (ENTRIES.isEmpty()) return;
-        var partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
+        var partialTick = event.renderTickTime;
         // Copy: a host can close itself (or another) while being driven — a close button runs inside
         // drainInput, so by the time it returns this host may already be gone.
         for (var host : List.copyOf(ENTRIES.keySet())) {

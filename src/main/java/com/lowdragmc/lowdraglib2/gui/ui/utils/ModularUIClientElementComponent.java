@@ -29,7 +29,7 @@ public record ModularUIClientElementComponent(ModularUITooltipComponent modularU
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0);
         modularUITooltipComponent.modularUI.getWidget()
-                .render(graphics, 0, 0, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false));
+                .render(graphics, 0, 0, Minecraft.getInstance().getFrameTime());
         graphics.pose().popPose();
     }
 }

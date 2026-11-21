@@ -389,8 +389,8 @@ public final class UITestRunner {
                 phase = Phase.MP_AWAIT_JOIN;
                 ConnectScreen.startConnecting(new TitleScreen(), minecraft,
                         new ServerAddress("127.0.0.1", gamePort),
-                        new ServerData("LDLib2 MP Test", "127.0.0.1:" + gamePort, ServerData.Type.OTHER),
-                        false, null);
+                        new ServerData("LDLib2 MP Test", "127.0.0.1:" + gamePort, false),
+                        false);
             }
             case MP_AWAIT_JOIN -> {
                 assert mpSession != null;
@@ -851,7 +851,7 @@ public final class UITestRunner {
         var message = "take '" + takeName + "' was cut short: " + open.summary() + " -> " + open.video();
         LDLib2.LOGGER.warn("[uitest] {}", message);
         if (!run.report.steps.isEmpty()) {
-            run.report.steps.getLast().log.add(message);
+            run.report.steps.get(run.report.steps.size() - 1).log.add(message);
         }
     }
 
@@ -1114,7 +1114,7 @@ public final class UITestRunner {
         var window = minecraft.getWindow();
         var environment = report.environment;
         environment.minecraft = FMLLoader.versionInfo().mcVersion();
-        environment.neoforge = FMLLoader.versionInfo().neoForgeVersion();
+        environment.neoforge = FMLLoader.versionInfo().forgeVersion();
         environment.java = System.getProperty("java.version", "");
         environment.os = System.getProperty("os.name", "") + " " + System.getProperty("os.version", "");
         environment.guiScale = (int) window.getGuiScale();

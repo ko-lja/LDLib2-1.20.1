@@ -29,10 +29,10 @@ import lombok.Setter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.function.Consumers;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -73,7 +73,7 @@ public class UIHierarchy extends UIElement {
 
     // runtime
     @Setter
-    protected Consumer<Set<UITreeNode>> onSelectedChanged = Consumers.nop();
+    protected Consumer<Set<UITreeNode>> onSelectedChanged = x -> {};
     @Setter @Nullable
     private IHistoryStack historyStack;
 
@@ -395,7 +395,7 @@ public class UIHierarchy extends UIElement {
         if (!isSelectedNodeValid(nodes)) return;
         var tags = nodes.stream()
                 .sorted(Comparator.comparingInt(node -> node.getKey().getSiblingIndex()))
-                .map(node -> CODEC.encodeStart(Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE), node.key)
+                .map(node -> CODEC.encodeStart(RegistryOps.create(NbtOps.INSTANCE, Platform.getFrozenRegistry()), node.key)
                         .result().orElse(null))
                 .filter(Objects::nonNull)
                 .filter(CompoundTag.class::isInstance)
@@ -414,7 +414,7 @@ public class UIHierarchy extends UIElement {
             List<CompoundTag> copiedNodes = nodeCopy.copiedNodes();
             var added = new ArrayList<UIElement>();
             copiedNodes.forEach(tag -> {
-                CODEC.parse(Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE), tag).result().ifPresent(element -> {
+                CODEC.parse(RegistryOps.create(NbtOps.INSTANCE, Platform.getFrozenRegistry()), tag).result().ifPresent(element -> {
                     parent.addEditorChild(element, -1);
                     added.add(element);
                 });

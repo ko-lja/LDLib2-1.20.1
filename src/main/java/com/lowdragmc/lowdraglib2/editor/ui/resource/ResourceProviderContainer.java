@@ -819,7 +819,7 @@ public class ResourceProviderContainer<T> extends UIElement {
             return;
         }
         // The current provider when it can take the copy — the old behaviour, still the common case.
-        var defaultTarget = targets.contains(resourceProvider) ? resourceProvider : targets.getFirst();
+        var defaultTarget = targets.contains(resourceProvider) ? resourceProvider : targets.get(0);
         showCopyDialog(targets, defaultTarget, resourceProvider.getResourceName(key) + "_copy",
                 (target, name) -> copyResourceTo(copied, target, name));
     }
@@ -984,7 +984,7 @@ public class ResourceProviderContainer<T> extends UIElement {
     public static void startInlineRename(UIElement cell, String initial,
                                          Predicate<Character> charValidator, Consumer<String> onCommit) {
         if (cell == null || cell.getChildren().isEmpty()) return;
-        if (!(cell.getChildren().getLast() instanceof Label label)) return;
+        if (!(cell.getChildren().get(cell.getChildren().size() - 1) instanceof Label label)) return;
         var textField = new TextField().setText(initial).setCharValidator(charValidator);
         var cancelled = new boolean[1];
         textField.addEventListener(UIEvents.BLUR, e -> {

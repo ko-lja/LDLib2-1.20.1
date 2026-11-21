@@ -343,7 +343,7 @@ public class PortModel extends GraphElementModel implements IPort, IHasDisplayNa
      */
     public Tooltips getDefaultTooltips() {
         return Tooltips.of(getTitle().copy().append(" (")
-                .append(Component.literal(dataTypeHandle.getFriendlyName()).withColor(dataTypeHandle.getTypeColor()))
+                .append(Component.literal(dataTypeHandle.getFriendlyName()).withStyle(s -> s.withColor(dataTypeHandle.getTypeColor())))
                 .append(")")
         );
     }

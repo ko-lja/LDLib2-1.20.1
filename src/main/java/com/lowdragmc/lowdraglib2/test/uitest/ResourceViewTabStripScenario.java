@@ -247,7 +247,7 @@ public class ResourceViewTabStripScenario implements UIScenario {
                         g.step("no tab is cut off by the strip", ResourceViewTabStripScenario::checkTabsFit);
                         g.check("the browser tab is still at the head of it", ctx -> {
                             var view = resourceView(ctx);
-                            return view.tabView.tabHeaderContainer.getChildren().getFirst()
+                            return view.tabView.tabHeaderContainer.getChildren().get(0)
                                     == view.getAssetBrowserTab()
                                     && view.tabView.tabHeaderContainer.getChildren().get(1)
                                     == view.pinnedTabSeparator;
@@ -523,7 +523,7 @@ public class ResourceViewTabStripScenario implements UIScenario {
             ctx.check("exactly one drop marker is showing", markers.size() == 1, 1, markers.size());
             if (markers.size() == 1) {
                 var container = resourceView(ctx).tabView.tabScroller.viewContainer;
-                ctx.log("the marker is at index " + container.getChildren().indexOf(markers.getFirst().element())
+                ctx.log("the marker is at index " + container.getChildren().indexOf(markers.get(0).element())
                         + " of " + container.getChildren().size());
             }
         });

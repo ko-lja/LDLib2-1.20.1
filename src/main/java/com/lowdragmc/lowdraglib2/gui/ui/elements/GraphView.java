@@ -586,18 +586,18 @@ public class GraphView extends UIElement {
         for (long i = firstX; i <= lastX; i++) {
             if (skipEvery > 0 && Math.floorMod(i, skipEvery) == 0) continue;
             float screenX = x + (i * cellSize - offsetX) * scale;
-            buffer.addVertex(pose, screenX, y, 0).setColor(color);
-            buffer.addVertex(pose, screenX, y + h, 0).setColor(color);
-            buffer.addVertex(pose, screenX + lineWidth, y + h, 0).setColor(color);
-            buffer.addVertex(pose, screenX + lineWidth, y, 0).setColor(color);
+            buffer.vertex(pose, screenX, y, 0).color(color).endVertex();
+            buffer.vertex(pose, screenX, y + h, 0).color(color).endVertex();
+            buffer.vertex(pose, screenX + lineWidth, y + h, 0).color(color).endVertex();
+            buffer.vertex(pose, screenX + lineWidth, y, 0).color(color).endVertex();
         }
         for (long i = firstY; i <= lastY; i++) {
             if (skipEvery > 0 && Math.floorMod(i, skipEvery) == 0) continue;
             float screenY = y + (i * cellSize - offsetY) * scale;
-            buffer.addVertex(pose, x, screenY, 0).setColor(color);
-            buffer.addVertex(pose, x, screenY + lineWidth, 0).setColor(color);
-            buffer.addVertex(pose, x + w, screenY + lineWidth, 0).setColor(color);
-            buffer.addVertex(pose, x + w, screenY, 0).setColor(color);
+            buffer.vertex(pose, x, screenY, 0).color(color).endVertex();
+            buffer.vertex(pose, x, screenY + lineWidth, 0).color(color).endVertex();
+            buffer.vertex(pose, x + w, screenY + lineWidth, 0).color(color).endVertex();
+            buffer.vertex(pose, x + w, screenY, 0).color(color).endVertex();
         }
     }
 

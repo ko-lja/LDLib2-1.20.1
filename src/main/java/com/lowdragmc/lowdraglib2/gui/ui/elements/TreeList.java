@@ -29,7 +29,6 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.apache.commons.lang3.function.Consumers;
 import org.appliedenergistics.yoga.*;
 
 import org.jetbrains.annotations.Nullable;
@@ -123,9 +122,9 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
     protected UIElementProvider<NODE> nodeUISupplier = textTemplate(value -> Component.translatable(value.toString()));
     protected BiConsumer<NODE, UIElement> onNodeUICreated = (node, ui) -> {};
     @Setter
-    protected Consumer<Set<NODE>> onSelectedChanged = Consumers.nop();
+    protected Consumer<Set<NODE>> onSelectedChanged = x -> {};
     @Setter
-    protected Consumer<NODE> onDoubleClickNode = Consumers.nop();
+    protected Consumer<NODE> onDoubleClickNode = x -> {};
     @Setter
     protected Predicate<NODE> selectableNodeFilter = Predicates.alwaysTrue();
     @Setter
@@ -156,7 +155,7 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
      * gated by {@link #reorderValidator}. Default {@code false} keeps the previous behavior.
      */
     protected boolean draggable = false;
-    protected Consumer<ReorderRequest<NODE>> onReorder = Consumers.nop();
+    protected Consumer<ReorderRequest<NODE>> onReorder = x -> {};
     protected Predicate<ReorderRequest<NODE>> reorderValidator = Predicates.alwaysTrue();
     /**
      * Optional factory for the drag payload object (receives the pressed node). Lets consumers hand
@@ -384,7 +383,7 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
                 var children = node.getChildren();
                 for (int i = children.size() - 1; i >= 0; i--) {
                     var childNode = (NODE) children.get(i);
-                    displayedChildren.computeIfAbsent(node, n -> new ArrayList<>()).addFirst(childNode);
+                    displayedChildren.computeIfAbsent(node, n -> new ArrayList<>()).add(0, childNode);
                     addNodeUI(childNode, nodeIndex + 1);
                 }
             }
@@ -490,7 +489,7 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
             var children = node.getChildren();
             for (int i = children.size() - 1; i >= 0; i--) {
                 var childNode = (NODE) children.get(i);
-                displayedChildren.computeIfAbsent(node, n -> new ArrayList<>()).addFirst(childNode);
+                displayedChildren.computeIfAbsent(node, n -> new ArrayList<>()).add(0, childNode);
                 addNodeUI(childNode, index + 1);
             }
         }
@@ -539,7 +538,7 @@ public class TreeList<NODE extends ITreeNode<?, ?>> extends UIElement {
         this.displayedChildren.remove(node);
         for (int i = currentChildren.size() - 1; i >= 0; i--) {
             var childNode = currentChildren.get(i);
-            this.displayedChildren.computeIfAbsent(node, n -> new ArrayList<>()).addFirst(childNode);
+            this.displayedChildren.computeIfAbsent(node, n -> new ArrayList<>()).add(0, childNode);
             addNodeUI(childNode, index + 1);
         }
         for (var shown : shownBefore) {

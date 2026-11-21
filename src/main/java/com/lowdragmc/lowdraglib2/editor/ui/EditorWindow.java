@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.editor.ui;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.client.window.OsWindowManager;
@@ -136,7 +137,7 @@ public class EditorWindow extends UIElement {
                 editorWindow.dockingBack = false;
             } else {
                 Minecraft.getInstance().getToasts().addToast(new SystemToast(
-                        new SystemToast.SystemToastId(1000L),
+                        SystemToast.SystemToastIds.PERIODIC_NOTIFICATION,
                         Component.translatable("editor.minimized.title"),
                         Component.translatable("editor.minimized.tips")
                 ));
@@ -488,7 +489,7 @@ public class EditorWindow extends UIElement {
             currentEditor = null;
             hideHost();
         } else {
-            showEditor(editors.lastEntry().getKey());
+            showEditor(Iterables.getLast(editors.entrySet()).getKey());
         }
     }
 

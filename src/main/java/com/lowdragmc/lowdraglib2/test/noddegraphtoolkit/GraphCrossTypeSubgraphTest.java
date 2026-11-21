@@ -39,7 +39,7 @@ public class GraphCrossTypeSubgraphTest {
         // Inline subgraph of a DIFFERENT (accepted) graph type.
         var sub = rootModel.createLocalSubgraphInstance(AnnotatedOtherGraph.class);
         if (sub == null) { helper.fail("createLocalSubgraphInstance(AnnotatedOtherGraph) returned null"); return; }
-        if (!(sub instanceof CustomGraphModelImpl c) || !(c.getGraph() instanceof AnnotatedOtherGraph)) {
+        if (sub == null || !(sub.getGraph() instanceof AnnotatedOtherGraph)) {
             helper.fail("inline subgraph is not an AnnotatedOtherGraph"); return;
         }
         rootModel.addLocalSubgraph(sub);
@@ -99,7 +99,7 @@ public class GraphCrossTypeSubgraphTest {
 
         // Accepted foreign type
         var accepted = gm.createLocalSubgraphInstance(AnnotatedOtherGraph.class);
-        if (!(accepted instanceof CustomGraphModelImpl c) || !(c.getGraph() instanceof AnnotatedOtherGraph)) {
+        if (accepted == null || !(accepted.getGraph() instanceof AnnotatedOtherGraph)) {
             helper.fail("accepted foreign type did not instantiate"); return;
         }
         // Rejected foreign type
@@ -109,11 +109,11 @@ public class GraphCrossTypeSubgraphTest {
         }
         // Same type is always allowed (both the typed and the no-arg factory).
         var same = gm.createLocalSubgraphInstance(TestGraph.class);
-        if (!(same instanceof CustomGraphModelImpl sc) || !(sc.getGraph() instanceof TestGraph)) {
+        if (same == null || !(same.getGraph() instanceof TestGraph)) {
             helper.fail("same-type subgraph should always be allowed"); return;
         }
         var sameNoArg = gm.createLocalSubgraphInstance();
-        if (!(sameNoArg instanceof CustomGraphModelImpl nc) || !(nc.getGraph() instanceof TestGraph)) {
+        if (sameNoArg == null || !(sameNoArg.getGraph() instanceof TestGraph)) {
             helper.fail("no-arg factory should produce a same-type subgraph"); return;
         }
 

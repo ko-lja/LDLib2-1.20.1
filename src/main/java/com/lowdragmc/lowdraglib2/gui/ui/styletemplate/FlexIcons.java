@@ -97,9 +97,9 @@ public final class FlexIcons {
 
     public static IGuiTexture getFlexWrapIcon(FlexWrap wrap) {
         return switch (wrap) {
-            case FlexWrap.NO_WRAP -> Icons.NOWRAP;
-            case FlexWrap.WRAP -> Icons.WRAP;
-            case FlexWrap.WRAP_REVERSE -> Icons.WRAP_REVERSE;
+            case NO_WRAP -> Icons.NOWRAP;
+            case WRAP -> Icons.WRAP;
+            case WRAP_REVERSE -> Icons.WRAP_REVERSE;
         };
     }
 

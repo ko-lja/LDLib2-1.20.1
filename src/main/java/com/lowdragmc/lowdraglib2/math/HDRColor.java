@@ -5,8 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
+import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
+import net.minecraft.util.Mth;
 import org.joml.Vector4f;
 
 import java.util.Objects;
@@ -36,12 +37,12 @@ public class HDRColor {
      * {@code @ConfigHDR Vector4f} shape (a bare 4-float list whose {@code w} was the intensity and
      * which could not express alpha). Always <b>writes</b> the current shape.
      */
-    public static final Codec<HDRColor> CODEC = Codec.withAlternative(
+    public static final Codec<HDRColor> CODEC = LDCodecs.withAlternative(
             RecordCodecBuilder.create(instance -> instance.group(
-                    ExtraCodecs.VECTOR4F.fieldOf("color").forGetter(HDRColor::toRawVector4f),
-                    Codec.FLOAT.optionalFieldOf("intensity", 1f).forGetter(HDRColor::getIntensity)
+                    LDCodecs.VECTOR4F.fieldOf("color").forGetter(HDRColor::toRawVector4f),
+                    LDCodecs.optionalFieldOf(Codec.FLOAT, "intensity", 1f).forGetter(HDRColor::getIntensity)
             ).apply(instance, HDRColor::new)),
-            ExtraCodecs.VECTOR4F,
+            LDCodecs.VECTOR4F,
             legacy -> new HDRColor(legacy.x, legacy.y, legacy.z, 1f, legacy.w));
 
     public static final StreamCodec<ByteBuf, HDRColor> STREAM_CODEC = StreamCodec.of(
@@ -177,7 +178,7 @@ public class HDRColor {
     }
 
     private static int round255(float value) {
-        return Math.clamp(Math.round(value * 255f), 0, 255);
+        return Mth.clamp(Math.round(value * 255f), 0, 255);
     }
 
     public HDRColor copy() {

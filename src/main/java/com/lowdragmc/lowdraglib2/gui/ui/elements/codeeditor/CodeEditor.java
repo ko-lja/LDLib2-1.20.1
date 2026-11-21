@@ -258,7 +258,7 @@ public class CodeEditor extends TextArea {
         }
 
         // Draw placeholder if empty
-        if (styledLines.isEmpty() || (styledLines.size() == 1 && styledLines.getFirst().text().isEmpty())) {
+        if (styledLines.isEmpty() || (styledLines.size() == 1 && styledLines.get(0).text().isEmpty())) {
             drawPlaceHolder(guiContext, font, scale, x, y);
         }
     }

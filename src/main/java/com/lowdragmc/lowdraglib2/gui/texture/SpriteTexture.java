@@ -300,7 +300,8 @@ public class SpriteTexture extends TransformTexture {
                 // Risky?
                 RenderSystem.setShader(LDLibShaders::getSpriteBlitShader);
                 RenderSystem.setShaderTexture(0, imageLocation);
-                var buffer2 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, POSITION_TEX_COLOR);
+                var buffer2 = Tesselator.getInstance().getBuilder();
+                buffer2.begin(VertexFormat.Mode.QUADS, POSITION_TEX_COLOR);
                 var shader = LDLibShaders.getSpriteBlitShader();
                 shader.safeGetUniform("UVBounds").set(uCenterStart, vCenterStart, uCenterEnd, vCenterEnd);
                 shader.safeGetUniform("WrapMode").set(wrapMode.ordinal());
@@ -311,7 +312,7 @@ public class SpriteTexture extends TransformTexture {
                         uCenterStart, vCenterStart, u1, v1, color);
 
                 // draw border first
-                var bufferData = buffer2.build();
+                var bufferData = buffer2.endOrDiscardIfEmpty();
                 if (bufferData != null) {
                     BufferUploader.drawWithShader(bufferData);
                 }
@@ -328,10 +329,10 @@ public class SpriteTexture extends TransformTexture {
         float b = (color & 255) / 255.0F;
         float a = (color >> 24 & 255) / 255.0F;
 
-        buffer.addVertex(matrix, x, y + h, 0).setUv(u1, v2).setColor(r, g, b, a);
-        buffer.addVertex(matrix, x + w, y + h, 0).setUv(u2, v2).setColor(r, g, b, a);
-        buffer.addVertex(matrix, x + w, y, 0).setUv(u2, v1).setColor(r, g, b, a);
-        buffer.addVertex(matrix, x, y, 0).setUv(u1, v1).setColor(r, g, b, a);
+        buffer.vertex(matrix, x, y + h, 0).uv(u1, v2).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, x + w, y + h, 0).uv(u2, v2).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, x + w, y, 0).uv(u2, v1).color(r, g, b, a).endVertex();
+        buffer.vertex(matrix, x, y, 0).uv(u1, v1).color(r, g, b, a).endVertex();
     }
 
     @Override

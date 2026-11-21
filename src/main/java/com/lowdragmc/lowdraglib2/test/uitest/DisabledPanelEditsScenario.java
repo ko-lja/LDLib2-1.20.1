@@ -99,8 +99,8 @@ public class DisabledPanelEditsScenario implements UIScenario {
                 .step("press the first list item's handle", ctx -> {
                     ctx.put(ORDER, List.copyOf(fields(ctx).list));
                     var items = ctx.query().type(ArrayConfiguratorGroup.ItemConfigurator.class).list();
-                    var handle = ElementBounds.of(items.getFirst().as(ArrayConfiguratorGroup.ItemConfigurator.class).label);
-                    var last = items.getLast().bounds();
+                    var handle = ElementBounds.of(items.get(0).as(ArrayConfiguratorGroup.ItemConfigurator.class).label);
+                    var last = items.get(items.size() - 1).bounds();
                     drag[0] = handle.centerX();
                     drag[1] = handle.centerY();
                     drag[2] = last.y() + last.height() + 4;

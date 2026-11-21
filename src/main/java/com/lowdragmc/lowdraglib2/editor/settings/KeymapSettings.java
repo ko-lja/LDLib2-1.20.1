@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.editor.settings;
 
+import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.configurator.ui.ConfiguratorGroup;
 import com.lowdragmc.lowdraglib2.editor.keymap.EditorAction;
@@ -32,8 +33,8 @@ public class KeymapSettings implements Settings {
     public static final ResourceLocation ID = LDLib2.id("keymap");
 
     private static final Codec<Keymap.Bindings> BINDINGS_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            KeyChord.CODEC.optionalFieldOf("primary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::primary),
-            KeyChord.CODEC.optionalFieldOf("secondary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::secondary)
+            LDCodecs.optionalFieldOf(KeyChord.CODEC, "primary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::primary),
+            LDCodecs.optionalFieldOf(KeyChord.CODEC, "secondary", KeyChord.UNBOUND).forGetter(Keymap.Bindings::secondary)
     ).apply(instance, Keymap.Bindings::new));
 
     public static final Codec<KeymapSettings> CODEC = Codec

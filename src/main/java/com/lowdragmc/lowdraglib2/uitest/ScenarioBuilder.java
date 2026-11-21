@@ -125,7 +125,7 @@ public final class ScenarioBuilder {
             if (pending.isEmpty()) {
                 pending.add(submit.apply(ctx));
             }
-            var future = pending.getFirst();
+            var future = pending.get(0);
             if (!future.isDone()) {
                 ctx.repeat(waitingFor);
                 return;
@@ -151,7 +151,7 @@ public final class ScenarioBuilder {
             if (pending.isEmpty()) {
                 pending.add(submit.apply(ctx));
             }
-            var future = pending.getFirst();
+            var future = pending.get(0);
             if (!future.isDone()) {
                 ctx.repeat(waitingFor + " (reading server)");
                 return;
@@ -990,7 +990,7 @@ public final class ScenarioBuilder {
 
     private ScenarioBuilder paced(String name, StepKind kind, Step.Body body) {
         add(name, kind, body);
-        steps.getLast().paced = true;
+        steps.get(steps.size() - 1).paced = true;
         return this;
     }
 
@@ -1466,7 +1466,7 @@ public final class ScenarioBuilder {
 
     private static long clientTick(TestContext ctx) {
         return Minecraft.getInstance() instanceof MinecraftAccessor accessor
-                ? accessor.ldlib2$getClientTickCount()
+                ? Minecraft.getInstance().gui.getGuiTicks()
                 : 0L;
     }
 }
