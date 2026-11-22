@@ -32,14 +32,14 @@ public class TransitionValue extends StyleValue<Transition> {
     @Nullable
     public static StyleTransition parse(String rawValue) {
         try {
-            var args = rawValue.split(" ");
+            var args = rawValue.trim().split("\\s+");
             if (args.length < 2) return null;
             var property = PropertyRegistry.byName(args[0]);
             if (property == null) return null;
             var duration = Float.parseFloat(args[1]);
             var ease = Eases.LINEAR;
             var delay = 0f;
-            if (args.length == 3) {
+            if (args.length >= 3) {
                 for (Eases value : Eases.values()) {
                     if (value.name().equalsIgnoreCase(args[2])) {
                         ease = value;
@@ -47,7 +47,7 @@ public class TransitionValue extends StyleValue<Transition> {
                     }
                 }
             }
-            if (args.length == 4) {
+            if (args.length >= 4) {
                 delay = Float.parseFloat(args[3]);
             }
             return new StyleTransition(property, new Animation(duration, delay, ease));

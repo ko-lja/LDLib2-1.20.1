@@ -529,7 +529,7 @@ public class FluidSlot extends BindableUIElement<FluidStack> {
         }
         // allow xei lookup
         if (element.hasAttribute("allow-xei-lookup")) {
-            setAllowXEILookup(XmlUtils.getAsBoolean(element, "allow-xei-Lookup", allowXEILookup));
+            setAllowXEILookup(XmlUtils.getAsBoolean(element, "allow-xei-lookup", allowXEILookup));
         }
         // fluid display
         var fluid = XmlUtils.getFluidStack(element);

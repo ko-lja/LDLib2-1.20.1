@@ -25,7 +25,6 @@ import net.minecraft.Util;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Tuple;
@@ -346,10 +345,14 @@ public class TextElement extends UIElement {
     @Override
     public void loadXml(Element element) {
         super.loadXml(element);
-        XmlUtils.getComponents(element, net.minecraft.network.chat.Style.EMPTY)
-                .stream()
-                .reduce(MutableComponent::append)
-                .ifPresent(this::setText);
+        var lines = XmlUtils.getComponents(element, net.minecraft.network.chat.Style.EMPTY);
+        if (lines.isEmpty()) return;
+        var text = Component.empty();
+        for (int i = 0; i < lines.size(); i++) {
+            if (i > 0) text.append("\n");
+            text.append(lines.get(i));
+        }
+        setText(text);
     }
 
     @Override

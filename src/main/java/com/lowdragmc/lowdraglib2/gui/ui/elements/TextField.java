@@ -31,7 +31,7 @@ import com.lowdragmc.lowdraglib2.syncdata.annotation.Persisted;
 import com.lowdragmc.lowdraglib2.syncdata.annotation.SkipPersistedValue;
 import com.lowdragmc.lowdraglib2.utils.HistoryStack;
 import com.lowdragmc.lowdraglib2.utils.TextUtilities;
-import com.lowdragmc.lowdraglib2.utils.XmlUtils;
+import com.lowdragmc.lowdraglib2.gui.ui.style.values.EnumValue;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.KeyState;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.vfyjxf.taffy.style.FlexDirection;
@@ -1229,7 +1229,11 @@ public class TextField extends BindableUIElement<String> {
     public void loadXml(Element element) {
         // mode
         if (element.hasAttribute("mode")) {
-            editorMode = XmlUtils.getAsEnum(element, "mode", Mode.class, editorMode);
+            var rawMode = element.getAttribute("mode");
+            var mode = rawMode.trim().equalsIgnoreCase("nbt") ? Mode.COMPOUND_TAG : EnumValue.find(Mode.class, rawMode);
+            if (mode != null) {
+                editorMode = mode;
+            }
         }
         // regex validator
         if (element.hasAttribute("regex-validator")) {

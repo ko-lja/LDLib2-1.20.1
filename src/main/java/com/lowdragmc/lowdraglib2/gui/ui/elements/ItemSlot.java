@@ -506,7 +506,7 @@ public class ItemSlot extends BindableUIElement<ItemStack> {
     public void loadXml(Element element) {
         // allow xei lookup
         if (element.hasAttribute("allow-xei-lookup")) {
-            setAllowXEILookup(XmlUtils.getAsBoolean(element, "allow-xei-Lookup", allowXEILookup));
+            setAllowXEILookup(XmlUtils.getAsBoolean(element, "allow-xei-lookup", allowXEILookup));
         }
         // item display
         var item = XmlUtils.getItemStack(element);

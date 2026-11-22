@@ -10,11 +10,18 @@ import com.lowdragmc.lowdraglib2.client.renderer.ATESRRendererProvider;
 import com.lowdragmc.lowdraglib2.client.renderer.IRenderer;
 import com.lowdragmc.lowdraglib2.client.shader.LDLibShaders;
 import com.lowdragmc.lowdraglib2.core.mixins.ParticleEngineAccessor;
+import com.lowdragmc.lowdraglib2.editor.resource.EditorResourceEvent;
 import com.lowdragmc.lowdraglib2.editor.resource.IRendererResource;
 import com.lowdragmc.lowdraglib2.editor.resource.PackResourceManager;
+import com.lowdragmc.lowdraglib2.editor.resource.ResourceInstance;
+import com.lowdragmc.lowdraglib2.editor.resource.TexturesResource;
 import com.lowdragmc.lowdraglib2.gui.factory.LDMenuTypes;
 import com.lowdragmc.lowdraglib2.gui.holder.ModularUIContainerScreen;
+import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StylesheetManager;
+import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.MCSprites;
+import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.OreSprites;
+import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUIClientElementComponent;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUITooltipComponent;
 import com.lowdragmc.lowdraglib2.integration.kjs.ui.LDKJSMenuTypes;
@@ -81,6 +88,17 @@ public class ClientProxy {
     @SubscribeEvent
     public void shaderRegistry(RegisterShadersEvent event) {
         LDLibShaders.registerShaders(event);
+    }
+
+    @SubscribeEvent
+    @SuppressWarnings("unchecked")
+    public void onLoadBuiltinEditorResource(EditorResourceEvent.LoadBuiltin event) {
+        if (event.resourceInstance.resource == TexturesResource.INSTANCE) {
+            var instance = (ResourceInstance<IGuiTexture>) event.resourceInstance;
+            Sprites.init(instance);
+            MCSprites.init(instance);
+            OreSprites.init(instance);
+        }
     }
 
     /**

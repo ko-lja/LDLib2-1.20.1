@@ -3,15 +3,8 @@ package com.lowdragmc.lowdraglib2.client;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
 import com.lowdragmc.lowdraglib2.client.font.LDFontManager;
-import com.lowdragmc.lowdraglib2.editor.resource.EditorResourceEvent;
-import com.lowdragmc.lowdraglib2.editor.resource.ResourceInstance;
-import com.lowdragmc.lowdraglib2.editor.resource.TexturesResource;
 import com.lowdragmc.lowdraglib2.gui.holder.IModularUIHolder;
-import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.CursorOverlay;
-import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.MCSprites;
-import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.OreSprites;
-import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.commands.CommandSourceStack;
@@ -81,15 +74,6 @@ public class ClientEventListener {
                 mui.setScreenAndInit(containerScreen);
                 event.addListener(mui.getWidget());
             }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onLoadBuiltinEditorResource(EditorResourceEvent.LoadBuiltin event) {
-        if (event.resourceInstance.resource == TexturesResource.INSTANCE) {
-            Sprites.init((ResourceInstance<IGuiTexture>) event.resourceInstance);
-            MCSprites.init((ResourceInstance<IGuiTexture>) event.resourceInstance);
-            OreSprites.init((ResourceInstance<IGuiTexture>) event.resourceInstance);
         }
     }
 //
