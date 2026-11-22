@@ -1,6 +1,7 @@
 {
     "vertex": "ldlib2:gui_shader",
     "fragment": "ldlib2:fbm",
+    "attributes": [ "Position", "UV0", "Color" ],
     "samplers": [
     ],
     "uniforms": [

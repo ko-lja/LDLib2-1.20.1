@@ -1,6 +1,7 @@
 {
     "vertex": "ldlib2:visual_layer",
     "fragment": "ldlib2:visual_layer",
+    "attributes": [ "Position", "UV0" ],
     "samplers": [
         { "name": "DiffuseSampler" },
         { "name": "Mask" }
