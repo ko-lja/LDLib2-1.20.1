@@ -1,7 +1,6 @@
 package com.lowdragmc.lowdraglib2.syncdata.mark;
 
 import com.lowdragmc.lowdraglib2.syncdata.utils.StackSnapshots;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +13,7 @@ final class ItemHandlerStrategy implements IMarkStrategy<ItemStackHandler, ItemS
     @Override
     public boolean test(Class<?> type) {
         return ItemStackHandler.class.isAssignableFrom(type)
-                && MarkStrategies.isDeclaredBy(type, ItemStackHandler.class, "serializeNBT", HolderLookup.Provider.class)
+                && MarkStrategies.isDeclaredBy(type, ItemStackHandler.class, "serializeNBT")
                 && MarkStrategies.isDeclaredBy(type, ItemStackHandler.class, "getSlots")
                 && MarkStrategies.isDeclaredBy(type, ItemStackHandler.class, "getStackInSlot", int.class);
     }

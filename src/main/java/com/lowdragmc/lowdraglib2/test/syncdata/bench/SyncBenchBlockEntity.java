@@ -40,6 +40,7 @@ public class SyncBenchBlockEntity extends BlockEntity implements ISyncPersistRPC
     private final FieldManagedStorage syncStorage = new FieldManagedStorage(this);
     public volatile boolean syncEnabled = true;
     public int setChangedCalls;
+    public boolean markedChunkUnsaved;
 
     @Persisted
     @DescSynced
@@ -107,6 +108,9 @@ public class SyncBenchBlockEntity extends BlockEntity implements ISyncPersistRPC
         SET_CHANGED_NANOS.addAndGet(System.nanoTime() - start);
         SET_CHANGED_CALLS.incrementAndGet();
         setChangedCalls++;
+        if (level != null && level.getChunkAt(worldPosition).isUnsaved()) {
+            markedChunkUnsaved = true;
+        }
     }
 
     @Override

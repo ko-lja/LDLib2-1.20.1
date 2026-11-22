@@ -81,12 +81,13 @@ public class AsyncPersistenceTest {
             if (step[0] == 0 && now - since[0] >= PERIODS_NANOS) {
                 chunk.setUnsaved(false);
                 be.setChangedCalls = 0;
+                be.markedChunkUnsaved = false;
                 be.tier++;
                 be.logic.progress++;
                 step[0] = 1;
                 since[0] = now;
             } else if (step[0] == 1 && now - since[0] >= 2 * PERIODS_NANOS) {
-                if (!chunk.isUnsaved()) helper.fail("changes nobody watched were not persisted");
+                if (!be.markedChunkUnsaved) helper.fail("changes nobody watched were not persisted");
                 if (be.setChangedCalls < 1 || be.setChangedCalls > 2) {
                     helper.fail("two changes, waiting unsent for ten periods, caused " + be.setChangedCalls + " setChanged calls");
                 }
