@@ -1,0 +1,8 @@
+{
+    "loader": "forge:obj",
+    "model": "ldlib2:models/block/obj_demo.obj",
+    "flip_v": true,
+    "textures": {
+        "particle": "minecraft:block/gold_block"
+    }
+}

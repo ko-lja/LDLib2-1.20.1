@@ -50,6 +50,8 @@ public class CommonProxy {
             ITEMS.register("test", () -> TestItem.ITEM);
             BLOCKS.register("test_2", () -> NoRendererTestBlock.BLOCK);
             ITEMS.register("test_2", () -> new BlockItem(NoRendererTestBlock.BLOCK, new Item.Properties()));
+            BLOCKS.register("obj_demo", () -> ObjDemoBlock.BLOCK);
+            ITEMS.register("obj_demo", () -> new BlockItem(ObjDemoBlock.BLOCK, new Item.Properties()));
             BLOCKS.register("sync_test", () -> SyncTestBlock.BLOCK);
             BLOCKS.register("sync_bench", () -> SyncBenchBlock.BLOCK);
         }

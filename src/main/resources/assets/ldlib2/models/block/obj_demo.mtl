@@ -1,0 +1,7 @@
+newmtl sides
+Kd 1 1 1
+map_Kd minecraft:block/stone_bricks
+
+newmtl caps
+Kd 1 1 1
+map_Kd minecraft:block/gold_block

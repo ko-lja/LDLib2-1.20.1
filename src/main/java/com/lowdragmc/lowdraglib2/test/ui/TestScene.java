@@ -7,6 +7,7 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.Button;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Scene;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
 import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegisterClient;
+import com.lowdragmc.lowdraglib2.test.ObjDemoBlock;
 import com.lowdragmc.lowdraglib2.utils.virtuallevel.DummyWorld;
 import com.lowdragmc.lowdraglib2.utils.virtuallevel.TrackedDummyWorld;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,8 @@ public class TestScene implements IScreenTest {
         dummyWorld.setBlockAndUpdate(new BlockPos(1, 0, -1), Blocks.GREEN_STAINED_GLASS.defaultBlockState());
         dummyWorld.setBlockAndUpdate(new BlockPos(2, 0, -1), Blocks.REDSTONE_BLOCK.defaultBlockState());
         dummyWorld.setBlockAndUpdate(new BlockPos(0, 1, -1), Blocks.CHEST.defaultBlockState());
+        dummyWorld.setBlockAndUpdate(new BlockPos(1, 1, -1), ObjDemoBlock.BLOCK.defaultBlockState());
+        dummyWorld.setBlockAndUpdate(new BlockPos(2, 1, -1), ObjDemoBlock.BLOCK.defaultBlockState());
 
         var entityPlayer = Minecraft.getInstance().player;
         if (entityPlayer != null && dummyWorld.getBlockEntity(new BlockPos(0, 1, -1)) instanceof ChestBlockEntity chest) {
