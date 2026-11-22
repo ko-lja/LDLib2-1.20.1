@@ -80,52 +80,28 @@ Script scenarios that open real UIs in a real client, click and type through the
 
 ## Java Integration
 
-LDLib2 is published to the FirstDark Maven snapshots repository.
+### Forge 1.20.1
+
+The Forge 1.20.1 backport is published to the Expandium Maven: releases to `releases`, per-commit builds to `snapshots`.
 
 ```gradle
 repositories {
-    maven { url = "https://maven.firstdark.dev/snapshots" }
+    maven { url = "https://repo.expandium.net/releases" } // release builds and Yoga
+    maven { url = "https://repo.expandium.net/snapshots" } // snapshot builds
 }
 
 dependencies {
-    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${ldlib2_version}:all")
+    // ModDevGradle : modImplementation; ForgeGradle: implementation fg.deobf(...)
+    modImplementation "com.lowdragmc.ldlib2:ldlib2-forge-1.20.1:2.3.0"
+    modImplementation "com.lowdragmc.ldlib2:ldlib2-compose-1.20.1:20.1.1.0" // optional
+    // ModDevGradle does not resolve transitives of remapped dependencies; only needed if your code touches APIs that expose these
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
+    compileOnly "org.appliedenergistics.yoga:yoga:0.1.0"
+    compileOnly "dev.vfyjxf:taffy:1.1.5"
 }
 ```
 
-For LDLib2 versions before `2.2.1`, disable transitive dependencies and add Yoga manually:
-
-```gradle
-dependencies {
-    implementation("com.lowdragmc.ldlib2:ldlib2-neoforge-${minecraft_version}:${ldlib2_version}:all") {
-        transitive = false
-    }
-    compileOnly("org.appliedenergistics.yoga:yoga:1.0.0")
-}
-```
-
-Recommended project variables:
-
-```properties
-minecraft_version=1.21.1
-ldlib2_version=2.2.44
-```
-
-### Optional: Compose UI
-
-[Compose UI](https://low-drag-mc.github.io/LowDragMC-Doc/en/ldlib2/ui/compose/) is a separate mod, `ldlib2-compose`, that your mod ships as Jar-in-Jar. It is written against Kotlin and needs the Kotlin Compose compiler plugin at the same version as your Kotlin plugin.
-
-Its version starts with the Minecraft line it is built for: `21.0.0.1` is the first release for 1.21.1, and each Minecraft version gets its own build. Only 1.21.1 is published so far.
-
-```gradle
-dependencies {
-    implementation "com.lowdragmc.ldlib2:ldlib2-compose-1.21.1:21.0.0.1"
-    jarJar(group: 'com.lowdragmc.ldlib2', name: 'ldlib2-compose-1.21.1') {
-        version { require '[21.0.0.1,)'; prefer '21.0.0.1' }
-    }
-}
-```
-
-See [Optional module: ldlib2-compose](https://low-drag-mc.github.io/LowDragMC-Doc/en/ldlib2/java_integration.html#optional-module-ldlib2-compose) for the plugin, repository, and `neoforge.mods.toml` setup.
+[Compose UI](https://low-drag-mc.github.io/LowDragMC-Doc/en/ldlib2/ui/compose/) (`ldlib2-compose`) is written against Kotlin and needs the Kotlin Compose compiler plugin at the same version as your Kotlin plugin. See [Optional module: ldlib2-compose](https://low-drag-mc.github.io/LowDragMC-Doc/en/ldlib2/java_integration.html#optional-module-ldlib2-compose) for the full setup.
 
 ### LDLib Plugin Entry Point
 

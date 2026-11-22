@@ -1,5 +1,5 @@
 // ldlib2-compose: LDLib2's declarative UI layer, a separate optional mod with its own version
-// (gradle.properties here) and release (.github/workflows/compose-build-publish.yml). The core jar never
+// (gradle.properties here) and release (.github/workflows/build.yml). The core jar never
 // contains it. It is a mod rather than a library so the Compose runtime ships as Jar-in-Jar and NeoForge
 // can dedupe it against other mods.
 
@@ -159,6 +159,11 @@ tasks.withType(PublishToMavenRepository).configureEach {
     }
 }
 
+configurations.matching { it.name == 'reobfApiElements' }.configureEach { extendsFrom configurations.api }
+configurations.matching { it.name == 'reobfRuntimeElements' }.configureEach {
+    extendsFrom configurations.api, configurations.implementation, configurations.runtimeOnly
+}
+
 publishing {
     publications {
         register('mavenJava', MavenPublication) {
@@ -168,7 +173,8 @@ publishing {
     }
     repositories {
         maven {
-            url "https://maven.firstdark.dev/snapshots"
+            name "Expandium"
+            url "https://repo.expandium.net/${version.toString().toLowerCase().contains('snapshot') ? 'snapshots' : 'releases'}"
             credentials {
                 username System.getenv("MAVEN_USER")
                 password System.getenv("MAVEN_PASS")

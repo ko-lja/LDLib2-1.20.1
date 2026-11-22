@@ -1,0 +1,242 @@
+name: Build
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*', 'compose-v*']
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      releaseCore:
+        description: 'Release the current mod_version'
+        type: boolean
+        default: false
+      releaseCompose:
+        description: 'Release the current compose_version'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+  SNAPSHOTS_TO_KEEP: 15
+  MAVEN_RELEASES: 'https://repo.expandium.net/releases'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      MAVEN_USER: ${{ secrets.MAVEN_USER }}
+      MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Resolve versions
+        id: version
+        run: |
+          prop() { grep -E "^$1\s*=" "$2" | cut -d'=' -f2 | tr -d ' \r'; }
+          CORE_BASE=$(prop mod_version gradle.properties)
+          COMPOSE_BASE=$(prop compose_version module.compose/gradle.properties)
+          MC=$(prop minecraft_version gradle.properties)
+          GROUP_PATH=$(prop maven_group gradle.properties | tr '.' '/')
+          SHA7=${GITHUB_SHA::7}
+          SUFFIX="snapshot+$SHA7"
+          DEFAULT_REF="refs/heads/${{ github.event.repository.default_branch }}"
+          BEFORE="${{ github.event.before }}"
+          CORE=build
+          COMPOSE=build
+
+          changed() {
+            [[ -n "$BEFORE" && ! "$BEFORE" =~ ^0+$ ]] && git cat-file -e "$BEFORE" 2>/dev/null || return 1
+            [[ "$(git show "$BEFORE:$2" 2>/dev/null | grep -E "^$1\s*=" | cut -d'=' -f2 | tr -d ' \r')" != "$3" ]]
+          }
+
+          if [[ "$GITHUB_REF" == refs/tags/compose-v* ]]; then
+            CORE=none
+            COMPOSE=release
+            [[ "${GITHUB_REF_NAME#compose-v}" == "$COMPOSE_BASE" ]] || { echo "$GITHUB_REF_NAME does not match compose_version $COMPOSE_BASE"; exit 1; }
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            CORE=release
+            COMPOSE=none
+            [[ "${GITHUB_REF_NAME#v}" == "$CORE_BASE" ]] || { echo "$GITHUB_REF_NAME does not match mod_version $CORE_BASE"; exit 1; }
+          elif [[ "$GITHUB_REF" == "$DEFAULT_REF" && "${{ github.event_name }}" != "pull_request" ]]; then
+            CORE=snapshot
+            COMPOSE=snapshot
+            { [[ "${{ inputs.releaseCore }}" == "true" ]] || changed mod_version gradle.properties "$CORE_BASE"; } && CORE=release
+            { [[ "${{ inputs.releaseCompose }}" == "true" ]] || changed compose_version module.compose/gradle.properties "$COMPOSE_BASE"; } && COMPOSE=release
+            if [[ "$CORE" == release ]] && git rev-parse -q --verify "refs/tags/v$CORE_BASE" >/dev/null; then
+              echo "⚠️ v$CORE_BASE is already tagged, publishing a core snapshot instead"
+              CORE=snapshot
+            fi
+            if [[ "$COMPOSE" == release ]] && git rev-parse -q --verify "refs/tags/compose-v$COMPOSE_BASE" >/dev/null; then
+              echo "⚠️ compose-v$COMPOSE_BASE is already tagged, publishing a compose snapshot instead"
+              COMPOSE=snapshot
+            fi
+          fi
+
+          [[ "$CORE" == release || "$CORE" == none ]] && CORE_VERSION=$CORE_BASE || CORE_VERSION="$CORE_BASE-$SUFFIX"
+          [[ "$COMPOSE" == release ]] && COMPOSE_VERSION=$COMPOSE_BASE || COMPOSE_VERSION="$COMPOSE_BASE-$SUFFIX"
+
+          # A compose release's pom points at a core release, so it is built against the plain mod_version.
+          COMPOSE_CORE=$CORE_VERSION
+          if [[ "$COMPOSE" == release ]]; then
+            COMPOSE_CORE=$CORE_BASE
+            if [[ "$CORE" != release ]]; then
+              URL="$MAVEN_RELEASES/$GROUP_PATH/ldlib2-forge-$MC/$CORE_BASE/ldlib2-forge-$MC-$CORE_BASE.pom"
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+              [[ "$CODE" == 200 ]] || { echo "LDLib2 $CORE_BASE is not released yet ($URL -> $CODE). Release the core first."; exit 1; }
+            fi
+          fi
+
+          {
+            echo "core=$CORE"
+            echo "core-version=$CORE_VERSION"
+            echo "compose=$COMPOSE"
+            echo "compose-version=$COMPOSE_VERSION"
+            echo "compose-core=$COMPOSE_CORE"
+            echo "mc=$MC"
+            echo "sha7=$SHA7"
+          } >> $GITHUB_OUTPUT
+          echo "Core: $CORE $CORE_VERSION | Compose: $COMPOSE $COMPOSE_VERSION (against core $COMPOSE_CORE)"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Build and test
+        run: >
+          ./gradlew :build :module.compose:build --stacktrace
+          -Pmod_version=${{ steps.version.outputs.core-version }}
+          -Pcompose_version=${{ steps.version.outputs.compose-version }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ldlib2-${{ steps.version.outputs.mc }}-${{ steps.version.outputs.core-version }}
+          path: |
+            build/libs/*.jar
+            module.compose/build/libs/*.jar
+          retention-days: 14
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-reports
+          path: |
+            build/reports/
+            build/test-results/
+            module.compose/build/reports/
+            module.compose/build/test-results/
+          retention-days: 7
+
+      - name: Publish core to Maven
+        if: ${{ env.MAVEN_USER != '' && (steps.version.outputs.core == 'snapshot' || steps.version.outputs.core == 'release') }}
+        run: >
+          ./gradlew :publish --stacktrace
+          -Pmod_version=${{ steps.version.outputs.core-version }}
+
+      - name: Publish compose to Maven
+        if: ${{ env.MAVEN_USER != '' && (steps.version.outputs.compose == 'snapshot' || steps.version.outputs.compose == 'release') }}
+        run: >
+          ./gradlew :module.compose:publish --stacktrace
+          -Pmod_version=${{ steps.version.outputs.compose-core }}
+          -Pcompose_version=${{ steps.version.outputs.compose-version }}
+
+      - name: Publish snapshot release
+        if: ${{ steps.version.outputs.core == 'snapshot' || steps.version.outputs.compose == 'snapshot' }}
+        run: |
+          FILES=()
+          [[ "${{ steps.version.outputs.core }}" == snapshot ]] && FILES+=(build/libs/*.jar)
+          [[ "${{ steps.version.outputs.compose }}" == snapshot ]] && FILES+=(module.compose/build/libs/*.jar)
+          {
+            echo "Automatic snapshot of \`${{ steps.version.outputs.sha7 }}\`."
+            echo
+            [[ "${{ steps.version.outputs.core }}" == snapshot ]] && echo "- LDLib2 \`${{ steps.version.outputs.core-version }}\`"
+            [[ "${{ steps.version.outputs.compose }}" == snapshot ]] && echo "- ldlib2-compose \`${{ steps.version.outputs.compose-version }}\`"
+            echo
+            git log -1 --format='%s' "$GITHUB_SHA"
+          } > notes.md
+          TAG="snapshot-${{ steps.version.outputs.sha7 }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+            exit 0
+          fi
+          gh release create "$TAG" "${FILES[@]}" \
+            --target "$GITHUB_SHA" \
+            --title "Snapshot ${{ steps.version.outputs.sha7 }}" \
+            --notes-file notes.md \
+            --prerelease \
+            --latest=false
+
+      - name: Prune old snapshots
+        if: ${{ steps.version.outputs.core == 'snapshot' || steps.version.outputs.compose == 'snapshot' }}
+        run: |
+          gh release list --limit 200 --json tagName,createdAt \
+            --jq '(env.SNAPSHOTS_TO_KEEP | tonumber) as $keep | [.[] | select(.tagName | startswith("snapshot-"))] | sort_by(.createdAt) | reverse | .[$keep:] | .[].tagName' \
+            | while read -r OLD; do
+                echo "Deleting $OLD"
+                gh release delete "$OLD" --cleanup-tag --yes
+              done
+
+      - name: Publish core release
+        if: ${{ steps.version.outputs.core == 'release' }}
+        run: |
+          TAG="v${{ steps.version.outputs.core-version }}"
+          awk -v h="## $TAG" '$0==h{f=1;next} /^## /&&f{exit} f' CHANGELOG.md > notes.md 2>/dev/null || true
+          [ -s notes.md ] || echo "Release $TAG" > notes.md
+          gh release create "$TAG" build/libs/*.jar \
+            --target "$GITHUB_SHA" \
+            --title "LDLib2 ${{ steps.version.outputs.mc }} ${{ steps.version.outputs.core-version }}" \
+            --notes-file notes.md \
+            --latest
+
+      - name: Publish compose release
+        if: ${{ steps.version.outputs.compose == 'release' }}
+        run: |
+          TAG="compose-v${{ steps.version.outputs.compose-version }}"
+          echo "ldlib2-compose ${{ steps.version.outputs.compose-version }}, requires LDLib2 ${{ steps.version.outputs.compose-core }}." > notes.md
+          gh release create "$TAG" module.compose/build/libs/*.jar \
+            --target "$GITHUB_SHA" \
+            --title "ldlib2-compose ${{ steps.version.outputs.mc }} ${{ steps.version.outputs.compose-version }}" \
+            --notes-file notes.md \
+            --latest=false
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Build ${{ steps.version.outputs.sha7 }}"
+            echo "- LDLib2: ${{ steps.version.outputs.core }} \`${{ steps.version.outputs.core-version }}\`"
+            echo "- ldlib2-compose: ${{ steps.version.outputs.compose }} \`${{ steps.version.outputs.compose-version }}\`"
+            echo "- Maven: $([ -n "$MAVEN_USER" ] && echo enabled || echo 'skipped (no MAVEN_USER secret)')"
+          } >> $GITHUB_STEP_SUMMARY

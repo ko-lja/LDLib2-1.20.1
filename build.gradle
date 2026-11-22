@@ -105,7 +105,10 @@ allprojects {
         }
         maven {
             name "Expandium"
-            url "https://repo.expandium.net/snapshots"
+            url "https://repo.expandium.net/releases"
+            content {
+                includeGroup "org.appliedenergistics.yoga"
+            }
         }
     }
 }
@@ -366,6 +369,11 @@ tasks.register("printVersion") {
     println(mod_version)
 }
 
+configurations.matching { it.name == 'reobfApiElements' }.configureEach { extendsFrom configurations.api }
+configurations.matching { it.name == 'reobfRuntimeElements' }.configureEach {
+    extendsFrom configurations.api, configurations.implementation, configurations.runtimeOnly
+}
+
 // Example configuration to allow publishing using the maven-publish plugin
 // (MDG swaps the reobfuscated jar into the java component, so this publishes SRG-named jars)
 publishing {
@@ -377,7 +385,8 @@ publishing {
     }
     repositories {
         maven {
-            url "https://maven.firstdark.dev/snapshots"
+            name "Expandium"
+            url "https://repo.expandium.net/${version.toString().toLowerCase().contains('snapshot') ? 'snapshots' : 'releases'}"
             credentials {
                 username System.getenv("MAVEN_USER")
                 password System.getenv("MAVEN_PASS")
