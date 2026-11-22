@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(ModelBakery.class)
 public abstract class BlockStateModelLoaderMixin {
 
-    @WrapOperation(method = "/^lambda\\$.*\\$\\d+$/",
+    @WrapOperation(method = "/^(lambda\\$.*\\$\\d+|m_\\d+_)$/",
                    at = @At(value = "INVOKE",
                             target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V",
                             remap = false),

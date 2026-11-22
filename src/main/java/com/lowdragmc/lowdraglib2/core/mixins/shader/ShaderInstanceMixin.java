@@ -37,7 +37,7 @@ public abstract class ShaderInstanceMixin implements ILDShaderInstance {
                                           @Local(argsOnly = true) ResourceProvider resourceProvider,
                                           @Local(argsOnly = true) ResourceLocation shaderLocation,
                                           @Local(argsOnly = true) VertexFormat vertexFormat,
-                                          @Local(name = "jsonobject") JsonObject json) throws IOException {
+                                          @Local JsonObject json) throws IOException {
         this.onCreateShader(resourceProvider, shaderLocation, vertexFormat, json);
         return original.call(provider, type, name);
     }

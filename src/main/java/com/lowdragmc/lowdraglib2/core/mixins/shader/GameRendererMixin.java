@@ -9,10 +9,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
+
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
     @Inject(method = "reloadShaders", at = {@At(value = "HEAD")})
     private void ldlib$reloadShaders(ResourceProvider resourceProvider, CallbackInfo ci) {
-        LDLibShaders.GEOMETRY_TYPE.getPrograms().values().forEach(Program::close);
+        new ArrayList<>(LDLibShaders.GEOMETRY_TYPE.getPrograms().values()).forEach(Program::close);
     }
 }
