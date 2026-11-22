@@ -74,6 +74,8 @@
     <xs:element name="tag-field" type="Element" substitutionGroup="ui-node"/> <!--Todo tag-->
     <xs:element name="text-field" type="TextField" substitutionGroup="ui-node"/>
     <xs:element name="tree-list" type="Element" substitutionGroup="ui-node"/>
+    <xs:element name="virtual-scroller-view" type="Element" substitutionGroup="ui-node"/>
+    <xs:element name="structured-tag-editor" type="Element" substitutionGroup="ui-node"/>
     <xs:element name="template" type="Template" substitutionGroup="ui-node"/>
 
     <xs:complexType name="Element">
@@ -212,6 +214,7 @@
                             <xs:enumeration value="internal"/>
                             <xs:enumeration value="string"/>
                             <xs:enumeration value="nbt"/>
+                            <xs:enumeration value="compound-tag"/>
                             <xs:enumeration value="resource-location"/>
                             <xs:enumeration value="number-long"/>
                             <xs:enumeration value="number-int"/>
@@ -219,6 +222,14 @@
                             <xs:enumeration value="number-double"/>
                             <xs:enumeration value="number-short"/>
                             <xs:enumeration value="number-byte"/>
+                            <xs:enumeration value="compound_tag"/>
+                            <xs:enumeration value="resource_location"/>
+                            <xs:enumeration value="number_long"/>
+                            <xs:enumeration value="number_int"/>
+                            <xs:enumeration value="number_float"/>
+                            <xs:enumeration value="number_double"/>
+                            <xs:enumeration value="number_short"/>
+                            <xs:enumeration value="number_byte"/>
                         </xs:restriction>
                     </xs:simpleType>
                 </xs:attribute>
