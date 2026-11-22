@@ -286,8 +286,10 @@ dependencies {
     modLocalImplementation("dev.architectury:architectury-forge:${architectury_version}") { transitive = false }
 
     // Oculus / Embeddium: the Forge 1.20.1 ports of Iris / Sodium
-    modLocalImplementation("maven.modrinth:embeddium:${embeddium_version}")
-    modLocalImplementation("maven.modrinth:oculus:${oculus_version}")
+    if (!project.hasProperty('server')) { // client only so shouldnt be on a server run
+        modLocalImplementation("maven.modrinth:embeddium:${embeddium_version}")
+        modLocalImplementation("maven.modrinth:oculus:${oculus_version}")
+    }
 
     // lombok
 //    compileOnly 'org.projectlombok:lombok:1.18.30'

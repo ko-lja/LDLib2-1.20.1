@@ -22,6 +22,7 @@ import com.lowdragmc.lowdraglib2.uitest.input.Keys;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 
@@ -210,20 +211,16 @@ public class EditorDockMenuHostScenario implements UIScenario {
         try {
             var toasts = ctx.mc().getToasts();
             var all = new ArrayList<Toast>();
-            var queued = ToastComponent.class.getDeclaredField("queued");
-            queued.setAccessible(true);
+            var queued = ObfuscationReflectionHelper.findField(ToastComponent.class, "f_94916_");
             for (var toast : (Collection<?>) queued.get(toasts)) {
                 all.add((Toast) toast);
             }
-            var visible = ToastComponent.class.getDeclaredField("visible");
-            visible.setAccessible(true);
+            var visible = ObfuscationReflectionHelper.findField(ToastComponent.class, "f_94915_");
             for (var instance : (Collection<?>) visible.get(toasts)) {
-                var getToast = instance.getClass().getDeclaredMethod("getToast");
-                getToast.setAccessible(true);
+                var getToast = ObfuscationReflectionHelper.findMethod(instance.getClass(), "m_94942_");
                 all.add((Toast) getToast.invoke(instance));
             }
-            var title = SystemToast.class.getDeclaredField("title");
-            title.setAccessible(true);
+            var title = ObfuscationReflectionHelper.findField(SystemToast.class, "f_94821_");
             var keys = new ArrayList<String>();
             for (var toast : all) {
                 if (toast instanceof SystemToast

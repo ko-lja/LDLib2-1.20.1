@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 import java.util.function.Supplier;
 
-@KJSBindings
+@KJSBindings(clientOnly = true)
 public final class ClipboardManager {
     public static ClipboardManager INSTANCE = new ClipboardManager();
     private ClipboardManager() {}

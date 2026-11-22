@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
-@KJSBindings
+@KJSBindings(clientOnly = true)
 public class IRendererResource extends Resource<IRenderer> {
     public static final IRendererResource INSTANCE = new IRendererResource();
     private final Set<ResourceProviderContainer<IRenderer>> openedContainers = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));

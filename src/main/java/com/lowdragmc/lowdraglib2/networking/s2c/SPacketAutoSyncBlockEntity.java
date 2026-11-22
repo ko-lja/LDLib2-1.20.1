@@ -7,7 +7,6 @@ import lombok.Getter;
 import net.minecraft.network.FriendlyByteBuf;
 import com.lowdragmc.lowdraglib2.compat.network.StreamCodec;
 import com.lowdragmc.lowdraglib2.compat.network.CustomPacketPayload;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -80,7 +79,8 @@ public class SPacketAutoSyncBlockEntity extends PacketIntLocation {
     }
 
     public static void execute(SPacketAutoSyncBlockEntity packet, IPayloadContext context) {
-        var level = Minecraft.getInstance().level;
+        var player = context.player();
+        var level = player == null ? null : player.level();
         if (level != null) {
             if (level.getBlockEntity(packet.pos) instanceof ISyncBlockEntity syncBlockEntity) {
                 processPacket(syncBlockEntity, packet);
