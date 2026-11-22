@@ -63,7 +63,7 @@ public class Platform {
     }
 
     public static String platformName() {
-        return "NeoForge";
+        return "Forge";
     }
 
     public static boolean isForge() {

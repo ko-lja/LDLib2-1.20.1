@@ -34,6 +34,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.*;
 
 @OnlyIn(Dist.CLIENT)
@@ -42,6 +43,8 @@ public class ClientProxy {
     public ClientProxy(IEventBus eventBus) {
         eventBus.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, LDLibClientConfig.SPEC);
+        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new LDLibConfigScreen(parent)));
     }
 
     @SubscribeEvent
