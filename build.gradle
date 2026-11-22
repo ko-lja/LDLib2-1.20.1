@@ -275,6 +275,9 @@ dependencies {
 
     // EMI
     modCompileOnly("maven.modrinth:emi:${emi_version}")
+    if (project.hasProperty('withEmi')) {
+        modLocalRuntime("maven.modrinth:emi:${emi_version}")
+    }
 
     // AE2
     modLocalImplementation("appeng:appliedenergistics2-forge:${ae2_version}") { transitive = false }
