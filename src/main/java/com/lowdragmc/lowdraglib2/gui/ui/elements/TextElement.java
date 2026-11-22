@@ -199,7 +199,7 @@ public class TextElement extends UIElement {
     private List<Tuple<FormattedCharSequence, Float>> formattedLines = Collections.emptyList();
 
     public void recompute() {
-        if (!LDLib2.isClient()) return;
+        if (!LDLib2.isClient() || !RenderSystem.isOnRenderThread()) return;
         var maxWidth = 0f;
         var wrap = getTextStyle().textWrap();
         var font = getTextStyle().font();
