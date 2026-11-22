@@ -49,6 +49,7 @@ public class LDFontSet extends FontSet {
     private static final int MISSING_HEIGHT = 8;
     private static final int MISSING_UPSCALE = 4;
     private static final int MISSING_PADDING = 2;
+    private static final float BAKED_GLYPH_UP_BIAS = 3f;
 
     private final LDFontManager manager;
     private final List<GlyphSource> sources;
@@ -287,7 +288,7 @@ public class LDFontSet extends FontSet {
             bakedRasterCount++;
         }
         return new BakedGlyph(slot.page().renderTypes(), slot.u0(), slot.u1(), slot.v0(), slot.v1(),
-                raw.left(), raw.right(), raw.top(), raw.bottom());
+                raw.left(), raw.right(), raw.top() + BAKED_GLYPH_UP_BIAS, raw.bottom() + BAKED_GLYPH_UP_BIAS);
     }
 
     /**
