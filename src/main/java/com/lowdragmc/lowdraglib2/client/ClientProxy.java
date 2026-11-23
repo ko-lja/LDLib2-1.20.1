@@ -164,6 +164,8 @@ public class ClientProxy {
                 }
             }
         }
+        SCRAPED_TEXTURES.clear();
+        WRAPPED_MODELS.clear();
 
     }
 

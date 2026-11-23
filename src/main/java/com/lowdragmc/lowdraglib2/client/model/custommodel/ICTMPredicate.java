@@ -6,7 +6,6 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import com.lowdragmc.lowdraglib2.client.renderer.IBlockRendererProvider;
-import com.lowdragmc.lowdraglib2.utils.virtuallevel.FacadeBlockAndTintGetter;
 
 import javax.annotation.Nonnull;
 

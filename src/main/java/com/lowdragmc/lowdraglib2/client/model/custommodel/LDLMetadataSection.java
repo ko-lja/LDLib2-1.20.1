@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @OnlyIn(Dist.CLIENT)
 public class LDLMetadataSection {
     public static final String SECTION_NAME = LDLib2.MOD_ID;
+    public static final String LEGACY_SECTION_NAME = "ldlib";
     private static final Map<ResourceLocation, LDLMetadataSection> METADATA_CACHE = new ConcurrentHashMap<>();
     public static final LDLMetadataSection MISSING = new LDLMetadataSection(false, null);
 
@@ -49,7 +50,10 @@ public class LDLMetadataSection {
         if (resourceOptional.isPresent()) {
             var resource = resourceOptional.get();
             try {
-                ret = resource.metadata().getSection(Serializer.INSTANCE).get();
+                var metadata = resource.metadata();
+                ret = metadata.getSection(Serializer.INSTANCE)
+                        .or(() -> metadata.getSection(Serializer.LEGACY))
+                        .orElse(MISSING);
             } catch (Exception ignored) {
             }
         }
@@ -84,12 +88,19 @@ public class LDLMetadataSection {
     }
 
     public static class Serializer implements MetadataSectionSerializer<LDLMetadataSection> {
-        static Serializer INSTANCE = new Serializer();
+        static final Serializer INSTANCE = new Serializer(SECTION_NAME);
+        static final Serializer LEGACY = new Serializer(LEGACY_SECTION_NAME);
+
+        private final String sectionName;
+
+        private Serializer(String sectionName) {
+            this.sectionName = sectionName;
+        }
 
         @Override
         @Nonnull
         public String getMetadataSectionName() {
-            return SECTION_NAME;
+            return sectionName;
         }
 
         @Override

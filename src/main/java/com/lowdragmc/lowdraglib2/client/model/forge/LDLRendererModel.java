@@ -99,9 +99,6 @@ public class LDLRendererModel implements IUnbakedGeometry<LDLRendererModel> {
         public static final ModelProperty<BlockPos> POS = new ModelProperty<>();
         public static final ModelProperty<ModelData> MODEL_DATA = new ModelProperty<>();
 
-        public static final ThreadLocal<ModelData> CURRENT_MODEL_DATA = new ThreadLocal<>();
-        public static final ThreadLocal<RenderType> CURRENT_RENDER_TYPE = new ThreadLocal<>();
-
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
             var renderer = data.get(RENDERER);
@@ -112,14 +109,10 @@ public class LDLRendererModel implements IUnbakedGeometry<LDLRendererModel> {
                 renderer = rendererProvider.getRenderer(state);
             }
             if (renderer != null) {
-                CURRENT_MODEL_DATA.set(data);
-                CURRENT_RENDER_TYPE.set(renderType);
                 var quads = renderer.renderModel(world, pos, state, side, rand, modelData, renderType);
                 if (renderer.reBakeCustomQuads() && state != null && world != null && pos != null) {
                     return CustomBakedModel.reBakeCustomQuads(quads, world, pos, state, side, renderer.reBakeCustomQuadsOffset());
                 }
-                CURRENT_MODEL_DATA.remove();
-                CURRENT_RENDER_TYPE.remove();
                 return quads;
             }
             return Collections.emptyList();
@@ -160,10 +153,7 @@ public class LDLRendererModel implements IUnbakedGeometry<LDLRendererModel> {
             var pos = data.get(POS);
             var modelData = data.get(MODEL_DATA);
             if (renderer != null) {
-                CURRENT_MODEL_DATA.set(data);
-                var texture = renderer.getParticleTexture(world, pos, modelData);
-                CURRENT_MODEL_DATA.remove();
-                return texture;
+                return renderer.getParticleTexture(world, pos, modelData);
             }
             return BakedModel.super.getParticleIcon(data);
         }

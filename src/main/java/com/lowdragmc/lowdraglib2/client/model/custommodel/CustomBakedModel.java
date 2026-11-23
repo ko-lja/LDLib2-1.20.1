@@ -41,12 +41,12 @@ public class CustomBakedModel implements BakedModel {
     @Getter
     protected final BakedModel parent;
     protected final ConcurrentMap<Direction, ConcurrentMap<Connections, List<BakedQuad>>> sideCache;
-    protected final List<BakedQuad> noSideCache;
+    protected final ConcurrentMap<Connections, List<BakedQuad>> noSideCache;
 
     public CustomBakedModel(BakedModel parent) {
         this.parent = parent;
         this.sideCache = new ConcurrentHashMap<>();
-        this.noSideCache = new ArrayList<>();
+        this.noSideCache = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -90,14 +90,7 @@ public class CustomBakedModel implements BakedModel {
     public List<BakedQuad> getCustomQuads(BlockAndTintGetter level, BlockPos pos, @Nonnull BlockState state, @Nullable Direction side, RandomSource rand) {
         var connections = Connections.checkConnections(level, pos, state, side);
         if (side == null) {
-            if (noSideCache.isEmpty()) {
-                synchronized (noSideCache) {
-                    if (noSideCache.isEmpty()) {
-                        noSideCache.addAll(buildCustomQuads(connections, parent.getQuads(state, null, rand), 0.0f));
-                    }
-                }
-            }
-            return noSideCache;
+            return noSideCache.computeIfAbsent(connections, key -> buildCustomQuads(key, parent.getQuads(state, null, rand), 0.0f));
         }
         return sideCache
             .computeIfAbsent(side, key -> new ConcurrentHashMap<>())
