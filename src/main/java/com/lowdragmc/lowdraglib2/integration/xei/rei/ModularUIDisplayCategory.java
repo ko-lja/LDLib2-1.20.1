@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.integration.xei.rei;
 
+import com.lowdragmc.lowdraglib2.gui.sync.bindings.impl.DataBindingBuilder;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -42,12 +43,14 @@ public abstract class ModularUIDisplayCategory<T extends ModularUIDisplay> imple
                 .build(new CacheLoader<>() {
                     @Override
                     public ModularUI load(T display) {
-                        var mui = uiProvider.createModularUI(display);
-                        mui.setTickWhileRending(true);
-                        mui.setAllowDebugMode(false);
-                        mui.setDrawTooltips(false);
-                        mui.init(getDisplayWidth(display), getDisplayHeight());
-                        return mui;
+                        return DataBindingBuilder.local(() -> {
+                            var mui = uiProvider.createModularUI(display);
+                            mui.setTickWhileRending(true);
+                            mui.setAllowDebugMode(false);
+                            mui.setDrawTooltips(false);
+                            mui.init(getDisplayWidth(display), getDisplayHeight());
+                            return mui;
+                        });
                     }
                 });
         this.ingredientCache = CacheBuilder.newBuilder()

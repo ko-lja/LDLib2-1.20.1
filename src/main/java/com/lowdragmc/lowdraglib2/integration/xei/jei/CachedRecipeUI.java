@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.integration.xei.jei;
 
+import com.lowdragmc.lowdraglib2.gui.sync.bindings.impl.DataBindingBuilder;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -28,11 +29,11 @@ final class CachedRecipeUI<T> {
                 .build(new CacheLoader<>() {
                     @Override
                     public Entry load(T key) {
-                        return Entry.create(
+                        return DataBindingBuilder.local(() -> Entry.create(
                                 uiProvider.createModularUI(key),
                                 width.getAsInt(),
                                 height.getAsInt()
-                        );
+                        ));
                     }
                 });
     }

@@ -29,6 +29,8 @@ import java.util.function.Supplier;
 @MethodsReturnNonnullByDefault
 @KJSBindings
 public class DataBindingBuilder<T> {
+    private static final ThreadLocal<Integer> LOCAL_DEPTH = ThreadLocal.withInitial(() -> 0);
+
     @Getter @Setter
     private String name = "unknown";
     @Setter
@@ -145,7 +147,17 @@ public class DataBindingBuilder<T> {
         return this;
     }
 
+    public static <R> R local(Supplier<R> factory) {
+        LOCAL_DEPTH.set(LOCAL_DEPTH.get() + 1);
+        try {
+            return factory.get();
+        } finally {
+            LOCAL_DEPTH.set(LOCAL_DEPTH.get() - 1);
+        }
+    }
+
     public SimpleBinding<T> build() {
+        if (LOCAL_DEPTH.get() > 0) return build(false);
         if (LDLib2.isRemote()) return build(true);
         if (LDLib2.isServer()) return build(false);
         throw new IllegalStateException("Cannot build the binding '%s': the current thread is neither a client nor a server thread. Use build(boolean isRemote) to pick a side explicitly.".formatted(name));

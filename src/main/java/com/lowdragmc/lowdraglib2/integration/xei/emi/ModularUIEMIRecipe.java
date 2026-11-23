@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.integration.xei.emi;
 
+import com.lowdragmc.lowdraglib2.gui.sync.bindings.impl.DataBindingBuilder;
 import com.google.common.base.Suppliers;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -45,12 +46,14 @@ public abstract class ModularUIEMIRecipe implements EmiRecipe {
                 .build(new CacheLoader<>() {
                     @Override
                     public ModularUI load(ModularUIEMIRecipe key) {
-                        var mui = uiProvider.createModularUI(key);
-                        mui.setTickWhileRending(true);
-                        mui.setAllowDebugMode(false);
-                        mui.setDrawTooltips(false);
-                        mui.init(getDisplayWidth(), getDisplayHeight());
-                        return mui;
+                        return DataBindingBuilder.local(() -> {
+                            var mui = uiProvider.createModularUI(key);
+                            mui.setTickWhileRending(true);
+                            mui.setAllowDebugMode(false);
+                            mui.setDrawTooltips(false);
+                            mui.init(getDisplayWidth(), getDisplayHeight());
+                            return mui;
+                        });
                     }
                 });
         this.ingredientCache = Suppliers.memoizeWithExpiration(() -> {var recipeIngredient = new EMIRecipeIngredientHandler();
