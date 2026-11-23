@@ -13,6 +13,7 @@
     "ItemModelShaperMixin",
     "ItemRendererMixin",
     "ModelBakeryMixin",
+    "ModelBakerImplMixin",
     "emi.RecipeScreenMixin",
     "ObjModelMixin",
     "ParticleEngineAccessor",

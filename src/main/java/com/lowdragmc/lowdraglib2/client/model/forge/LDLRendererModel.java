@@ -3,6 +3,7 @@ package com.lowdragmc.lowdraglib2.client.model.forge;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.lowdragmc.lowdraglib2.client.model.custommodel.CustomBakedModel;
 import com.lowdragmc.lowdraglib2.client.renderer.IBlockRendererProvider;
 import com.lowdragmc.lowdraglib2.client.renderer.IRenderer;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -98,6 +99,8 @@ public class LDLRendererModel implements IUnbakedGeometry<LDLRendererModel> {
         public static final ModelProperty<BlockPos> POS = new ModelProperty<>();
         public static final ModelProperty<ModelData> MODEL_DATA = new ModelProperty<>();
 
+        public static final ThreadLocal<ModelData> CURRENT_MODEL_DATA = new ThreadLocal<>();
+        public static final ThreadLocal<RenderType> CURRENT_RENDER_TYPE = new ThreadLocal<>();
 
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand, ModelData data, @Nullable RenderType renderType) {
@@ -109,7 +112,15 @@ public class LDLRendererModel implements IUnbakedGeometry<LDLRendererModel> {
                 renderer = rendererProvider.getRenderer(state);
             }
             if (renderer != null) {
-                return renderer.renderModel(world, pos, state, side, rand, modelData, renderType);
+                CURRENT_MODEL_DATA.set(data);
+                CURRENT_RENDER_TYPE.set(renderType);
+                var quads = renderer.renderModel(world, pos, state, side, rand, modelData, renderType);
+                if (renderer.reBakeCustomQuads() && state != null && world != null && pos != null) {
+                    return CustomBakedModel.reBakeCustomQuads(quads, world, pos, state, side, renderer.reBakeCustomQuadsOffset());
+                }
+                CURRENT_MODEL_DATA.remove();
+                CURRENT_RENDER_TYPE.remove();
+                return quads;
             }
             return Collections.emptyList();
         }
@@ -149,7 +160,10 @@ public class LDLRendererModel implements IUnbakedGeometry<LDLRendererModel> {
             var pos = data.get(POS);
             var modelData = data.get(MODEL_DATA);
             if (renderer != null) {
-                return renderer.getParticleTexture(world, pos, modelData);
+                CURRENT_MODEL_DATA.set(data);
+                var texture = renderer.getParticleTexture(world, pos, modelData);
+                CURRENT_MODEL_DATA.remove();
+                return texture;
             }
             return BakedModel.super.getParticleIcon(data);
         }
