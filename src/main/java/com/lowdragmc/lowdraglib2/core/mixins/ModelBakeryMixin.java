@@ -30,7 +30,7 @@ public abstract class ModelBakeryMixin {
               at = @At(value = "INVOKE",
                        target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;[Ljava/lang/Object;)V", remap = false))
     protected void injectStateToModelLocation(Logger instance, String s, Object[] objects, Operation<Void> original) {
-        ResourceLocation id = objects[0] instanceof ResourceLocation rl ? rl : null;
+        ResourceLocation id = objects[0] instanceof ResourceLocation rl ? new ResourceLocation(rl.getNamespace(), rl.getPath()) : null;
         if (id != null) {
             if (id.getPath().startsWith("block/")) {
                 id = id.withPath(id.getPath().substring("block/".length()));
