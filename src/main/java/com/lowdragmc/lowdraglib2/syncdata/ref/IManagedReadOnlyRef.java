@@ -23,23 +23,31 @@ public class IManagedReadOnlyRef extends ReadOnlyRef<IManaged> {
 
     @Override
     public void clearSyncDirty() {
-        for (var field : getManaged().getSyncStorage().getSyncFields()) {
-            field.clearSyncDirty();
+        var managed = readRaw();
+        if (managed != null) {
+            for (var field : managed.getSyncStorage().getSyncFields()) {
+                field.clearSyncDirty();
+            }
         }
         super.clearSyncDirty();
     }
 
     @Override
     public void clearPersistedDirty() {
-        for (var field : getManaged().getSyncStorage().getPersistedFields()) {
-            field.clearPersistedDirty();
+        var managed = readRaw();
+        if (managed != null) {
+            for (var field : managed.getSyncStorage().getPersistedFields()) {
+                field.clearPersistedDirty();
+            }
         }
         super.clearPersistedDirty();
     }
 
     @Override
     public void readOnlyUpdate() {
-        var storage = getManaged().getSyncStorage();
+        var managed = readRaw();
+        if (managed == null) return;
+        var storage = managed.getSyncStorage();
 
         for (IRef<?> field : storage.getNonLazyFields()) {
             field.update();

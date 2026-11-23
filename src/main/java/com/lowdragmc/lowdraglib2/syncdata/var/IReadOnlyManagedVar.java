@@ -39,9 +39,9 @@ public interface IReadOnlyManagedVar<TYPE> {
         }
 
         @Override
-        public boolean checkIsDirty() {
+        public boolean checkIsDirty(TYPE value) {
             try {
-                return onDirtyMethod != null && (boolean) onDirtyMethod.invoke(instance);
+                return onDirtyMethod != null && (boolean) onDirtyMethod.invoke(instance, value);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -64,7 +64,7 @@ public interface IReadOnlyManagedVar<TYPE> {
      * Evaluates whether the associated object or state is "dirty" (i.e., has been modified or requires further action).
      * This method internally checks if a custom "dirty checker" is available
      */
-    boolean checkIsDirty();
+    boolean checkIsDirty(TYPE value);
 
     /**
      * Serializes a unique identifier (UID) for the specified object into a CompoundTag.

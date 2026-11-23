@@ -69,7 +69,7 @@ public abstract class ReadOnlyManagedRef<TYPE> extends Ref<TYPE> {
             var newUid = managedVar.serializeUid(newValue);
             if (newUid.equals(oldUid)) {
                 if (managedVar.hasDirtyChecker()) {
-                    if (managedVar.checkIsDirty()) {
+                    if (managedVar.checkIsDirty(newValue)) {
                         markAsDirty();
                     }
                 } else {
