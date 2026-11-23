@@ -1,8 +1,11 @@
 package com.lowdragmc.lowdraglib2.core.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.lowdragmc.lowdraglib2.client.model.custommodel.LDLMetadataSection;
 import com.lowdragmc.lowdraglib2.client.renderer.IRenderer;
 import com.lowdragmc.lowdraglib2.editor.resource.IRendererResource;
+
+import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
@@ -14,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * @author KilaBash
@@ -22,6 +26,19 @@ import java.util.*;
  */
 @Mixin(SpriteResourceLoader.class)
 public abstract class SpriteSourceListMixin {
+
+    // load ctm textures
+    @Inject(method = "list", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/ImmutableList;builder()Lcom/google/common/collect/ImmutableList$Builder;"))
+    private void injectList(ResourceManager resourceManager, CallbackInfoReturnable<List<Supplier<SpriteContents>>> cir,
+                            @Local Map<ResourceLocation, SpriteSource.SpriteSupplier> map,
+                            @Local SpriteSource.Output output) {
+        for (ResourceLocation spriteName : map.keySet()) {
+            var data = LDLMetadataSection.getMetadata(LDLMetadataSection.spriteToAbsolute(spriteName));
+            if (data.connection != null) {
+                new SingleFile(data.connection, Optional.empty()).run(resourceManager, output);
+            }
+        }
+    }
 
     // try to load all renderer textures
     @Inject(method = "load", at = @At(value = "RETURN"))

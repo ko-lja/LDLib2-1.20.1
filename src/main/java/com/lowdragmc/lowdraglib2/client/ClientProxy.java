@@ -1,15 +1,21 @@
 package com.lowdragmc.lowdraglib2.client;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.lowdragmc.lowdraglib2.CommonProxy;
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
 import com.lowdragmc.lowdraglib2.client.font.LDFontManager;
 import com.lowdragmc.lowdraglib2.client.font.LDFontStatsOverlay;
+import com.lowdragmc.lowdraglib2.client.model.custommodel.CustomBakedModel;
+import com.lowdragmc.lowdraglib2.client.model.custommodel.LDLMetadataSection;
 import com.lowdragmc.lowdraglib2.client.model.forge.LDLRendererModel;
 import com.lowdragmc.lowdraglib2.client.renderer.ATESRRendererProvider;
 import com.lowdragmc.lowdraglib2.client.renderer.IRenderer;
+import com.lowdragmc.lowdraglib2.client.renderer.block.RendererBlock;
 import com.lowdragmc.lowdraglib2.client.shader.LDLibShaders;
 import com.lowdragmc.lowdraglib2.core.mixins.ParticleEngineAccessor;
+import com.lowdragmc.lowdraglib2.core.mixins.accessor.ModelBakeryAccessor;
 import com.lowdragmc.lowdraglib2.editor.resource.EditorResourceEvent;
 import com.lowdragmc.lowdraglib2.editor.resource.IRendererResource;
 import com.lowdragmc.lowdraglib2.editor.resource.PackResourceManager;
@@ -27,8 +33,15 @@ import com.lowdragmc.lowdraglib2.gui.ui.utils.ModularUITooltipComponent;
 import com.lowdragmc.lowdraglib2.integration.kjs.ui.LDKJSMenuTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.client.gui.screens.MenuScreens;
+
+import com.lowdragmc.lowdraglib2.test.TestBlock;
+import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.client.resources.model.*;
 import net.minecraft.resources.ResourceLocation;
@@ -36,21 +49,24 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.*;
+
+import java.util.*;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientProxy {
 
-    public ClientProxy(IEventBus eventBus) {
+    public static final Multimap<ResourceLocation, Material> SCRAPED_TEXTURES = HashMultimap.create();
+    public static final Object2BooleanMap<ResourceLocation> WRAPPED_MODELS = new Object2BooleanLinkedOpenHashMap<>();
+
+    public ClientProxy(FMLJavaModLoadingContext ctx, IEventBus eventBus) {
         eventBus.register(this);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, LDLibClientConfig.SPEC);
-        ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+        ctx.registerConfig(ModConfig.Type.CLIENT, LDLibClientConfig.SPEC);
+        ctx.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new LDLibConfigScreen(parent)));
     }
 
@@ -77,12 +93,80 @@ public class ClientProxy {
             if (LDLib2.isKubejsLoaded()) {
                 LDKJSMenuTypes.onRegisterMenuScreensEvent();
             }
+
+            //noinspection removal
+            ItemBlockRenderTypes.setRenderLayer(RendererBlock.BLOCK, RenderType.translucent());
+            if (Platform.isDevEnv()) {
+                //noinspection removal
+                ItemBlockRenderTypes.setRenderLayer(TestBlock.BLOCK, RenderType.cutoutMipped());
+            }
         });
     }
 
     @SubscribeEvent
     public void modelRegistry(final ModelEvent.RegisterGeometryLoaders e) {
         e.register(LDLib2.id("renderer").getPath(), LDLRendererModel.Loader.INSTANCE);
+    }
+
+    @SubscribeEvent
+    public void modelBake(final ModelEvent.ModifyBakingResult event) {
+        ModelBakery modelBakery = event.getModelBakery();
+        for (Map.Entry<ResourceLocation, BakedModel> entry : event.getModels().entrySet()) {
+            ResourceLocation rl = entry.getKey();
+            UnbakedModel rootModel = ((ModelBakeryAccessor)modelBakery).getTopLevelModels().get(rl);
+            if (rootModel != null) {
+                BakedModel baked = entry.getValue();
+                if (baked instanceof LDLRendererModel) {
+                    continue;
+                }
+                if (baked.isCustomRenderer()) { // Nothing we can add to builtin models
+                    continue;
+                }
+                Deque<ResourceLocation> dependencies = new ArrayDeque<>();
+                Set<ResourceLocation> seenModels = new HashSet<>();
+                dependencies.push(rl);
+                seenModels.add(rl);
+                boolean shouldWrap = ClientProxy.WRAPPED_MODELS.getOrDefault(rl, false);
+                // Breadth-first loop through dependencies, exiting as soon as a CTM texture is found, and skipping duplicates/cycles
+                while (!shouldWrap && !dependencies.isEmpty()) {
+                    ResourceLocation dep = dependencies.pop();
+                    UnbakedModel model;
+                    try {
+                        model = dep == rl ? rootModel : modelBakery.getModel(dep);
+                    } catch (Exception e) {
+                        continue;
+                    }
+
+                    try {
+                        Set<Material> textures = new HashSet<>(ClientProxy.SCRAPED_TEXTURES.get(dep));
+                        for (Material tex : textures) {
+                            // Cache all dependent texture metadata
+                            // At least one texture has CTM metadata, so we should wrap this model
+                            if (!LDLMetadataSection.getMetadata(LDLMetadataSection.spriteToAbsolute(tex.texture())).isMissing()) { // TODO lazy
+                                shouldWrap = true;
+                                break;
+                            }
+                        }
+                        if (!shouldWrap) {
+                            for (ResourceLocation newDep : model.getDependencies()) {
+                                if (seenModels.add(newDep)) {
+                                    dependencies.push(newDep);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        LDLib2.LOGGER.error("Error loading model dependency {} for model {}. Skipping...", dep, rl, e);
+                    }
+                }
+                ClientProxy.WRAPPED_MODELS.put(rl, shouldWrap);
+                if (shouldWrap) {
+                    entry.setValue(new CustomBakedModel(baked));
+                }
+            }
+        }
+        SCRAPED_TEXTURES.clear();
+        WRAPPED_MODELS.clear();
+
     }
 
     @SubscribeEvent
@@ -158,6 +242,10 @@ public class ClientProxy {
             return accessor.getProviders().get(ForgeRegistries.PARTICLE_TYPES.getKey(type));
         }
         return null;
+    }
+
+    public static void textureScraped(ResourceLocation modelLocation, Material material) {
+        SCRAPED_TEXTURES.put(modelLocation, material);
     }
 
 }
