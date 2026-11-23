@@ -2,6 +2,7 @@ package com.lowdragmc.lowdraglib2.core.mixins;
 
 import com.lowdragmc.lowdraglib2.LDLib2;
 import com.lowdragmc.lowdraglib2.Platform;
+import com.lowdragmc.lowdraglib2.client.model.custommodel.CustomBakedModel;
 import com.lowdragmc.lowdraglib2.client.model.custommodel.LDLMetadataSection;
 import com.lowdragmc.lowdraglib2.utils.CustomResourcePack;
 import net.minecraft.server.packs.PackResources;
@@ -34,5 +35,6 @@ public abstract class ReloadableResourceManagerMixin {
     @Unique
     private static void ldlib2$injectClientResourcePack() {
         LDLMetadataSection.clearCache();
+        CustomBakedModel.clearCache();
     }
 }

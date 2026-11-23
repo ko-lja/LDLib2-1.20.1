@@ -22,6 +22,7 @@ public class LDLMetadataSection {
     public static final String SECTION_NAME = LDLib2.MOD_ID;
     public static final String LEGACY_SECTION_NAME = "ldlib";
     private static final Map<ResourceLocation, LDLMetadataSection> METADATA_CACHE = new ConcurrentHashMap<>();
+    private static final Map<TextureAtlasSprite, LDLMetadataSection> SPRITE_METADATA_CACHE = new ConcurrentHashMap<>();
     public static final LDLMetadataSection MISSING = new LDLMetadataSection(false, null);
 
     public final boolean emissive;
@@ -34,6 +35,7 @@ public class LDLMetadataSection {
 
     public static void clearCache() {
         METADATA_CACHE.clear();
+        SPRITE_METADATA_CACHE.clear();
     }
 
     public boolean isMissing() {
@@ -63,17 +65,20 @@ public class LDLMetadataSection {
 
     @Nonnull
     public static LDLMetadataSection getMetadata(TextureAtlasSprite sprite) {
-        return getMetadata(spriteToAbsolute(sprite.contents().name()));
+        var cached = SPRITE_METADATA_CACHE.get(sprite);
+        if (cached != null) return cached;
+        var section = getMetadata(spriteToAbsolute(sprite.contents().name()));
+        SPRITE_METADATA_CACHE.put(sprite, section);
+        return section;
     }
 
     public static boolean isEmissive(TextureAtlasSprite sprite) {
-        LDLMetadataSection ret = getMetadata(spriteToAbsolute(sprite.contents().name()));
-        return ret.emissive;
+        return getMetadata(sprite).emissive;
     }
 
     @Nullable
     public static TextureAtlasSprite getConnection(TextureAtlasSprite sprite) {
-        LDLMetadataSection ret = getMetadata(spriteToAbsolute(sprite.contents().name()));
+        LDLMetadataSection ret = getMetadata(sprite);
         return ret.connection == null ? null : ModelFactory.getBlockSprite(ret.connection);
     }
 

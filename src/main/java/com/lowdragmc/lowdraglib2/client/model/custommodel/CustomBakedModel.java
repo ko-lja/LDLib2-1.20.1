@@ -1,5 +1,7 @@
 package com.lowdragmc.lowdraglib2.client.model.custommodel;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.lowdragmc.lowdraglib2.client.model.ModelFactory;
 import com.lowdragmc.lowdraglib2.client.model.bakedpipeline.Quad;
 import com.lowdragmc.lowdraglib2.client.model.bakedpipeline.Submap;
@@ -38,6 +40,11 @@ import static com.lowdragmc.lowdraglib2.client.model.forge.LDLRendererModel.Rend
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class CustomBakedModel implements BakedModel {
+    private static final Object NO_CONNECTIONS = new Object();
+    private static final Cache<BakedQuad, ConcurrentMap<Object, List<BakedQuad>>> REBAKED_QUADS = CacheBuilder.newBuilder()
+            .weakKeys()
+            .build();
+
     @Getter
     protected final BakedModel parent;
     protected final ConcurrentMap<Direction, ConcurrentMap<Connections, List<BakedQuad>>> sideCache;
@@ -98,38 +105,84 @@ public class CustomBakedModel implements BakedModel {
     }
 
     public static List<BakedQuad> reBakeCustomQuads(List<BakedQuad> quads, BlockAndTintGetter level, BlockPos pos, @Nonnull BlockState state, @Nullable Direction side, float offset) {
-        return buildCustomQuads(Connections.checkConnections(level, pos, state, side), quads, offset);
+        Connections connections = null;
+        List<BakedQuad> result = null;
+        int index = 0;
+        for (var bakedQuad : quads) {
+            var section = LDLMetadataSection.getMetadata(bakedQuad.getSprite());
+            if (isPassThrough(section, offset)) {
+                if (result != null) result.add(bakedQuad);
+                index++;
+                continue;
+            }
+            if (result == null) {
+                result = new ArrayList<>(quads.size() + 8);
+                result.addAll(quads.subList(0, index));
+            }
+            index++;
+            if (section.connection != null && connections == null) {
+                connections = Connections.checkConnections(level, pos, state, side);
+            }
+            result.addAll(rebakeCached(bakedQuad, section, connections, offset));
+        }
+        return result == null ? quads : result;
     }
 
     public static List<BakedQuad> buildCustomQuads(Connections connections, List<BakedQuad> base, float offset) {
-        List<BakedQuad> result = new LinkedList<>();
+        List<BakedQuad> result = new ArrayList<>(base.size() + 8);
         for (BakedQuad bakedQuad : base) {
             var section = LDLMetadataSection.getMetadata(bakedQuad.getSprite());
-            TextureAtlasSprite connection = section.connection == null ? null : ModelFactory.getBlockSprite(section.connection);
-            if (connection == null) {
-                result.add(makeQuad(bakedQuad, section, offset).rebake());
-                continue;
-            }
-
-            Quad quad = makeQuad(bakedQuad, section, offset).derotate();
-            Quad[] quads = quad.subdivide(4);
-
-            int[] ctm = connections.getSubmapIndices();
-
-            for (int j = 0; j < quads.length; j++) {
-                Quad q = quads[j];
-                if (q == null) continue;
-                int ctmid = q.getUvs().normalize().getQuadrant();
-                quads[j] = q.grow().transformUVs(ctm[ctmid] > 15 ? bakedQuad.getSprite() : connection, Submap.uvs[ctm[ctmid]]);
-            }
-
-            for (Quad quad1 : quads) {
-                if (quad1 == null) continue;
-                BakedQuad rebake = quad1.rebake();
-                result.add(rebake);
+            if (isPassThrough(section, offset)) {
+                result.add(bakedQuad);
+            } else {
+                result.addAll(rebakeCached(bakedQuad, section, connections, offset));
             }
         }
         return result;
+    }
+
+    public static void clearCache() {
+        REBAKED_QUADS.invalidateAll();
+    }
+
+    private static boolean isPassThrough(LDLMetadataSection section, float offset) {
+        return section.connection == null && !section.emissive && offset == 0f;
+    }
+
+    private static List<BakedQuad> rebakeCached(BakedQuad bakedQuad, LDLMetadataSection section, @Nullable Connections connections, float offset) {
+        if (offset != 0f) {
+            return rebake(bakedQuad, section, connections, offset);
+        }
+        Object key = section.connection == null || connections == null ? NO_CONNECTIONS : connections;
+        return REBAKED_QUADS.asMap()
+                .computeIfAbsent(bakedQuad, quad -> new ConcurrentHashMap<>())
+                .computeIfAbsent(key, k -> rebake(bakedQuad, section, connections, 0f));
+    }
+
+    private static List<BakedQuad> rebake(BakedQuad bakedQuad, LDLMetadataSection section, @Nullable Connections connections, float offset) {
+        TextureAtlasSprite connection = section.connection == null || connections == null ? null : ModelFactory.getBlockSprite(section.connection);
+        if (connection == null) {
+            return List.of(makeQuad(bakedQuad, section, offset).rebake());
+        }
+
+        Quad quad = makeQuad(bakedQuad, section, offset).derotate();
+        Quad[] quads = quad.subdivide(4);
+
+        int[] ctm = connections.getSubmapIndices();
+
+        for (int j = 0; j < quads.length; j++) {
+            Quad q = quads[j];
+            if (q == null) continue;
+            int ctmid = q.getUvs().normalize().getQuadrant();
+            quads[j] = q.grow().transformUVs(ctm[ctmid] > 15 ? bakedQuad.getSprite() : connection, Submap.uvs[ctm[ctmid]]);
+        }
+
+        List<BakedQuad> result = new ArrayList<>(4);
+        for (Quad quad1 : quads) {
+            if (quad1 == null) continue;
+            result.add(quad1.rebake());
+        }
+        return List.copyOf(result);
     }
 
     protected static Quad makeQuad(BakedQuad bq, LDLMetadataSection section, float offset) {
