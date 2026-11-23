@@ -258,8 +258,9 @@ public class Scene extends UIElement {
         level = world;
         dummyWorld = world instanceof TrackedDummyWorld trackedLevel ? trackedLevel : new TrackedDummyWorld(world);
         //compute window size from scaled width & height
-        this.renderer = ClientWrapper.createWorldSceneRenderer(dummyWorld, useFBOSceneRenderer, fboSize);
-        dummyWorld.setBlockFilter(core::contains);
+        renderer = ClientWrapper.createWorldSceneRenderer(dummyWorld, useFBOSceneRenderer, fboSize);
+        var _renderer = renderer;
+        dummyWorld.setBlockFilter(pos -> _renderer.renderedBlocksMap.keySet().stream().anyMatch(c -> c.contains(pos)));
         center = new Vector3f(0, 0, 0);
         renderer.useOrtho(useOrtho);
         renderer.setOnLookingAt(ray -> {});
