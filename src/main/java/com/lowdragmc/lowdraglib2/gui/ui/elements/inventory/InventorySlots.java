@@ -10,7 +10,6 @@ import dev.vfyjxf.taffy.style.AlignContent;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import dev.vfyjxf.taffy.style.JustifyContent;
 import net.minecraft.world.inventory.Slot;
-import org.appliedenergistics.yoga.YogaEdge;
 
 import java.util.function.Consumer;
 

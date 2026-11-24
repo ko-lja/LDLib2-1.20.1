@@ -22,6 +22,7 @@ import com.lowdragmc.lowdraglib2.editor.ui.view.ResourceView;
 import com.lowdragmc.lowdraglib2.gui.ColorPattern;
 import com.lowdragmc.lowdraglib2.gui.texture.Icons;
 import com.lowdragmc.lowdraglib2.gui.texture.SpriteTexture;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Edge;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Horizontal;
 import com.lowdragmc.lowdraglib2.gui.ui.data.TextWrap;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Vertical;
@@ -47,7 +48,6 @@ import lombok.Getter;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.appliedenergistics.yoga.*;
 import org.lwjgl.glfw.GLFW;
 
 import org.jetbrains.annotations.Nullable;
@@ -217,17 +217,17 @@ public abstract class Editor extends UIElement implements EditorHost {
         rootWindow.setAnchorId(ANCHOR_ROOT);
         var split1 = rootWindow
                 .splitStyle(style -> style.percentage(80).minPercentage(5).maxPercentage(95))
-                .splitNew(YogaEdge.LEFT);
+                .splitNew(Edge.LEFT);
         rightWindow = split1.getSecond().setImmortal(true);
         rightWindow.setAnchorId(ANCHOR_RIGHT);
         var split2 = split1.getFirst()
                 .splitStyle(style -> style.percentage(75).minPercentage(5).maxPercentage(95))
-                .splitNew(YogaEdge.TOP);
+                .splitNew(Edge.TOP);
         bottomWindow = split2.getSecond().setImmortal(true);
         bottomWindow.setAnchorId(ANCHOR_BOTTOM);
         var split3 = split2.getFirst()
                 .splitStyle(style -> style.percentage(28).minPercentage(5).maxPercentage(95))
-                .splitNew(YogaEdge.LEFT);
+                .splitNew(Edge.LEFT);
         centerWindow = split3.getSecond().setImmortal(true);
         centerWindow.setAnchorId(ANCHOR_CENTER);
         leftWindow = split3.getFirst().setImmortal(true);
@@ -647,8 +647,8 @@ public abstract class Editor extends UIElement implements EditorHost {
 
         var targetSide = path.charAt(path.length() - 1);
         var edge = parentConfig.vertical() ?
-                (targetSide == 'f' ? YogaEdge.TOP : YogaEdge.BOTTOM) :
-                (targetSide == 'f' ? YogaEdge.LEFT : YogaEdge.RIGHT);
+                (targetSide == 'f' ? Edge.TOP : Edge.BOTTOM) :
+                (targetSide == 'f' ? Edge.LEFT : Edge.RIGHT);
         parentWindow.splitStyle(style -> style.percentage(parentConfig.percentage()));
         var split = parentWindow.splitNew(edge);
         var targetWindow = targetSide == 'f' ? split.getFirst() : split.getSecond();

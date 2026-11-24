@@ -29,7 +29,6 @@ import lombok.experimental.Accessors;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import com.lowdragmc.lowdraglib2.gui.util.ITickable;
 import net.minecraft.util.Mth;
-import org.appliedenergistics.yoga.YogaEdge;
 import org.w3c.dom.Element;
 
 import org.jetbrains.annotations.Nullable;

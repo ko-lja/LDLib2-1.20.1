@@ -25,7 +25,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
-import org.appliedenergistics.yoga.*;
 import org.w3c.dom.Element;
 
 import org.jetbrains.annotations.Nullable;

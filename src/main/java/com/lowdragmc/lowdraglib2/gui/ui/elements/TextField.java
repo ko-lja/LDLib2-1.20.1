@@ -54,7 +54,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.util.Tuple;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.appliedenergistics.yoga.*;
 import org.lwjgl.glfw.GLFW;
 import org.w3c.dom.Element;
 

@@ -6,10 +6,9 @@ import com.lowdragmc.lowdraglib2.gui.ui.style.Property;
 import com.lowdragmc.lowdraglib2.gui.ui.style.PropertyRegistry;
 import com.lowdragmc.lowdraglib2.gui.ui.style.properties.*;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.FlexIcons;
+import com.lowdragmc.lowdraglib2.utils.data.OptionalFloat;
 import dev.vfyjxf.taffy.style.*;
 import lombok.experimental.UtilityClass;
-import org.appliedenergistics.yoga.*;
-import org.appliedenergistics.yoga.numeric.FloatOptional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,9 +29,9 @@ public final class LayoutProperties {
     public static final Property<TaffyDisplay> DISPLAY = PropertyRegistry.create("display", TaffyDisplay.class, TaffyDisplay.FLEX);
     public static final Property<TaffyDirection> LAYOUT_DIRECTION = PropertyRegistry.create("layout-direction", TaffyDirection.class, TaffyDirection.INHERIT);
     public static final Property<TaffyDimension> FLEX_BASIS = create("flex-basis", TaffyDimension.auto());
-    public static final Property<FloatOptional> FLEX = create("flex", FloatOptional.of());
-    public static final Property<FloatOptional> FLEX_GROW = create("flex-grow", FloatOptional.of());
-    public static final Property<FloatOptional> FLEX_SHRINK = create("flex-shrink", FloatOptional.of(0));
+    public static final Property<OptionalFloat> FLEX = create("flex", OptionalFloat.empty());
+    public static final Property<OptionalFloat> FLEX_GROW = create("flex-grow", OptionalFloat.empty());
+    public static final Property<OptionalFloat> FLEX_SHRINK = create("flex-shrink", OptionalFloat.of(0));
     public static final Property<FlexDirection> FLEX_DIRECTION = PropertyRegistry.create("flex-direction", FlexDirection.class, FlexDirection.COLUMN).setIconProvider(FlexIcons::getFlexDirectionIcon);
     public static final Property<FlexWrap> FLEX_WRAP = PropertyRegistry.create("flex-wrap", FlexWrap.class, FlexWrap.NO_WRAP).setIconProvider(FlexIcons::getFlexWrapIcon);
     public static final Property<TaffyPosition> POSITION = PropertyRegistry.create("position", TaffyPosition.class, TaffyPosition.RELATIVE);
@@ -74,9 +73,9 @@ public final class LayoutProperties {
     public static final Property<TaffyDimension> MAX_WIDTH = create("max-width", TaffyDimension.auto());
     public static final Property<TaffyDimension> MAX_HEIGHT = create("max-height", TaffyDimension.auto());
 
-    public static final Property<FloatOptional> ASPECT_RATE = create("aspect-rate", FloatOptional.of());
+    public static final Property<OptionalFloat> ASPECT_RATE = create("aspect-rate", OptionalFloat.empty());
     // TODO overflow and clip?
-    public static final Property<YogaOverflow> OVERFLOW = PropertyRegistry.create("overflow", YogaOverflow.class, YogaOverflow.VISIBLE, List.of(YogaOverflow.VISIBLE, YogaOverflow.HIDDEN));
+    public static final Property<Overflow> OVERFLOW = PropertyRegistry.create("overflow", Overflow.class, Overflow.VISIBLE, List.of(Overflow.VISIBLE, Overflow.HIDDEN));
     public static final Property<AlignItems> ALIGN_ITEMS = PropertyRegistry.create("align-items", AlignItems.class, AlignItems.STRETCH, DEFAULT_ALIGN_ITEMS).setIconProvider(v -> IGuiTexture.EMPTY);
     public static final Property<AlignItems> ALIGN_SELF = PropertyRegistry.create("align-self", AlignItems.class, AlignItems.AUTO, DEFAULT_ALIGN_ITEMS).setIconProvider(v -> IGuiTexture.EMPTY);
     public static final Property<AlignContent> ALIGN_CONTENT = PropertyRegistry.create("align-content", AlignContent.class, AlignContent.FLEX_START).setIconProvider(v -> IGuiTexture.EMPTY);
@@ -147,7 +146,7 @@ public final class LayoutProperties {
         createSetter(LayoutProperties.GAP_ALL, (style, value) -> style.gap.setAll(value));
         createSetter(LayoutProperties.GAP, (style, value) -> style.gap.setSize(value));
 
-        // Grid properties (Taffy-specific, no Yoga equivalents)
+        // Grid properties
         createSetter(LayoutProperties.GRID_TEMPLATE_ROWS, TaffyLayoutStyle::setGridTemplateRows);
         createSetter(LayoutProperties.GRID_TEMPLATE_COLUMNS, TaffyLayoutStyle::setGridTemplateColumns);
         createSetter(LayoutProperties.GRID_TEMPLATE_AREAS, TaffyLayoutStyle::setGridTemplateAreas);
@@ -158,8 +157,8 @@ public final class LayoutProperties {
         createSetter(LayoutProperties.GRID_COLUMN, TaffyLayoutStyle::setGridColumn);
     }
 
-    public static Property<FloatOptional> create(String name, FloatOptional initialValue) {
-        return PropertyRegistry.create(new FloatOptionalProperty(name, initialValue));
+    public static Property<OptionalFloat> create(String name, OptionalFloat initialValue) {
+        return PropertyRegistry.create(new OptionalFloatProperty(name, initialValue));
     }
 
     public static Property<LengthPercentageAuto> create(String name, LengthPercentageAuto initialValue) {

@@ -23,7 +23,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.loading.FMLLoader;
-import org.appliedenergistics.yoga.YogaEdge;
 
 import java.io.File;
 import java.io.FileReader;

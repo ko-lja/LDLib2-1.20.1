@@ -3,10 +3,10 @@ package com.lowdragmc.lowdraglib2.configurator.ui;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.Selector;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.TextField;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.UIElementProvider;
+import com.lowdragmc.lowdraglib2.utils.data.OptionalFloat;
 import dev.vfyjxf.taffy.style.FlexDirection;
 import lombok.Getter;
 import net.minecraft.network.chat.Component;
-import org.appliedenergistics.yoga.numeric.FloatOptional;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -14,13 +14,13 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class FloatOptionalConfigurator extends ValueConfigurator<FloatOptional> {
+public class OptionalFloatConfigurator extends ValueConfigurator<OptionalFloat> {
     public final TextField textField;
     public final Selector<Boolean> definedSelector;
     @Getter
     protected Float min, max, wheel;
 
-    public FloatOptionalConfigurator(String name, Supplier<FloatOptional> supplier, Consumer<FloatOptional> onUpdate, @Nonnull FloatOptional defaultValue, boolean forceUpdate) {
+    public OptionalFloatConfigurator(String name, Supplier<OptionalFloat> supplier, Consumer<OptionalFloat> onUpdate, @Nonnull OptionalFloat defaultValue, boolean forceUpdate) {
         super(name, supplier, onUpdate, defaultValue, forceUpdate);
         setCopiable(value -> value);
 
@@ -41,9 +41,9 @@ public class FloatOptionalConfigurator extends ValueConfigurator<FloatOptional> 
 
         definedSelector.setOnValueChanged(defined -> {
             if (defined) {
-                updateValueActively(FloatOptional.of(min == null ? 0 : min));
+                updateValueActively(OptionalFloat.of(min == null ? 0 : min));
             } else {
-                updateValueActively(FloatOptional.of());
+                updateValueActively(OptionalFloat.empty());
             }
             updateTextFieldValue();
         });
@@ -52,34 +52,34 @@ public class FloatOptionalConfigurator extends ValueConfigurator<FloatOptional> 
 
         textField.layout(layout -> {
             layout.flex(2);
-        }).setDisplay(value.isDefined());
+        }).setDisplay(value.isPresent());
         textField.setTextResponder(this::onNumberUpdate);
         updateTextField();
     }
 
     @Override
-    protected void onPaste(FloatOptional pasted) {
-        if ((max != null && pasted.getValue() <= max) && (min != null && pasted.getValue() >= min)) {
+    protected void onPaste(OptionalFloat pasted) {
+        if ((max != null && pasted.unwrap() <= max) && (min != null && pasted.unwrap() >= min)) {
             super.onPaste(pasted);
         }
     }
 
     @Override
     protected void onDropObject(@Nonnull Object object) {
-        if (object instanceof FloatOptional floatOptional && (max != null && floatOptional.getValue() <= max) && (min != null && floatOptional.getValue() >= min)) {
+        if (object instanceof OptionalFloat floatOptional && (max != null && floatOptional.unwrap() <= max) && (min != null && floatOptional.unwrap() >= min)) {
             updateValueActively(floatOptional);
             updateTextFieldValue();
         }
     }
 
-    public FloatOptionalConfigurator setRange(Float min, Float max) {
+    public OptionalFloatConfigurator setRange(Float min, Float max) {
         this.min = min;
         this.max = max;
         updateTextField();
         return this;
     }
 
-    public FloatOptionalConfigurator setWheel(Float wheel) {
+    public OptionalFloatConfigurator setWheel(Float wheel) {
         if (wheel.doubleValue() == 0) return this;
         this.wheel = wheel;
         updateTextField();
@@ -96,17 +96,17 @@ public class FloatOptionalConfigurator extends ValueConfigurator<FloatOptional> 
 
     protected void updateTextFieldValue() {
         assert value != null;
-        textField.setDisplay(value.isDefined());
-        textField.setText(String.valueOf(value.getValue()), false);
+        textField.setDisplay(value.isPresent());
+        textField.setText(String.valueOf(value.unwrap()), false);
     }
 
     protected void updateSelector() {
         assert value != null;
-        definedSelector.setValue(value.isDefined(), false);
+        definedSelector.setValue(value.isPresent(), false);
     }
 
     @Override
-    protected void onValueUpdatePassively(FloatOptional newValue) {
+    protected void onValueUpdatePassively(OptionalFloat newValue) {
         if (newValue == null) newValue = defaultValue;
         if (newValue.equals(value)) return;
         super.onValueUpdatePassively(newValue);
@@ -116,6 +116,6 @@ public class FloatOptionalConfigurator extends ValueConfigurator<FloatOptional> 
 
     private void onNumberUpdate(String s) {
         var number = Float.parseFloat(s);
-        updateValueActively(Optional.ofNullable(definedSelector.getValue()).orElse(false) ? FloatOptional.of(number) : FloatOptional.of());
+        updateValueActively(Optional.ofNullable(definedSelector.getValue()).orElse(false) ? OptionalFloat.of(number) : OptionalFloat.empty());
     }
 }

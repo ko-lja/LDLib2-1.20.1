@@ -45,8 +45,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.SharedConstants;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.appliedenergistics.yoga.YogaEdge;
-import org.appliedenergistics.yoga.YogaOverflow;
 import org.lwjgl.glfw.GLFW;
 import org.w3c.dom.Element;
 import oshi.util.tuples.Pair;

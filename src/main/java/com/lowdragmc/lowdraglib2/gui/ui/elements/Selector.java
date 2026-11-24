@@ -27,7 +27,6 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.network.chat.Component;
-import org.appliedenergistics.yoga.*;
 import org.joml.Vector2f;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

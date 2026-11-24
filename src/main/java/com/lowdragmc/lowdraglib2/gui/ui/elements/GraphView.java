@@ -22,7 +22,6 @@ import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
-import org.appliedenergistics.yoga.YogaOverflow;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;

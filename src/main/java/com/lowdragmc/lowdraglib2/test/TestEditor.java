@@ -9,7 +9,6 @@ import com.lowdragmc.lowdraglib2.gui.ui.elements.codeeditor.CodeEditor;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.codeeditor.language.Languages;
 import com.lowdragmc.lowdraglib2.gui.ui.style.Stylesheet;
 import com.lowdragmc.lowdraglib2.gui.ui.styletemplate.Sprites;
-import org.appliedenergistics.yoga.YogaEdge;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;

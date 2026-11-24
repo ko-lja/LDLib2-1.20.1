@@ -23,7 +23,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import org.appliedenergistics.yoga.style.StyleSizeLength;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -326,15 +325,6 @@ public class Dialog extends UIElement {
     public Dialog show(@Nullable ModularUI modularUI) {
         if (modularUI == null) return this;
         return show(modularUI.ui.rootElement);
-    }
-
-    /**
-     * Sets the width of the dialog. by default, it will be 150px.
-     */
-    @Deprecated
-    public Dialog width(StyleSizeLength width) {
-        overlay.layout(layout -> layout.width(width));
-        return this;
     }
 
     public Dialog width(TaffyDimension width) {

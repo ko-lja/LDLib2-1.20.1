@@ -86,7 +86,7 @@ The Forge 1.20.1 backport is published to the Expandium Maven: releases to `rele
 
 ```gradle
 repositories {
-    maven { url = "https://repo.expandium.net/releases" } // release builds and Yoga
+    maven { url = "https://repo.expandium.net/releases" } // release builds
     maven { url = "https://repo.expandium.net/snapshots" } // snapshot builds
 }
 
@@ -96,7 +96,6 @@ dependencies {
     modImplementation "com.lowdragmc.ldlib2:ldlib2-compose-1.20.1:20.1.1.0" // optional
     // ModDevGradle does not resolve transitives of remapped dependencies; only needed if your code touches APIs that expose these
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:2.1.20"
-    compileOnly "org.appliedenergistics.yoga:yoga:0.1.0"
     compileOnly "dev.vfyjxf:taffy:1.1.5"
 }
 ```

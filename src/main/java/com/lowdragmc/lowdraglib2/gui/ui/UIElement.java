@@ -36,7 +36,7 @@ import com.lowdragmc.lowdraglib2.utils.PersistedParser;
 import com.lowdragmc.lowdraglib2.utils.TagBuilder;
 import com.lowdragmc.lowdraglib2.utils.XmlUtils;
 import com.lowdragmc.lowdraglib2.gui.ui.utils.KeyState;
-import com.mojang.blaze3d.platform.InputConstants;
+import com.lowdragmc.lowdraglib2.utils.data.OptionalFloat;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.latvian.mods.rhino.util.HideFromJS;
@@ -46,14 +46,11 @@ import dev.vfyjxf.taffy.tree.Layout;
 import dev.vfyjxf.taffy.tree.NodeId;
 import dev.vfyjxf.taffy.tree.TaffyTree;
 import it.unimi.dsi.fastutil.ints.IntArrays;
-import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
@@ -63,14 +60,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.appliedenergistics.yoga.*;
-import org.appliedenergistics.yoga.numeric.FloatOptional;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.glfw.GLFW;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -166,8 +160,8 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
     @Nullable
     private UIElement[] sortedChildrenCache = null;
     private ImmutableList<UIElement> structurePathCache = null;
-    private FloatOptional positionXCache = FloatOptional.of();
-    private FloatOptional positionYCache = FloatOptional.of();
+    private OptionalFloat positionXCache = OptionalFloat.empty();
+    private OptionalFloat positionYCache = OptionalFloat.empty();
     @Nullable
     private Matrix4f localToWorldCache = null;
     @Nullable
@@ -274,8 +268,8 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
      * This method is called when the screen is initialized with new width and height.
      */
     public void initScreen(int screenWidth, int screenHeight) {
-        positionXCache = FloatOptional.of();
-        positionYCache = FloatOptional.of();
+        positionXCache = OptionalFloat.empty();
+        positionYCache = OptionalFloat.empty();
         for (var child : children) {
             child.initScreen(screenWidth, screenHeight);
         }
@@ -348,12 +342,6 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
         }
     }
 
-    @Deprecated(since = "26.1")
-    public UIElement setDisplay(YogaDisplay display) {
-        layoutStyle.display(display);
-        return this;
-    }
-
     public UIElement setDisplay(TaffyDisplay display) {
         layoutStyle.display(display);
         return this;
@@ -361,12 +349,6 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
 
     public UIElement setDisplay(boolean display) {
         layoutStyle.display(display ? TaffyDisplay.FLEX : TaffyDisplay.NONE);
-        return this;
-    }
-
-    @Deprecated(since = "26.1")
-    public UIElement setOverflow(YogaOverflow overflow) {
-        layoutStyle.setOverflow(overflow);
         return this;
     }
 
@@ -410,9 +392,9 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
      */
     public final void clearLayoutCache() {
         clearPoseCache();
-        if (!positionXCache.isDefined() && !positionYCache.isDefined()) return;
-        positionXCache = FloatOptional.of();
-        positionYCache = FloatOptional.of();
+        if (!positionXCache.isPresent() && !positionYCache.isPresent()) return;
+        positionXCache = OptionalFloat.empty();
+        positionYCache = OptionalFloat.empty();
         for (var child : children) {
             child.clearLayoutCache();
         }
@@ -491,20 +473,20 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
      * The absolute X offset relative to the screen.
      */
     public final float getPositionX() {
-        if (positionXCache.isUndefined()) {
-            positionXCache = FloatOptional.of(getLayoutX() + (parent == null ? 0 : parent.getPositionX()));
+        if (positionXCache.isEmpty()) {
+            positionXCache = OptionalFloat.of(getLayoutX() + (parent == null ? 0 : parent.getPositionX()));
         }
-        return positionXCache.getValue();
+        return positionXCache.getAsFloat();
     }
 
     /**
      * The absolute Y offset relative to the screen.
      */
     public final float getPositionY() {
-        if (positionYCache.isUndefined()) {
-            positionYCache = FloatOptional.of(getLayoutY() + (parent == null ? 0 : parent.getPositionY()));
+        if (positionYCache.isEmpty()) {
+            positionYCache = OptionalFloat.of(getLayoutY() + (parent == null ? 0 : parent.getPositionY()));
         }
-        return positionYCache.getValue();
+        return positionYCache.getAsFloat();
     }
 
     public final float getSizeWidth() {
