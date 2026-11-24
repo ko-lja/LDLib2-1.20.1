@@ -23,7 +23,7 @@ import org.joml.Vector2f;
 
 /**
  * Lightweight 2D transform for UIElement: translate + rotate + scale around an origin (pivot).
- * Does not affect Yoga layout; only rendering and hit-testing.
+ * Does not affect the layout; only rendering and hit-testing.
  */
 @Accessors(chain = true, fluent = true)
 @EqualsAndHashCode

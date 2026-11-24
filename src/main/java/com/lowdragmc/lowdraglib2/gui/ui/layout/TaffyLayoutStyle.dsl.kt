@@ -332,7 +332,6 @@ class TaffyLayoutStyleDsl(val layout: LayoutStyle) {
     fun display(value: TaffyDisplay) = apply { it.display(value) }
     fun direction(value: TaffyDirection) = apply { it.direction(value) }
     fun position(value: TaffyPosition) = apply { it.positionType(value) }
-//    fun overflow(value: YogaOverflow) = add { it.overflow(value) }
 
     // ----------------------------
     // grid

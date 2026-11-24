@@ -1,6 +1,7 @@
 package com.lowdragmc.lowdraglib2.editor.ui;
 
 import com.lowdragmc.lowdraglib2.configurator.annotation.Configurable;
+import com.lowdragmc.lowdraglib2.gui.ui.data.Edge;
 import com.lowdragmc.lowdraglib2.gui.ui.elements.SplitView;
 import com.lowdragmc.lowdraglib2.gui.ColorPattern;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
@@ -20,7 +21,6 @@ import lombok.experimental.Accessors;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
-import org.appliedenergistics.yoga.YogaEdge;
 
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.Nullable;
@@ -507,28 +507,28 @@ public class SplittableWindow extends UIElement {
      * Splits the current window horizontally or vertically based on the specified edge and
      * creates two new windows in the process.
      *
-     * @param edge the edge of the window to split, which can be one of {@code YogaEdge.TOP}, {@code YogaEdge.BOTTOM},
-     *             {@code YogaEdge.LEFT}, or {@code YogaEdge.RIGHT}
+     * @param edge the edge of the window to split, which can be one of {@code Edge.TOP}, {@code Edge.BOTTOM},
+     *             {@code Edge.LEFT}, or {@code Edge.RIGHT}
      * @param newWindow the new window to be placed on the specified edge after splitting
      * @return a pair of SplittableWindows: the split window on the specified edge and the remaining portion
      *         of the original window
      */
-    public Pair<SplittableWindow, SplittableWindow> splitWith(YogaEdge edge, SplittableWindow newWindow) {
+    public Pair<SplittableWindow, SplittableWindow> splitWith(Edge edge, SplittableWindow newWindow) {
         if (this.splitView != null) throw new IllegalStateException("Cannot split a split window");
         if (this.viewContainer == null) throw new IllegalStateException("Cannot split a window that is empty");
-        if (edge == YogaEdge.TOP) {
+        if (edge == Edge.TOP) {
             this.splitView = new SplitView.Vertical()
                     .top(first = newWindow)
                     .bottom(second = new SplittableWindow(this, this.viewContainer));
-        } else if (edge == YogaEdge.BOTTOM) {
+        } else if (edge == Edge.BOTTOM) {
             this.splitView = new SplitView.Vertical()
                     .top(first = new SplittableWindow(this, this.viewContainer))
                     .bottom(second = newWindow);
-        } else if (edge == YogaEdge.LEFT) {
+        } else if (edge == Edge.LEFT) {
             this.splitView = new SplitView.Horizontal()
                     .left(first = newWindow)
                     .right(second = new SplittableWindow(this, this.viewContainer));
-        } else if (edge == YogaEdge.RIGHT) {
+        } else if (edge == Edge.RIGHT) {
             this.splitView = new SplitView.Horizontal()
                     .left(first = new SplittableWindow(this, this.viewContainer))
                     .right(second = newWindow);
@@ -546,17 +546,17 @@ public class SplittableWindow extends UIElement {
     /**
      * Splits the current window into two new windows based on the specified edge and returns the resulting pair of windows.
      *
-     * @param edge the edge of the window to split, which can be one of {@code YogaEdge.TOP}, {@code YogaEdge.BOTTOM},
-     *             {@code YogaEdge.LEFT}, or {@code YogaEdge.RIGHT}
+     * @param edge the edge of the window to split, which can be one of {@code Edge.TOP}, {@code Edge.BOTTOM},
+     *             {@code Edge.LEFT}, or {@code Edge.RIGHT}
      * @return a pair of SplittableWindows, where the first element is the window created on the specified edge
      *         and the second element is the remaining portion of the original window
      */
-    public Pair<SplittableWindow, SplittableWindow> splitNew(YogaEdge edge) {
+    public Pair<SplittableWindow, SplittableWindow> splitNew(Edge edge) {
         SplittableWindow newWindow = new SplittableWindow(this);
         return splitWith(edge, newWindow);
     }
 
-    protected ViewContainer getEmptyOrSplitContainer(YogaEdge edge) {
+    protected ViewContainer getEmptyOrSplitContainer(Edge edge) {
         if (splitView != null) {
             splitView.removeSelf();
             splitView = null;
@@ -568,13 +568,13 @@ public class SplittableWindow extends UIElement {
         if (this.viewContainer.isEmptyWindow()) {
             return this.viewContainer;
         }
-        if (edge == YogaEdge.TOP) {
+        if (edge == Edge.TOP) {
             return Objects.requireNonNull(splitNew(edge).getFirst().getViewContainer());
-        } else if (edge == YogaEdge.BOTTOM) {
+        } else if (edge == Edge.BOTTOM) {
             return Objects.requireNonNull(splitNew(edge).getSecond().getViewContainer());
-        } else if (edge == YogaEdge.LEFT) {
+        } else if (edge == Edge.LEFT) {
             return Objects.requireNonNull(splitNew(edge).getFirst().getViewContainer());
-        } else if (edge == YogaEdge.RIGHT) {
+        } else if (edge == Edge.RIGHT) {
             return Objects.requireNonNull(splitNew(edge).getSecond().getViewContainer());
         } else {
             throw new IllegalArgumentException("Invalid edge: " + edge);
@@ -586,20 +586,20 @@ public class SplittableWindow extends UIElement {
         return container.isMouseOverElement(mouseX, mouseY);
     }
 
-    private boolean isBorderHovering(YogaEdge edge, float mouseX, float mouseY) {
+    private boolean isBorderHovering(Edge edge, float mouseX, float mouseY) {
         var borderPercent = 0.2f;
         var container = viewContainer == null ? this : viewContainer.tabView.tabContentContainer;
         var x = container.getPositionX();
         var y = container.getPositionY();
         var w = container.getSizeWidth();
         var h = container.getSizeHeight();
-        if (edge == YogaEdge.TOP) {
+        if (edge == Edge.TOP) {
             return isMouseOver(x, y, w, h * borderPercent, mouseX, mouseY);
-        } else if (edge == YogaEdge.BOTTOM) {
+        } else if (edge == Edge.BOTTOM) {
             return isMouseOver(x, y + h * (1 - borderPercent), w, h * borderPercent, mouseX, mouseY);
-        } else if (edge == YogaEdge.LEFT) {
+        } else if (edge == Edge.LEFT) {
             return isMouseOver(x, y, w * borderPercent, h, mouseX, mouseY);
-        } else if (edge == YogaEdge.RIGHT) {
+        } else if (edge == Edge.RIGHT) {
             return isMouseOver(x + w * (1 - borderPercent), y, w * borderPercent, h, mouseX, mouseY);
         } else {
             throw new IllegalArgumentException("Invalid edge: " + edge);
@@ -635,14 +635,14 @@ public class SplittableWindow extends UIElement {
         if (isSplit()) return;
         style(style -> style.overlayTexture(IGuiTexture.EMPTY));
         if (event.dragHandler.draggingObject instanceof View view && acceptsView(view)) {
-            if (isBorderHovering(YogaEdge.TOP, event.x, event.y)) {
-                tryMoveToNewWindow(view, YogaEdge.TOP);
-            } else if (isBorderHovering(YogaEdge.BOTTOM, event.x, event.y)) {
-                tryMoveToNewWindow(view, YogaEdge.BOTTOM);
-            } else if (isBorderHovering(YogaEdge.LEFT, event.x, event.y)) {
-                tryMoveToNewWindow(view, YogaEdge.LEFT);
-            } else if (isBorderHovering(YogaEdge.RIGHT, event.x, event.y)) {
-                tryMoveToNewWindow(view, YogaEdge.RIGHT);
+            if (isBorderHovering(Edge.TOP, event.x, event.y)) {
+                tryMoveToNewWindow(view, Edge.TOP);
+            } else if (isBorderHovering(Edge.BOTTOM, event.x, event.y)) {
+                tryMoveToNewWindow(view, Edge.BOTTOM);
+            } else if (isBorderHovering(Edge.LEFT, event.x, event.y)) {
+                tryMoveToNewWindow(view, Edge.LEFT);
+            } else if (isBorderHovering(Edge.RIGHT, event.x, event.y)) {
+                tryMoveToNewWindow(view, Edge.RIGHT);
             } else if (isWindowHovering(event.x, event.y)) {
                 var targetContainer = viewContainer;
                 if (targetContainer == null) {
@@ -803,7 +803,7 @@ public class SplittableWindow extends UIElement {
         source.parentWindow = null;
     }
 
-    protected void tryMoveToNewWindow(View view, YogaEdge edge) {
+    protected void tryMoveToNewWindow(View view, Edge edge) {
         var oldContainer = view.getViewContainer();
         if (oldContainer == this.viewContainer && oldContainer != null && oldContainer.tabView.getTabContents().size() == 1) {
             return;
@@ -829,13 +829,13 @@ public class SplittableWindow extends UIElement {
         height = container.getSizeHeight();
         if (isWindowHovering(mouseX, mouseY)) {
             if (!isWindowEmpty) {
-                if (isBorderHovering(YogaEdge.TOP, mouseX, mouseY)) {
+                if (isBorderHovering(Edge.TOP, mouseX, mouseY)) {
                     DrawerHelper.drawSolidRect(graphics, x, y, width, height * 0.5f, ColorPattern.T_BLUE.color);
-                } else if (isBorderHovering(YogaEdge.BOTTOM, mouseX, mouseY)) {
+                } else if (isBorderHovering(Edge.BOTTOM, mouseX, mouseY)) {
                     DrawerHelper.drawSolidRect(graphics, x, y + height * 0.5f, width, height * 0.5f, ColorPattern.T_BLUE.color);
-                } else if (isBorderHovering(YogaEdge.LEFT, mouseX, mouseY)) {
+                } else if (isBorderHovering(Edge.LEFT, mouseX, mouseY)) {
                     DrawerHelper.drawSolidRect(graphics, x, y, width * 0.5f, height, ColorPattern.T_BLUE.color);
-                } else if (isBorderHovering(YogaEdge.RIGHT, mouseX, mouseY)) {
+                } else if (isBorderHovering(Edge.RIGHT, mouseX, mouseY)) {
                     DrawerHelper.drawSolidRect(graphics, x + width * 0.5f, y, width * 0.5f, height, ColorPattern.T_BLUE.color);
                 } else {
                     DrawerHelper.drawSolidRect(graphics, x, y, width, height, ColorPattern.T_BLUE.color);

@@ -39,7 +39,6 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.items.ItemStackHandler;
-import org.appliedenergistics.yoga.YogaFlexDirection;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 

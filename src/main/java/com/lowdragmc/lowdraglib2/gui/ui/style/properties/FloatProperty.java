@@ -10,7 +10,6 @@ import com.mojang.serialization.Codec;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.appliedenergistics.yoga.numeric.FloatOptional;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;

@@ -29,7 +29,7 @@ configurations {
 }
 
 // allprojects, not project-local: the add-on modules under module.* resolve LDLib2's own
-// transitives (kotlin-stdlib, yoga, taffy) and would otherwise each need this list copied.
+// transitives (kotlin-stdlib, taffy) and would otherwise each need this list copied.
 allprojects {
     repositories {
         // the Forge/Minecraft mirrors are asked before mavenCentral(), and a 5xx from one fails the build instead of
@@ -101,13 +101,6 @@ allprojects {
             url "https://maven.architectury.dev/"
             content {
                 includeGroup "dev.architectury"
-            }
-        }
-        maven {
-            name "Expandium"
-            url "https://repo.expandium.net/releases"
-            content {
-                includeGroup "org.appliedenergistics.yoga"
             }
         }
     }
@@ -202,7 +195,7 @@ legacyForge {
     }
 }
 
-// Non-mod libraries (kotlin-stdlib, yoga, taffy) go on the game's legacy classpath in dev runs.
+// Non-mod libraries (kotlin-stdlib, taffy) go on the game's legacy classpath in dev runs.
 configurations.additionalRuntimeClasspath.extendsFrom configurations.libraries
 
 // Mods on maven are published in SRG names and have to be remapped to the dev mappings. MDG provides
@@ -301,14 +294,6 @@ dependencies {
 //    compileOnly 'org.projectlombok:lombok:1.18.30'
 //    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-    // Yoga
-    libraries("org.appliedenergistics.yoga:yoga:${yoga_version}")
-    jarJar(group: 'org.appliedenergistics.yoga', name: 'yoga') {
-        version {
-            require "[${yoga_version},)"
-            prefer yoga_version
-        }
-    }
 
     // Taffy
     libraries("dev.vfyjxf:taffy:${taffy_version}")

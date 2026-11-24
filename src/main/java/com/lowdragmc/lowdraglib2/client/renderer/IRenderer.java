@@ -53,7 +53,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 import com.lowdragmc.lowdraglib2.compat.util.TriState;
-import org.appliedenergistics.yoga.YogaEdge;
 
 import javax.annotation.Nonnull;
 import org.jetbrains.annotations.Nullable;

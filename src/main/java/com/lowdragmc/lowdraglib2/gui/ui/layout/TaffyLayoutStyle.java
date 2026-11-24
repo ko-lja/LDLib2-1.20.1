@@ -2,13 +2,11 @@ package com.lowdragmc.lowdraglib2.gui.ui.layout;
 
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.data.*;
+import com.lowdragmc.lowdraglib2.utils.data.OptionalFloat;
 import dev.vfyjxf.taffy.geometry.TaffyPoint;
 import dev.vfyjxf.taffy.geometry.TaffyRect;
 import dev.vfyjxf.taffy.geometry.TaffySize;
 import dev.vfyjxf.taffy.style.*;
-import org.appliedenergistics.yoga.*;
-import org.appliedenergistics.yoga.numeric.FloatOptional;
-import org.appliedenergistics.yoga.style.StyleSizeLength;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -22,6 +20,9 @@ public class TaffyLayoutStyle {
         DEFAULT_TAFFY_STYLE.minSize = TaffySize.all(TaffyDimension.ZERO);
         DEFAULT_TAFFY_STYLE.alignContent = AlignContent.FLEX_START;
     }
+
+    public static final float DEFAULT_FLEX_GROW = 0.0F;
+    public static final float DEFAULT_FLEX_SHRINK = 0.0F;
 
     public final UIElement element;
     public final TaffyStyle style;
@@ -69,8 +70,8 @@ public class TaffyLayoutStyle {
         }
     }
 
-    public void setFlex(FloatOptional value) {
-        var flex = value.isUndefined() ? Float.NaN : value.getValue();
+    public void setFlex(OptionalFloat value) {
+        var flex = value.isEmpty() ? Float.NaN : value.getAsFloat();
         if (Float.isNaN(flex) && Float.isNaN(style.flex)) return;
         if (style.flex != flex) {
             style.flex = flex;
@@ -78,16 +79,16 @@ public class TaffyLayoutStyle {
         }
     }
 
-    public void setFlexGrow(FloatOptional value) {
-        var flexGrow = value.isUndefined() ? 0 : value.getValue();
+    public void setFlexGrow(OptionalFloat value) {
+        var flexGrow = value.isEmpty() ? 0 : value.getAsFloat();
         if (style.flexGrow != flexGrow) {
             style.flexGrow = flexGrow;
             element.markTaffyStyleDirty();
         }
     }
 
-    public void setFlexShrink(FloatOptional value) {
-        var flexShrink = value.isUndefined() ? 0 : value.getValue();
+    public void setFlexShrink(OptionalFloat value) {
+        var flexShrink = value.isEmpty() ? 0 : value.getAsFloat();
         if (style.flexShrink != flexShrink) {
             style.flexShrink = flexShrink;
             element.markTaffyStyleDirty();
@@ -115,16 +116,11 @@ public class TaffyLayoutStyle {
         }
     }
 
-    public void setOverFlow(YogaOverflow value) {
-//        TaffyPoint<Overflow> overflow = switch (value) {
-//            case VISIBLE -> new TaffyPoint<>(Overflow.VISIBLE, Overflow.VISIBLE);
-//            case HIDDEN -> new TaffyPoint<>(Overflow.HIDDEN, Overflow.HIDDEN);
-//            case SCROLL -> new TaffyPoint<>(Overflow.CLIP, Overflow.CLIP);
-//        };
-//        if (!style.overflow.equals(overflow)) {
-//            style.overflow = overflow;
-//            element.markTaffyStyleDirty();
-//        }
+    public void setOverFlow(Overflow value) {
+        if (style.overflow.x != value) {
+            style.overflow = new TaffyPoint<>(value, value);
+            element.markTaffyStyleDirty();
+        }
     }
 
     public void setAlignItems(AlignItems alignItems) {
@@ -169,8 +165,8 @@ public class TaffyLayoutStyle {
         }
     }
 
-    public void setAspectRate(FloatOptional value) {
-        var aspectRatio = value.isUndefined() ? DEFAULT_TAFFY_STYLE.aspectRatio : value.getValue();
+    public void setAspectRate(OptionalFloat value) {
+        var aspectRatio = value.isEmpty() ? DEFAULT_TAFFY_STYLE.aspectRatio : value.getAsFloat();
         if (Float.isNaN(style.aspectRatio) && Float.isNaN(aspectRatio)) return;
         if (style.aspectRatio != aspectRatio) {
             style.aspectRatio = aspectRatio;

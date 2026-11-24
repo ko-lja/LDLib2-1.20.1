@@ -51,7 +51,6 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.appliedenergistics.yoga.YogaConstants;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -111,7 +110,7 @@ public class ModularUI {
     @Getter
     private int screenWidth, screenHeight;
     @Getter
-    private float layoutWidth = YogaConstants.UNDEFINED, layoutHeight = YogaConstants.UNDEFINED;
+    private float layoutWidth = Float.NaN, layoutHeight = Float.NaN;
     @Getter
     private float leftPos, topPos, width, height;
     @Getter

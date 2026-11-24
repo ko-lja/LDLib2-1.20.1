@@ -32,7 +32,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import org.appliedenergistics.yoga.*;
 import org.joml.Vector2f;
 
 import javax.annotation.Nonnull;

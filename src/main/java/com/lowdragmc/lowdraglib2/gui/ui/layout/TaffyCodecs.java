@@ -3,6 +3,7 @@ package com.lowdragmc.lowdraglib2.gui.ui.layout;
 import com.lowdragmc.lowdraglib2.compat.codec.LDCodecs;
 import com.lowdragmc.lowdraglib2.gui.ui.data.*;
 import com.lowdragmc.lowdraglib2.utils.LDLibExtraCodecs;
+import com.lowdragmc.lowdraglib2.utils.data.OptionalFloat;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.vfyjxf.taffy.geometry.TaffyLine;
@@ -156,18 +157,6 @@ public final class TaffyCodecs {
         case STRETCH -> LengthPercentageAuto.stretch();
     }));
 
-    @Deprecated(since = "26.1")
-    public static final Codec<LengthPercentageAuto> LPA_STYLE_LENGTH_COMPAT_CODEC = LDLibExtraCodecs.compat(LPA_CODEC, YogaCodecs.STYLE_LENGTH_CODEC.xmap(
-            styleLength -> {
-                if (styleLength.isPercent()) return LengthPercentageAuto.length(styleLength.value().getValue() / 100f);
-                if (styleLength.isPoints()) return LengthPercentageAuto.length(styleLength.value().getValue());
-                return LengthPercentageAuto.auto();
-            },
-            lpa -> {
-                throw new IllegalArgumentException("Cannot convert TaffyDimension to StyleLength");
-            }
-    ));
-
     // ==================== LPARect Codec ====================
     public static final Codec<LPARect> LPA_RECT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LPA_CODEC.fieldOf("left").forGetter(rect -> rect.rect().left),
@@ -227,23 +216,6 @@ public final class TaffyCodecs {
         case CONTENT -> TaffyDimension.content();
     }))));
 
-    @Deprecated(since = "26.1")
-    public static final Codec<TaffyDimension> DIMENSION_STYLE_SIZE_LENGTH_COMPAT_CODEC = LDLibExtraCodecs.compat(DIMENSION_CODEC, YogaCodecs.STYLE_SIZE_LENGTH_CODEC.xmap(
-            styleSizeLength -> {
-                if (styleSizeLength.isPercent()) return TaffyDimension.percent(styleSizeLength.value().getValue() / 100f);
-                if (styleSizeLength.isPoints()) return TaffyDimension.length(styleSizeLength.value().getValue());
-                if (styleSizeLength.isAuto()) return TaffyDimension.auto();
-                if (styleSizeLength.isFitContent()) return TaffyDimension.fitContent();
-                if (styleSizeLength.isMaxContent()) return TaffyDimension.maxContent();
-                if (styleSizeLength.isStretch()) return TaffyDimension.stretch();
-                return TaffyDimension.auto();
-            },
-            dimension -> {
-                throw new IllegalArgumentException("Cannot convert TaffyDimension to StyleSizeLength");
-            }
-    ));
-
-
     // ==================== LPSize Codec ====================
     public static final Codec<LPSize> LP_SIZE_CODEC = RecordCodecBuilder.create(instance -> instance.group(
             LP_CODEC.fieldOf("width").forGetter(size -> size.size().width),
@@ -256,4 +228,22 @@ public final class TaffyCodecs {
             DIMENSION_CODEC.fieldOf("width").forGetter(size -> size.size().width),
             DIMENSION_CODEC.fieldOf("height").forGetter(size -> size.size().height)
     ).apply(instance, (width, height) -> new DimensionSize(TaffySize.of(width, height))));
+
+    public static final Codec<OptionalFloat> OPTIONAL_FLOAT_CODEC = LDLibExtraCodecs.TAG.xmap(TaffyCodecs::decodeOptionalFloat, TaffyCodecs::encodeOptionalFloat);
+
+    public static Tag encodeOptionalFloat(OptionalFloat optionalFloat) {
+        if (optionalFloat.isPresent()) {
+            return FloatTag.valueOf(optionalFloat.getAsFloat());
+        }
+        return StringTag.valueOf("undefined");
+    }
+
+    public static OptionalFloat decodeOptionalFloat(Tag tag) {
+        if (tag instanceof FloatTag floatTag) {
+            return OptionalFloat.of(floatTag.getAsFloat());
+        }
+        return OptionalFloat.empty();
+    }
+
+
 }

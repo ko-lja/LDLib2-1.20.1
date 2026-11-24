@@ -248,7 +248,7 @@ public class TestComponentExamples implements IScreenTest {
     private UIElement textAreaExample() {
         return new UIElement().layout(layout -> layout.gapAll(2)).addChildren(
                 new TextArea().setValue("""
-                        LDLib2 provides powerful UI library based on the yoga layout engine. If you are struggling with GUI development, LDLib2 is definitely one of your best choice. Compared with the LDLib, LDLib2 has undergone a complete refactoring:
+                        LDLib2 provides powerful UI library based on the taffy layout engine. If you are struggling with GUI development, LDLib2 is definitely one of your best choice. Compared with the LDLib, LDLib2 has undergone a complete refactoring:
                         
                         1. modern UI layout system
                         2. modern UI event system
