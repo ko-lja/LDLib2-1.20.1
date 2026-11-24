@@ -56,14 +56,14 @@ public abstract class ModularUIEMIRecipe implements EmiRecipe {
                         });
                     }
                 });
-        this.ingredientCache = Suppliers.memoizeWithExpiration(() -> {var recipeIngredient = new EMIRecipeIngredientHandler();
+        this.ingredientCache = Suppliers.memoize(() -> {var recipeIngredient = new EMIRecipeIngredientHandler();
             var mui = getModularUI();
             var event = UIEvent.create(EMIUIEvents.RECIPE_INGREDIENT);
             event.target = mui.ui.rootElement;
             event.customData = recipeIngredient;
             UIEventDispatcher.dispatchAllChildren(event);
             return recipeIngredient;
-        }, 10, TimeUnit.SECONDS);
+        });
     }
 
     public ModularUI getModularUI() {

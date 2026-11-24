@@ -54,8 +54,7 @@ public abstract class ModularUIDisplayCategory<T extends ModularUIDisplay> imple
                     }
                 });
         this.ingredientCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(10, TimeUnit.SECONDS)
-                .maximumSize(10)
+                .weakKeys()
                 .build(new CacheLoader<>() {
                     @Override
                     public REIRecipeIngredientHandler load(T display) {
