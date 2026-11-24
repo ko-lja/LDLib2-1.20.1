@@ -58,13 +58,19 @@ public abstract class ModularUIDisplayCategory<T extends ModularUIDisplay> imple
                 .build(new CacheLoader<>() {
                     @Override
                     public REIRecipeIngredientHandler load(T display) {
-                        var mui = getUIForDisplay(display);
-                        var recipeIngredient = new REIRecipeIngredientHandler();
-                        var event = UIEvent.create(REIUIEvents.RECIPE_INGREDIENT);
-                        event.target = mui.ui.rootElement;
-                        event.customData = recipeIngredient;
-                        UIEventDispatcher.dispatchAllChildren(event);
-                        return recipeIngredient;
+                        return DataBindingBuilder.local(() -> {
+                            var mui = uiProvider.createModularUI(display);
+                            try {
+                                var recipeIngredient = new REIRecipeIngredientHandler();
+                                var event = UIEvent.create(REIUIEvents.RECIPE_INGREDIENT);
+                                event.target = mui.ui.rootElement;
+                                event.customData = recipeIngredient;
+                                UIEventDispatcher.dispatchAllChildren(event);
+                                return recipeIngredient;
+                            } finally {
+                                mui.onRemoved();
+                            }
+                        });
                     }
                 });
     }
