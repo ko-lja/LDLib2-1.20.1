@@ -31,9 +31,14 @@ public class UITemplate {
     public static final Codec<UITemplate> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             CompoundTag.CODEC.fieldOf("template").forGetter(value -> value.data),
             LDCodecs.optionalFieldOf(Codec.STRING, "builtin_styles").forGetter(ui -> Optional.ofNullable((ui.builtinStyles == null || ui.builtinStyles.isBlank()) ? null : ui.builtinStyles)),
-            LDCodecs.optionalFieldOf(ResourceLocation.CODEC.listOf(), "stylesheets").forGetter(ui -> Optional.ofNullable(ui.stylesheets.isEmpty() ? null : ui.stylesheets))
-    ).apply(instance, (template, customStyles, stylesheets) ->
-            new UITemplate(template, customStyles.orElse(""), stylesheets.orElseGet(Collections::emptyList))));
+            LDCodecs.optionalFieldOf(ResourceLocation.CODEC.listOf(), "stylesheets").forGetter(ui -> Optional.ofNullable(ui.stylesheets.isEmpty() ? null : ui.stylesheets)),
+            LDCodecs.optionalFieldOf(Codec.BOOL, "hud", false).forGetter(ui -> ui.hud)
+    ).apply(instance, (template, customStyles, stylesheets, hud) -> {
+        var ui = new UITemplate(template, customStyles.orElse(""), stylesheets.orElseGet(Collections::emptyList));
+        ui.hud = hud;
+        return ui;
+    }));
+
     public static final StreamCodec<FriendlyByteBuf, UITemplate> STREAM_CODEC = StreamCodec.of((buffer, value) -> {
         buffer.writeNbt(value.data);
         buffer.writeUtf((value.builtinStyles == null || value.builtinStyles.isBlank()) ? "" : value.builtinStyles);
@@ -63,6 +68,12 @@ public class UITemplate {
     private String builtinStyles;
     @Getter
     private final List<ResourceLocation> stylesheets = new ArrayList<>();
+    /**
+     * Edited as a HUD: the UI editor previews it at the game screen's size over the game, its root filling the screen.
+     * Only the editor reads it, it is not sent to clients.
+     */
+    @Getter @Setter
+    private boolean hud;
     // cache
     @Nullable
     private Stylesheet customStylesheet;
@@ -143,11 +154,13 @@ public class UITemplate {
     }
 
     public UITemplate copy() {
-        return new UITemplate(
+        var copy = new UITemplate(
                 data.copy(),
                 builtinStyles,
                 stylesheets
         );
+        copy.hud = hud;
+        return copy;
     }
 
     public void copyStylesFrom(UITemplate other) {

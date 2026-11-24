@@ -38,7 +38,8 @@ public class DataComponentConfigurator extends ConfiguratorGroup {
     }
 
     public void resetPrototype() {
-        consumer.accept(prototype.copy());
+        var patch = prototype.copy();
+        write(() -> consumer.accept(patch));
         notifyChanges();
     }
 
@@ -51,8 +52,8 @@ public class DataComponentConfigurator extends ConfiguratorGroup {
             var current = supplier.get();
             return current == null || current.isEmpty() ? EndTag.INSTANCE : current;
         }, tag -> {
-            if (tag instanceof CompoundTag compound) consumer.accept(compound.copy());
-            else consumer.accept(new CompoundTag());
+            var updated = tag instanceof CompoundTag compound ? compound.copy() : new CompoundTag();
+            write(() -> consumer.accept(updated));
         }, EndTag.INSTANCE, forceUpdate);
         tagConfigurator.tagField.setTagValidator(DataComponentConfigurator::isCompoundOrEmpty);
         addConfigurator(tagConfigurator);

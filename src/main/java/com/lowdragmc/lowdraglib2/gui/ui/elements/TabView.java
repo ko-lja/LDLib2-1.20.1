@@ -2,6 +2,7 @@ package com.lowdragmc.lowdraglib2.gui.ui.elements;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
 import com.lowdragmc.lowdraglib2.configurator.ui.ConfiguratorGroup;
 import com.lowdragmc.lowdraglib2.configurator.ui.SelectorConfigurator;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
@@ -30,6 +31,8 @@ import org.w3c.dom.Node;
 
 import org.jetbrains.annotations.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -57,6 +60,8 @@ public class TabView extends UIElement {
     @Nullable
     @Getter
     private Tab selectedTab = null;
+    // oldest first: closing the selected tab goes back to the one selected before it
+    private final List<Tab> selectionHistory = new ArrayList<>();
 
     public TabView() {
         getLayout().flexDirection(FlexDirection.COLUMN_REVERSE);
@@ -140,9 +145,11 @@ public class TabView extends UIElement {
             tabContentContainer.removeChild(content);
         }
         tab.setSelected(false);
+        selectionHistory.remove(tab);
         if (selectedTab == tab) {
             selectedTab = null;
-            var newTab = tabContents.keySet().stream().findFirst().orElse(null);
+            var newTab = Lists.reverse(selectionHistory).stream().filter(tabContents::containsKey).findFirst()
+                    .or(() -> tabContents.keySet().stream().findFirst()).orElse(null);
             if (newTab != null) {
                 selectTab(newTab);
             }
@@ -152,6 +159,7 @@ public class TabView extends UIElement {
 
     public TabView clear() {
         tabContents.clear();
+        selectionHistory.clear();
         tabScroller.clearAllScrollViewChildren();
         tabContentContainer.clearAllChildren();
         return this;
@@ -170,6 +178,8 @@ public class TabView extends UIElement {
             }
         }
         selectedTab = tab;
+        selectionHistory.remove(tab);
+        selectionHistory.add(tab);
         selectedTab.setSelected(true);
         var content = tabContents.get(selectedTab);
         if (content != null) {
@@ -238,6 +248,7 @@ public class TabView extends UIElement {
         super.beforeDeserialize();
         if (!isRestoringOwnState()) {
             tabContents.clear();
+            selectionHistory.clear();
         }
     }
 
