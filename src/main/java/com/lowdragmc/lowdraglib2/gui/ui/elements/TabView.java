@@ -2,6 +2,7 @@ package com.lowdragmc.lowdraglib2.gui.ui.elements;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Lists;
 import com.lowdragmc.lowdraglib2.configurator.ui.ConfiguratorGroup;
 import com.lowdragmc.lowdraglib2.configurator.ui.SelectorConfigurator;
 import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
@@ -147,7 +148,7 @@ public class TabView extends UIElement {
         selectionHistory.remove(tab);
         if (selectedTab == tab) {
             selectedTab = null;
-            var newTab = selectionHistory.reversed().stream().filter(tabContents::containsKey).findFirst()
+            var newTab = Lists.reverse(selectionHistory).stream().filter(tabContents::containsKey).findFirst()
                     .or(() -> tabContents.keySet().stream().findFirst()).orElse(null);
             if (newTab != null) {
                 selectTab(newTab);

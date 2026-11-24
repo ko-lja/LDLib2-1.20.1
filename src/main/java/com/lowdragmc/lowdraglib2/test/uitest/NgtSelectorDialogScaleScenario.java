@@ -176,7 +176,7 @@ public class NgtSelectorDialogScaleScenario implements UIScenario {
 
     private static void checkPreview(TestContext ctx, String name, UIElement preview, float limit) {
         var bounds = ElementBounds.of(preview);
-        var content = preview.getChildren().isEmpty() ? null : ElementBounds.of(preview.getChildren().getFirst());
+        var content = preview.getChildren().isEmpty() ? null : ElementBounds.of(preview.getChildren().get(0));
         ctx.log("%s: preview [%.1f, %.1f] content %s limit %.1f".formatted(name, bounds.x(), bounds.right(),
                 content == null ? "-" : "[%.1f, %.1f]".formatted(content.x(), content.right()), limit));
         ctx.check(name + ": the preview clips what it holds", !preview.getStyle().overflowVisible());

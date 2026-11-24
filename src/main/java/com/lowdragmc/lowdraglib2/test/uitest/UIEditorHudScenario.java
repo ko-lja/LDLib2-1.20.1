@@ -30,6 +30,9 @@ import dev.vfyjxf.taffy.style.TaffyDimension;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.RegistryOps;
+
+import io.netty.handler.codec.DecoderException;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -156,13 +159,21 @@ public class UIEditorHudScenario implements UIScenario {
                         })
                         .check("saved as a HUD", ctx -> ctx.<UITemplate>get(SAVED).isHud())
                         .check("and still one written and read back", ctx -> {
-                            var ops = Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE);
-                            var tag = UITemplate.CODEC.encodeStart(ops, ctx.<UITemplate>get(SAVED)).getOrThrow();
-                            return UITemplate.CODEC.parse(ops, tag).getOrThrow().isHud();
+                            var ops = RegistryOps.create(NbtOps.INSTANCE, Platform.getFrozenRegistry());
+                            var value = ctx.<UITemplate>get(SAVED);
+                            var tag = UITemplate.CODEC.encodeStart(ops, value).getOrThrow(false, message -> {
+                                throw new DecoderException("Failed to decode: " + message + " " + value);
+                            });
+                            return UITemplate.CODEC.parse(ops, tag).getOrThrow(false, message -> {
+                                throw new DecoderException("Failed to decode: " + message + " " + tag);
+                            }).isHud();
                         })
                         .check("a UI that is not one writes nothing new", ctx -> {
-                            var ops = Platform.getFrozenRegistry().createSerializationContext(NbtOps.INSTANCE);
-                            var tag = UITemplate.CODEC.encodeStart(ops, UITemplate.of(new UIElement())).getOrThrow();
+                            var ops = RegistryOps.create(NbtOps.INSTANCE, Platform.getFrozenRegistry());
+                            var value = UITemplate.of(new UIElement());
+                            var tag = UITemplate.CODEC.encodeStart(ops, value).getOrThrow(false, message -> {
+                                throw new DecoderException("Failed to decode: " + message + " " + value);
+                            });
                             return tag instanceof CompoundTag compound && !compound.contains("hud");
                         }))
 
