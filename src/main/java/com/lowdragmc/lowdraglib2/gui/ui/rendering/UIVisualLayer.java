@@ -13,6 +13,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 public class UIVisualLayer {
     // msaa does it necessary?
@@ -22,6 +24,8 @@ public class UIVisualLayer {
     private static final int MAX_POOL_SIZE = 10;
 //    private static final int SAMPLER = 4;
 //    private static TextureTarget MSAA_RESOLVED_COLOR;
+
+    private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
     private final UIElement element;
     @Nullable
@@ -170,11 +174,6 @@ public class UIVisualLayer {
         var opacity = element.getStyle().opacity();
         var hasClip = element.getStyle().overflowClip() != IGuiTexture.EMPTY;
 
-        var x = element.getPositionX();
-        var y = element.getPositionY();
-        var width = element.getSizeWidth();
-        var height = element.getSizeHeight();
-
         RenderSystem.setShader(LDLibShaders::getVisualLayerShader);
         RenderSystem.setShaderTexture(0, textureId());
         var blitShader = LDLibShaders.getVisualLayerShader();
@@ -198,14 +197,17 @@ public class UIVisualLayer {
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
         );
 
+        var width = guiContext.modularUI.getScreenWidth();
+        var height = guiContext.modularUI.getScreenHeight();
+
         Tesselator tesselator = RenderSystem.renderThreadTesselator();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-        var pose = guiContext.pose.last().pose();
-        bufferbuilder.vertex(pose, x, y + height, 0).endVertex();
-        bufferbuilder.vertex(pose, x + width, y + height, 0).endVertex();
-        bufferbuilder.vertex(pose, x + width, y, 0).endVertex();
-        bufferbuilder.vertex(pose, x, y, 0).endVertex();
+        var z = guiContext.pose.last().pose().transform(new Vector4f(0, 0, 0, 1.0F)).z;
+        bufferbuilder.vertex(IDENTITY_MATRIX, 0, height, z).endVertex();
+        bufferbuilder.vertex(IDENTITY_MATRIX, width, height, z).endVertex();
+        bufferbuilder.vertex(IDENTITY_MATRIX, width, 0, z).endVertex();
+        bufferbuilder.vertex(IDENTITY_MATRIX, 0, 0, z).endVertex();
         BufferUploader.drawWithShader(bufferbuilder.end());
     }
 }
