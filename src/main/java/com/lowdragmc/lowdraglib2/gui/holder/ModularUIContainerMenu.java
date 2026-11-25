@@ -48,6 +48,11 @@ public class ModularUIContainerMenu extends AbstractContainerMenu {
             return ItemStack.EMPTY;
         }
 
+        var clickItemSlot = asModularUIHolderMenu().getItemSlot(clickSlot);
+        if (clickItemSlot != null && !clickItemSlot.isDisplayedInHierarchy()) {
+            return ItemStack.EMPTY;
+        }
+
         var stackToMove = clickSlot.getItem();
         if (stackToMove.isEmpty()) {
             return ItemStack.EMPTY;
@@ -142,7 +147,7 @@ public class ModularUIContainerMenu extends AbstractContainerMenu {
                                                   boolean fromPlayerSide) {
         var itemSlot = asModularUIHolderMenu().getItemSlot(candidateSlot);
         return isPlayerSideSlot(candidateSlot) != fromPlayerSide
-                && (itemSlot == null || itemSlot.getSlotStyle().acceptQuickMove())
+                && (itemSlot == null || (itemSlot.getSlotStyle().acceptQuickMove() && itemSlot.isDisplayedInHierarchy()))
                 && candidateSlot.mayPlace(stackToMove);
     }
 

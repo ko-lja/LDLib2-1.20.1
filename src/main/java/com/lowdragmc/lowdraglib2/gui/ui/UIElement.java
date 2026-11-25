@@ -965,6 +965,18 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
         return true;
     }
 
+    /**
+     * Whether this element and all its ancestors are displayed.
+     */
+    public boolean isDisplayedInHierarchy() {
+        for (UIElement element = this; element != null; element = element.getParent()) {
+            if (!element.isDisplayed()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /// Style
     public boolean hasClass(String clazz) {
         return classes.contains(clazz);
