@@ -966,11 +966,11 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
     }
 
     /**
-     * Whether this element and all its ancestors are displayed.
+     * Whether this element and all its ancestors are displayed and visible.
      */
-    public boolean isDisplayedInHierarchy() {
+    public boolean isInteractableInHierarchy() {
         for (UIElement element = this; element != null; element = element.getParent()) {
-            if (!element.isDisplayed()) {
+            if (!element.isVisible() || !element.isDisplayed() || element.getStyle().opacity() == 0f) {
                 return false;
             }
         }
