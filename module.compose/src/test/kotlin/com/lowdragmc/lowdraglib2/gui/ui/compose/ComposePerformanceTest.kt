@@ -1,5 +1,6 @@
 package com.lowdragmc.lowdraglib2.gui.ui.compose
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -32,13 +33,20 @@ class ComposePerformanceTest {
     private class ListFixture(n: Int) {
         val harness = TestHarness()
         var rows by mutableStateOf((1..n).map { Row(it, "v0") })
+        var rowCompositions = 0
 
         init {
             harness.setContent {
                 Node("list") {
-                    rows.forEach { row -> key(row.id) { Node(row.text) } }
+                    rows.forEach { row -> key(row.id) { RowNode(row) } }
                 }
             }
+        }
+
+        @Composable
+        private fun RowNode(row: Row) {
+            rowCompositions++
+            Node(row.text)
         }
 
         fun touchOne(index: Int, revision: Int) {
@@ -57,26 +65,20 @@ class ComposePerformanceTest {
     }
 
     @Test
-    fun `updating one row does not scale with list length`() {
-        val small = ListFixture(100)
-        val large = ListFixture(1000)
+    fun `updating one row recomposes only that row`() {
+        for (fixture in listOf(ListFixture(100), ListFixture(1000))) {
+            val n = fixture.rows.size
+            val cost = measure { rev -> fixture.touchOne(n / 2, rev); fixture.harness.frame() }
+            println("[perf] update 1 of $n: ${micros(cost)}")
 
-        val smallCost = measure { rev -> small.touchOne(50, rev); small.harness.frame() }
-        val largeCost = measure { rev -> large.touchOne(500, rev); large.harness.frame() }
+            fixture.rowCompositions = 0
+            fixture.touchOne(n / 2, -1)
+            fixture.harness.frame()
 
-        println("[perf] update 1 of 100:  ${micros(smallCost)}")
-        println("[perf] update 1 of 1000: ${micros(largeCost)}")
-        println("[perf] ratio for 10x the rows: %.2fx".format(largeCost.toDouble() / smallCost))
-
-        assertEquals("root(list(${large.rows.joinToString(",") { it.text }}))", large.harness.tree())
-
-        // Not O(1): the list lambda still walks every row, but untouched rows skip, so well under 10x.
-        assertTrue(
-            largeCost < smallCost * 6,
-            "10x rows cost ${largeCost.toDouble() / smallCost}x: ${micros(smallCost)} -> ${micros(largeCost)}",
-        )
-        small.harness.dispose()
-        large.harness.dispose()
+            assertEquals(1, fixture.rowCompositions, "rows recomposed for a one-row change in a list of $n")
+            assertEquals("root(list(${fixture.rows.joinToString(",") { it.text }}))", fixture.harness.tree())
+            fixture.harness.dispose()
+        }
     }
 
     @Test
