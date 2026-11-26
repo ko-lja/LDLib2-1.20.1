@@ -129,7 +129,10 @@ public class LDFontSet extends FontSet {
      */
     @Override
     public GlyphInfo getGlyphInfo(int character, boolean filterFishyGlyphs) {
-        var info = glyphInfos.get(character);
+        GlyphInfo info;
+        synchronized (glyphInfos) {
+            info = glyphInfos.get(character);
+        }
         if (info == null) {
             GlyphMetrics metrics = null;
             for (var source : sources) {
@@ -137,7 +140,9 @@ public class LDFontSet extends FontSet {
                 if (metrics != null) break;
             }
             info = metrics == null ? SpecialGlyphs.MISSING : new SdfGlyphInfo(character, metrics);
-            glyphInfos.put(character, info);
+            synchronized (glyphInfos) {
+                glyphInfos.put(character, info);
+            }
         }
         if (filterFishyGlyphs) {
             var advance = info.getAdvance();
@@ -302,7 +307,9 @@ public class LDFontSet extends FontSet {
     @Override
     public void close() {
         super.close();
-        glyphInfos.clear();
+        synchronized (glyphInfos) {
+            glyphInfos.clear();
+        }
         bakedGlyphs.clear();
         whiteGlyphs.clear();
         glyphsByWidth.clear();

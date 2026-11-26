@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -71,7 +72,7 @@ public class LDFontManager implements Function<ResourceLocation, FontSet>, Resou
     }
 
     private final Map<ResourceLocation, List<ProviderEntry>> definitions = new HashMap<>();
-    private final Map<ResourceLocation, LDFontSet> fontSets = new HashMap<>();
+    private final Map<ResourceLocation, LDFontSet> fontSets = new ConcurrentHashMap<>();
     private final Map<String, GlyphSource> sourceCache = new HashMap<>();
 
     @Nullable
@@ -203,7 +204,18 @@ public class LDFontManager implements Function<ResourceLocation, FontSet>, Resou
 
     @Override
     public FontSet apply(ResourceLocation fontId) {
-        return fontSets.computeIfAbsent(fontId, this::buildFontSet);
+        var existing = fontSets.get(fontId);
+        if (existing != null) {
+            return existing;
+        }
+        synchronized (this) {
+            existing = fontSets.get(fontId);
+            if (existing == null) {
+                existing = buildFontSet(fontId);
+                fontSets.put(fontId, existing);
+            }
+            return existing;
+        }
     }
 
     public int atlasPageCount(boolean raster) {
@@ -217,7 +229,7 @@ public class LDFontManager implements Function<ResourceLocation, FontSet>, Resou
      * Throws away every baked glyph and re-reads the font definitions. Called on resource reload, and safe to
      * call when a font related option changes.
      */
-    public void invalidate() {
+    public synchronized void invalidate() {
         // layouts hold direct BakedGlyph references, which point at atlas pages that are about to go away
         LDTextLayoutCache.clear();
         LDFontStatsOverlay.INSTANCE.reset();
@@ -237,7 +249,7 @@ public class LDFontManager implements Function<ResourceLocation, FontSet>, Resou
     }
 
     @Override
-    public void onResourceManagerReload(ResourceManager resourceManager) {
+    public synchronized void onResourceManagerReload(ResourceManager resourceManager) {
         invalidate();
         definitions.clear();
         for (var entry : FONT_DEFINITIONS.listMatchingResourceStacks(resourceManager).entrySet()) {
