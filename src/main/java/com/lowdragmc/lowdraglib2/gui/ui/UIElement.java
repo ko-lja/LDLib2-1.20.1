@@ -20,6 +20,7 @@ import com.lowdragmc.lowdraglib2.gui.texture.IGuiTexture;
 import com.lowdragmc.lowdraglib2.gui.texture.Icons;
 import com.lowdragmc.lowdraglib2.gui.ui.data.Transform2D;
 import com.lowdragmc.lowdraglib2.gui.ui.event.*;
+import com.lowdragmc.lowdraglib2.gui.ui.layout.LayoutProperties;
 import com.lowdragmc.lowdraglib2.gui.ui.layout.TaffyLayoutStyle;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.GUIContext;
 import com.lowdragmc.lowdraglib2.gui.ui.rendering.UIVisualLayer;
@@ -970,7 +971,7 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
      */
     public boolean isInteractableInHierarchy() {
         for (UIElement element = this; element != null; element = element.getParent()) {
-            if (!element.isVisible() || !element.isDisplayed() || element.getStyle().opacity() == 0f) {
+            if (!element.isVisible() || element.getLayout().getValueImmediate(LayoutProperties.DISPLAY) == TaffyDisplay.NONE) {
                 return false;
             }
         }
