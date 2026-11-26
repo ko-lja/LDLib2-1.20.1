@@ -1078,6 +1078,20 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
         }
     }
 
+    public void setStylesheetRules(List<StyleRule> rules) {
+        styleBag.removeCandidates(slot ->
+                slot.origin() == StyleOrigin.STYLESHEET && slot.sourceOrder() >= StyleEngine.SHEET_RULE_ORDER);
+        for (int i = 0; i < rules.size(); i++) {
+            var rule = rules.get(i);
+            styleBag.putCandidates(
+                    rule.properties,
+                    StyleOrigin.STYLESHEET,
+                    rule.getSpecificity(),
+                    StyleEngine.SHEET_RULE_ORDER + i
+            );
+        }
+    }
+
     public void removeAllRules() {
         styleBag.removeCandidates(slot -> slot.origin() == StyleOrigin.STYLESHEET);
     }

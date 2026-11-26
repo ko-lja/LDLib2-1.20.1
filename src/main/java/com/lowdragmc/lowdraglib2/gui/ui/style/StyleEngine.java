@@ -10,6 +10,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 public final class StyleEngine {
+    public static final int SHEET_RULE_ORDER = 1 << 30;
+
     public final ModularUI modularUI;
     public final List<Stylesheet> globalSheets = new CopyOnWriteArrayList<>();
 
@@ -50,31 +52,22 @@ public final class StyleEngine {
 
     public void addStylesheet(Stylesheet stylesheet) {
         globalSheets.add(stylesheet);
-        for (UIElement element : modularUI.getAllElements()) {
-            var rules = stylesheet.calculateValues(element);
-            if (!rules.isEmpty()) {
-                elementStyleRules.computeIfAbsent(element, e -> new ConcurrentHashMap<>()).put(stylesheet, rules);
-                element.addStyleRules(rules);
-            }
-        }
+        modularUI.getAllElements().forEach(this::applyStyleRules);
     }
 
     public void removeStylesheet(Stylesheet sheet) {
         globalSheets.remove(sheet);
-        for (var entry : elementStyleRules.entrySet()) {
-            var rules = entry.getValue().remove(sheet);
-            if (rules != null) {
-                entry.getKey().removeStyleRules(rules);
+        for (var element : List.copyOf(elementStyleRules.keySet())) {
+            var rulesMap = elementStyleRules.get(element);
+            if (rulesMap != null && rulesMap.containsKey(sheet)) {
+                applyStyleRules(element);
             }
         }
     }
 
     public void clearAllStylesheets() {
         globalSheets.clear();
-        for (var element : elementStyleRules.keySet()) {
-            element.removeAllRules();
-        }
-        elementStyleRules.clear();
+        List.copyOf(elementStyleRules.keySet()).forEach(this::applyStyleRules);
     }
 
     public void enqueue(StyleBag bag) {
@@ -108,33 +101,7 @@ public final class StyleEngine {
 
     public void onElementRegister(UIElement element) {
         enqueue(element.getStyleBag());
-        // Apply global stylesheets
-        for (var stylesheet : globalSheets) {
-            var rules = stylesheet.calculateValues(element);
-            if (!rules.isEmpty()) {
-                elementStyleRules.computeIfAbsent(element, e -> new ConcurrentHashMap<>()).put(stylesheet, rules);
-                element.addStyleRules(rules);
-            }
-        }
-        // Apply local stylesheets from ancestors (including self)
-        applyAncestorLocalStylesheets(element);
-    }
-
-    /**
-     * Apply local stylesheets from this element and all its ancestors to the given element.
-     */
-    private void applyAncestorLocalStylesheets(UIElement element) {
-        var ancestor = element;
-        while (ancestor != null) {
-            for (var sheet : ancestor.getLocalStylesheets()) {
-                var rules = sheet.calculateValues(element);
-                if (!rules.isEmpty()) {
-                    elementStyleRules.computeIfAbsent(element, e -> new ConcurrentHashMap<>()).put(sheet, rules);
-                    element.addStyleRules(rules);
-                }
-            }
-            ancestor = ancestor.getParent();
-        }
+        applyStyleRules(element);
     }
 
     /**
@@ -142,31 +109,14 @@ public final class StyleEngine {
      * The stylesheet will only be applied to the owner and its descendants.
      */
     public void addLocalStylesheet(UIElement owner, Stylesheet stylesheet) {
-        forEachRegisteredDescendantAndSelf(owner, element -> {
-            var rules = stylesheet.calculateValues(element);
-            if (!rules.isEmpty()) {
-                elementStyleRules.computeIfAbsent(element, e -> new ConcurrentHashMap<>()).put(stylesheet, rules);
-                element.addStyleRules(rules);
-            }
-        });
+        forEachRegisteredDescendantAndSelf(owner, this::applyStyleRules);
     }
 
     /**
      * Remove a local stylesheet that was scoped to the given owner element's subtree.
      */
     public void removeLocalStylesheet(UIElement owner, Stylesheet stylesheet) {
-        forEachRegisteredDescendantAndSelf(owner, element -> {
-            var rulesMap = elementStyleRules.get(element);
-            if (rulesMap != null) {
-                var rules = rulesMap.remove(stylesheet);
-                if (rules != null) {
-                    element.removeStyleRules(rules);
-                    if (rulesMap.isEmpty()) {
-                        elementStyleRules.remove(element);
-                    }
-                }
-            }
-        });
+        forEachRegisteredDescendantAndSelf(owner, this::applyStyleRules);
     }
 
     private void forEachRegisteredDescendantAndSelf(UIElement root, Consumer<UIElement> action) {
@@ -198,64 +148,50 @@ public final class StyleEngine {
 
     private void updateElementStyle(UIElement element) {
         if (element.getModularUI() != modularUI) return;
-        // 1. cache old for comparison
-        List<StyleRule> oldRules = new ArrayList<>();
-        var currentRulesMap = elementStyleRules.get(element);
-        if (currentRulesMap != null) {
-            for (List<StyleRule> rules : currentRulesMap.values()) {
-                oldRules.addAll(rules);
-            }
-        }
+        applyStyleRules(element);
+    }
 
-        // 2. calculate new style rules
-        Map<Stylesheet, List<StyleRule>> newRulesMap = new HashMap<>();
-        List<StyleRule> newRules = new ArrayList<>();
-
-        // Global stylesheets
+    private void applyStyleRules(UIElement element) {
+        var newRulesMap = new LinkedHashMap<Stylesheet, List<StyleRule>>();
         for (var stylesheet : globalSheets) {
-            var rules = stylesheet.calculateValues(element);
-            if (!rules.isEmpty()) {
-                newRulesMap.put(stylesheet, rules);
-                newRules.addAll(rules);
+            matchStylesheet(element, stylesheet, newRulesMap);
+        }
+        var ancestors = new ArrayList<UIElement>();
+        for (var ancestor = element; ancestor != null; ancestor = ancestor.getParent()) {
+            ancestors.add(ancestor);
+        }
+        for (int i = ancestors.size() - 1; i >= 0; i--) {
+            for (var sheet : ancestors.get(i).getLocalStylesheets()) {
+                matchStylesheet(element, sheet, newRulesMap);
             }
         }
 
-        // Local stylesheets from ancestors (including self)
-        var ancestor = element;
-        while (ancestor != null) {
-            for (var sheet : ancestor.getLocalStylesheets()) {
-                var rules = sheet.calculateValues(element);
-                if (!rules.isEmpty()) {
-                    newRulesMap.put(sheet, rules);
-                    newRules.addAll(rules);
-                }
-            }
-            ancestor = ancestor.getParent();
-        }
+        var oldRulesMap = elementStyleRules.get(element);
+        var oldRules = oldRulesMap == null ? List.<StyleRule>of() : flatten(oldRulesMap);
+        var newRules = flatten(newRulesMap);
+        if (oldRules.equals(newRules)) return;
 
-        // 3. compare old and new rules
-        boolean rulesChanged = !oldRules.equals(newRules);
-
-        if (rulesChanged) {
-            // A. clear old rules
-            if (!oldRules.isEmpty()) {
-                element.removeStyleRules(oldRules);
-            }
-
-            // B. update rules map
-            if (newRulesMap.isEmpty()) {
-                elementStyleRules.remove(element);
-            } else {
-                elementStyleRules.put(element, new ConcurrentHashMap<>(newRulesMap));
-            }
-
-            // C. apply new rules
-            if (!newRules.isEmpty()) {
-                element.addStyleRules(newRules);
-                enqueue(element.getStyleBag());
-            }
+        if (newRulesMap.isEmpty()) {
+            elementStyleRules.remove(element);
         } else {
-            // ok, nothing changes
+            elementStyleRules.put(element, Collections.unmodifiableMap(newRulesMap));
         }
+        element.setStylesheetRules(newRules);
+        enqueue(element.getStyleBag());
+    }
+
+    private static void matchStylesheet(UIElement element, Stylesheet sheet,
+                                        Map<Stylesheet, List<StyleRule>> rulesMap) {
+        rulesMap.remove(sheet);
+        var rules = sheet.calculateValues(element);
+        if (!rules.isEmpty()) {
+            rulesMap.put(sheet, rules);
+        }
+    }
+
+    private static List<StyleRule> flatten(Map<Stylesheet, List<StyleRule>> rulesMap) {
+        var rules = new ArrayList<StyleRule>();
+        rulesMap.values().forEach(rules::addAll);
+        return rules;
     }
 }

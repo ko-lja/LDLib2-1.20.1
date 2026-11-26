@@ -27,6 +27,7 @@ public final class Stylesheet {
     private final Map<String, List<StyleRule>> byClassName = new HashMap<>();
     private final Map<String, List<StyleRule>> byId = new HashMap<>();
     private final List<StyleRule> universalRules = new ArrayList<>();
+    private final Map<StyleRule, Integer> positions = new IdentityHashMap<>();
 
     public Stylesheet(List<StyleRule> rules) {
         this.rules.addAll(rules);
@@ -74,6 +75,7 @@ public final class Stylesheet {
         byClassName.clear();
         byId.clear();
         universalRules.clear();
+        positions.clear();
     }
 
     private void rebuildIndex() {
@@ -84,6 +86,7 @@ public final class Stylesheet {
     }
 
     private void indexRule(StyleRule rule) {
+        positions.putIfAbsent(rule, positions.size());
         var groups = rule.matcher.getSelectorGroups();
         if (groups.isEmpty()) {
             universalRules.add(rule);
@@ -136,6 +139,7 @@ public final class Stylesheet {
                 matchRules.add(rule);
             }
         }
+        matchRules.sort(Comparator.comparingInt(rule -> positions.getOrDefault(rule, Integer.MAX_VALUE)));
         return Collections.unmodifiableList(matchRules);
     }
 
