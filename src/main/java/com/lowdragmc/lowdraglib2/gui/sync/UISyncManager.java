@@ -9,6 +9,7 @@ import com.lowdragmc.lowdraglib2.networking.both.PacketUIRPCEventReturn;
 import com.lowdragmc.lowdraglib2.utils.ByteBufUtil;
 import com.lowdragmc.lowdraglib2.utils.IdentityMap;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
@@ -26,6 +27,9 @@ public class UISyncManager {
     private final AtomicInteger eventID = new AtomicInteger(0);
     @Getter
     private final Map<Integer, Consumer<?>> returnCallbacks = new HashMap<>();
+    @Getter
+    @Setter
+    private boolean awaitingInitialData = false;
 
     public UISyncManager(ModularUI modularUI) {
         this.modularUI = modularUI;
@@ -54,7 +58,7 @@ public class UISyncManager {
 
     /// Sync Data Logic
     public final void tick() {
-        if (modularUI.player == null) return;
+        if (modularUI.player == null || awaitingInitialData) return;
         var toSync = new ArrayList<SyncValue<?>>();
         for (var value : syncValues.values()) {
             value.update();
@@ -96,6 +100,7 @@ public class UISyncManager {
     }
 
     public void readInitialData(FriendlyByteBuf data) {
+        awaitingInitialData = false;
         handlePack(data);
         // clear changed flag
         for (var value : syncValues.values()) {

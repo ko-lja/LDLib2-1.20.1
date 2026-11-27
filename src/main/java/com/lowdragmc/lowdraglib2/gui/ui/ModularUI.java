@@ -611,6 +611,15 @@ public class ModularUI {
         this.ui.rootElement.clearLayoutCache();
     }
 
+    public void calculateStylesWithoutLayout() {
+        if (ui.rootElement.getModularUI() != this) {
+            ui.rootElement._setModularUIInternal(this);
+        }
+        while (styleEngine.requireCalculate()) {
+            styleEngine.calculateStyle();
+        }
+    }
+
     private void calculateStyleAndLayout() {
         int dirtyCount = 0;
         while (styleEngine.requireCalculate() || taffyTree.isDirty(ui.rootElement.nodeId)) {

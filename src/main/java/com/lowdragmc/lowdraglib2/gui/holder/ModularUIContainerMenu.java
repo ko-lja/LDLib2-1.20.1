@@ -1,14 +1,18 @@
 package com.lowdragmc.lowdraglib2.gui.holder;
 
+import com.lowdragmc.lowdraglib2.compat.network.PacketDistributor;
 import com.lowdragmc.lowdraglib2.gui.factory.IContainerUIHolder;
 import com.lowdragmc.lowdraglib2.gui.ui.ModularUI;
+import com.lowdragmc.lowdraglib2.networking.c2s.CPacketSlotVisibility;
 import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
@@ -19,6 +23,11 @@ public class ModularUIContainerMenu extends AbstractContainerMenu {
     public final IContainerUIHolder uiHolder;
     @Getter
     public final ModularUI modularUI;
+    @Nullable
+    @Setter
+    private BitSet clientHiddenSlots;
+    @Nullable
+    private BitSet sentHiddenSlots;
 
     public ModularUIContainerMenu(MenuType<ModularUIContainerMenu> menuType,
                                   int windowID,
@@ -36,6 +45,39 @@ public class ModularUIContainerMenu extends AbstractContainerMenu {
     }
 
     @Override
+    public void clicked(int slotId, int button, ClickType clickType, Player player) {
+        if (player.level().isClientSide) {
+            sendHiddenSlots();
+        }
+        super.clicked(slotId, button, clickType, player);
+    }
+
+    private void sendHiddenSlots() {
+        var hiddenSlots = new BitSet();
+        for (var slot : this.slots) {
+            var itemSlot = asModularUIHolderMenu().getItemSlot(slot);
+            if (itemSlot != null && !itemSlot.isInteractableInHierarchy()) {
+                hiddenSlots.set(slot.index);
+            }
+        }
+        if (!hiddenSlots.equals(sentHiddenSlots)) {
+            sentHiddenSlots = hiddenSlots;
+            PacketDistributor.sendToServer(new CPacketSlotVisibility(containerId, hiddenSlots));
+        }
+    }
+
+    protected boolean isSlotInteractable(Slot slot) {
+        var itemSlot = asModularUIHolderMenu().getItemSlot(slot);
+        if (itemSlot == null) {
+            return true;
+        }
+        if (clientHiddenSlots != null) {
+            return !clientHiddenSlots.get(slot.index);
+        }
+        return itemSlot.isInteractableInHierarchy();
+    }
+
+    @Override
     public ItemStack quickMoveStack(Player player, int idx) {
         if (player.level().isClientSide) {
             return ItemStack.EMPTY;
@@ -48,8 +90,7 @@ public class ModularUIContainerMenu extends AbstractContainerMenu {
             return ItemStack.EMPTY;
         }
 
-        var clickItemSlot = asModularUIHolderMenu().getItemSlot(clickSlot);
-        if (clickItemSlot != null && !clickItemSlot.isInteractableInHierarchy()) {
+        if (!isSlotInteractable(clickSlot)) {
             return ItemStack.EMPTY;
         }
 
@@ -147,7 +188,8 @@ public class ModularUIContainerMenu extends AbstractContainerMenu {
                                                   boolean fromPlayerSide) {
         var itemSlot = asModularUIHolderMenu().getItemSlot(candidateSlot);
         return isPlayerSideSlot(candidateSlot) != fromPlayerSide
-                && (itemSlot == null || (itemSlot.getSlotStyle().acceptQuickMove() && itemSlot.isInteractableInHierarchy()))
+                && (itemSlot == null || itemSlot.getSlotStyle().acceptQuickMove())
+                && isSlotInteractable(candidateSlot)
                 && candidateSlot.mayPlace(stackToMove);
     }
 

@@ -64,6 +64,11 @@ public class VanillaSpriteTexture extends TransformTexture {
     public VanillaSpriteTexture() {
     }
 
+    public static void clearCache() {
+        SPRITE_CACHE.clear();
+        MISSING_SPRITES.clear();
+    }
+
     public VanillaSpriteTexture(ResourceLocation sprite) {
         this.sprite = sprite;
     }

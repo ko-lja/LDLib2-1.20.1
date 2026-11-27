@@ -20,10 +20,9 @@ import java.nio.ByteBuffer;
 /**
  * Rasterizes TrueType/OpenType outlines and turns them into signed distance fields.
  * <p>
- * Rasterization goes through FreeType, the same library Minecraft itself uses for TTF fonts. stb_truetype was
- * tried first and had to be abandoned: its rasterizer writes past the end of its own output buffer at small em
- * sizes, which corrupts the native heap and takes the JVM down a few allocations later. FreeType renders these
- * same fonts every time the vanilla font manager loads them.
+ * Rasterization goes through stb_truetype, the same library Minecraft 1.20.1 itself uses for TTF fonts. Its
+ * rasterizer has been seen writing past the end of its output buffer at small em sizes, so every bitmap buffer is
+ * allocated with an extra row and 64 bytes of slack beyond {@code width * height}.
  * <p>
  * Metrics mirror vanilla's {@link com.mojang.blaze3d.font.TrueTypeGlyphProvider}: the face is scaled so one em
  * maps to {@code emPixels} device pixels and every metric is divided by the oversample factor to land back in
@@ -129,7 +128,7 @@ public class TrueTypeSdfSource implements GlyphSource {
             return RawGlyph.space(rendered.advance() / oversample);
         }
 
-        // fromCoverage, not fromMask: FreeType's grey levels say where the outline runs inside each edge
+        // fromCoverage, not fromMask: stb_truetype's grey levels say where the outline runs inside each edge
         // pixel, and throwing that away is what makes large text look jagged
         var sdf = DistanceTransform.fromCoverage(rendered.coverage(), rendered.width(), rendered.height(),
                 PADDING, PADDING);

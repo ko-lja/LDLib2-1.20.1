@@ -477,7 +477,7 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
         if (positionXCache.isEmpty()) {
             positionXCache = OptionalFloat.of(getLayoutX() + (parent == null ? 0 : parent.getPositionX()));
         }
-        return positionXCache.getAsFloat();
+        return positionXCache.unwrap();
     }
 
     /**
@@ -487,7 +487,7 @@ public class UIElement implements IConfigurable, IPersistedSerializable, ILDLReg
         if (positionYCache.isEmpty()) {
             positionYCache = OptionalFloat.of(getLayoutY() + (parent == null ? 0 : parent.getPositionY()));
         }
-        return positionYCache.getAsFloat();
+        return positionYCache.unwrap();
     }
 
     public final float getSizeWidth() {

@@ -41,13 +41,13 @@ public final class StyleEngine {
     }
 
     public void addStylesheets(Stylesheet... stylesheets) {
-        for (Stylesheet sheet : stylesheets) {
-            addStylesheet(sheet);
-        }
+        addStylesheets(Arrays.asList(stylesheets));
     }
 
     public void addStylesheets(List<Stylesheet> stylesheets) {
-        stylesheets.forEach(this::addStylesheet);
+        if (stylesheets.isEmpty()) return;
+        globalSheets.addAll(stylesheets);
+        modularUI.getAllElements().forEach(this::applyStyleRules);
     }
 
     public void addStylesheet(Stylesheet stylesheet) {
@@ -131,7 +131,7 @@ public final class StyleEngine {
     public void onElementUnregister(UIElement element) {
         if (elementStyleRules.containsKey(element)) {
             remove(element.getStyleBag());
-            element.removeAllRules();
+            element.setStylesheetRules(List.of());
             elementStyleRules.remove(element);
         }
     }

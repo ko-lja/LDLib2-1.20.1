@@ -49,7 +49,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -96,6 +95,8 @@ public abstract class WorldSceneRenderer {
     public record RenderedBlocksEntry(Set<BlockPos> snapshot, @Nullable ISceneBlockRenderHook hook) {
     }
 
+    private volatile Set<BlockPos> renderedBlocks = Set.of();
+
     @Nullable
     protected VertexBuffer[] vertexBuffers;
     @Nullable
@@ -126,7 +127,6 @@ public abstract class WorldSceneRenderer {
     protected int syncCompileMaxBlocksPerFrame = 200;
     @Nullable
     protected SyncCompileState syncCompileState;
-    private final Queue<BufferBuilder> builderPool = new ConcurrentLinkedQueue<>();
     @Getter
     @Setter
     protected boolean endBatchLast = false;// if true, endBatch will be called after all rendering
@@ -193,15 +193,10 @@ public abstract class WorldSceneRenderer {
      */
     public void releaseResource() {
         deleteCacheBuffer();
-        BufferBuilder pooled;
-        while ((pooled = builderPool.poll()) != null) {
-            MemoryUtil.memFree(((BufferBuilderAccessor) pooled).getBuffer());
-        }
     }
 
     private BufferBuilder acquireBuilder(RenderType layer) {
-        var pooled = builderPool.poll();
-        return pooled != null ? pooled : new BufferBuilder(layer.bufferSize());
+        return new BufferBuilder(layer.bufferSize());
     }
 
     private void recycleBuilder(BufferBuilder builder, boolean building) {
@@ -213,7 +208,7 @@ public abstract class WorldSceneRenderer {
             }
         }
         builder.discard();
-        builderPool.offer(builder);
+        MemoryUtil.memFree(((BufferBuilderAccessor) builder).getBuffer());
     }
 
     public WorldSceneRenderer setParticleManager(ParticleManager particleManager) {
@@ -340,6 +335,7 @@ public abstract class WorldSceneRenderer {
             cancelCompile();
             // Snapshot so later mutations to the caller's collection don't race with the compile thread.
             this.renderedBlocksMap.put(blocks, new RenderedBlocksEntry(Set.copyOf(blocks), renderHook));
+            updateRenderedBlocks();
         }
         return this;
     }
@@ -348,6 +344,7 @@ public abstract class WorldSceneRenderer {
         if (blocks != null) {
             cancelCompile();
             this.renderedBlocksMap.remove(blocks);
+            updateRenderedBlocks();
         }
         return this;
     }
@@ -355,7 +352,25 @@ public abstract class WorldSceneRenderer {
     public WorldSceneRenderer removeAllRenderedBlocks() {
         cancelCompile();
         this.renderedBlocksMap.clear();
+        updateRenderedBlocks();
         return this;
+    }
+
+    public boolean isBlockRendered(BlockPos pos) {
+        return renderedBlocks.contains(pos);
+    }
+
+    private void updateRenderedBlocks() {
+        var entries = renderedBlocksMap.values();
+        if (entries.size() == 1) {
+            renderedBlocks = entries.iterator().next().snapshot();
+            return;
+        }
+        var union = new HashSet<BlockPos>();
+        for (var entry : entries) {
+            union.addAll(entry.snapshot());
+        }
+        renderedBlocks = Collections.unmodifiableSet(union);
     }
 
     /**

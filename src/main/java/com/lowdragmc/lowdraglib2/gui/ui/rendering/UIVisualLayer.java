@@ -197,17 +197,23 @@ public class UIVisualLayer {
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
         );
 
-        var width = guiContext.modularUI.getScreenWidth();
-        var height = guiContext.modularUI.getScreenHeight();
+        var guiToClip = new Matrix4f(RenderSystem.getProjectionMatrix()).mul(RenderSystem.getModelViewMatrix());
+        var origin = guiToClip.transform(guiContext.pose.last().pose().transform(new Vector4f(0, 0, 0, 1.0F)));
+        var ndcZ = origin.z / origin.w;
+        var clipToGui = guiToClip.invert(new Matrix4f());
 
         Tesselator tesselator = RenderSystem.renderThreadTesselator();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-        var z = guiContext.pose.last().pose().transform(new Vector4f(0, 0, 0, 1.0F)).z;
-        bufferbuilder.vertex(IDENTITY_MATRIX, 0, height, z).endVertex();
-        bufferbuilder.vertex(IDENTITY_MATRIX, width, height, z).endVertex();
-        bufferbuilder.vertex(IDENTITY_MATRIX, width, 0, z).endVertex();
-        bufferbuilder.vertex(IDENTITY_MATRIX, 0, 0, z).endVertex();
+        addClipVertex(bufferbuilder, clipToGui, -1, -1, ndcZ);
+        addClipVertex(bufferbuilder, clipToGui, 1, -1, ndcZ);
+        addClipVertex(bufferbuilder, clipToGui, 1, 1, ndcZ);
+        addClipVertex(bufferbuilder, clipToGui, -1, 1, ndcZ);
         BufferUploader.drawWithShader(bufferbuilder.end());
+    }
+
+    private static void addClipVertex(BufferBuilder bufferbuilder, Matrix4f clipToGui, float x, float y, float z) {
+        var position = clipToGui.transform(new Vector4f(x, y, z, 1.0F));
+        bufferbuilder.vertex(IDENTITY_MATRIX, position.x / position.w, position.y / position.w, position.z / position.w).endVertex();
     }
 }

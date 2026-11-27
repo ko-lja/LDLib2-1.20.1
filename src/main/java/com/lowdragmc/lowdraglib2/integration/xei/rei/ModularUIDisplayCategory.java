@@ -61,6 +61,7 @@ public abstract class ModularUIDisplayCategory<T extends ModularUIDisplay> imple
                         return DataBindingBuilder.local(() -> {
                             var mui = uiProvider.createModularUI(display);
                             try {
+                                mui.calculateStylesWithoutLayout();
                                 var recipeIngredient = new REIRecipeIngredientHandler();
                                 var event = UIEvent.create(REIUIEvents.RECIPE_INGREDIENT);
                                 event.target = mui.ui.rootElement;

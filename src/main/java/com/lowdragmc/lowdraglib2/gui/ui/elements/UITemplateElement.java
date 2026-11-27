@@ -10,12 +10,11 @@ import com.lowdragmc.lowdraglib2.editor.resource.UIResource;
 import com.lowdragmc.lowdraglib2.gui.ui.UIElement;
 import com.lowdragmc.lowdraglib2.gui.ui.UITemplate;
 import com.lowdragmc.lowdraglib2.gui.ui.style.StyleOrigin;
-import com.lowdragmc.lowdraglib2.gui.ui.style.StyleRule;
+import com.lowdragmc.lowdraglib2.gui.ui.style.Stylesheet;
 import com.lowdragmc.lowdraglib2.integration.kjs.KJSBindings;
 import com.lowdragmc.lowdraglib2.registry.annotation.LDLRegister;
 import com.lowdragmc.lowdraglib2.utils.TagBuilder;
 import dev.latvian.mods.rhino.util.RemapPrefixForJS;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -45,7 +44,7 @@ public class UITemplateElement extends UIElement {
     @Nullable
     @Getter
     private UITemplate template;
-    private List<StyleRule> styleRules = new ArrayList<>();
+    private final List<Stylesheet> templateStylesheets = new ArrayList<>();
 
     public UITemplateElement() {
         this(null);
@@ -67,8 +66,8 @@ public class UITemplateElement extends UIElement {
     protected void loadTemplate() {
         clearAllChildren();
         getStyleBag().removeCandidates(slot -> slot.origin() == StyleOrigin.DEFAULT);
-        this.removeStyleRules(styleRules);
-        styleRules.clear();
+        templateStylesheets.forEach(this::removeLocalStylesheet);
+        templateStylesheets.clear();
         if (template != null) {
             if (LOADDINGS.get().contains(template)) {
                 LDLib2.LOGGER.error("Circular template loading detected: {}", path);
@@ -78,17 +77,9 @@ public class UITemplateElement extends UIElement {
             LOADDINGS.get().add(template);
             template.initUI(this);
             for (var stylesheet : template.getAllStylesheets()) {
-                styleRules.addAll(stylesheet.calculateValues(this));
-            }
-            // apply rules
-            addStyleRules(styleRules);
-            ObjectArrayList<UIElement> elements = new ObjectArrayList<>();
-            this.getChildren().forEach(elements::push);
-            while (!elements.isEmpty()) {
-                var peek = elements.pop();
-                peek.getChildren().forEach(elements::push);
-                for (var stylesheet : template.getAllStylesheets()) {
-                    peek.addStyleRules(stylesheet.calculateValues(peek));
+                if (!getLocalStylesheets().contains(stylesheet)) {
+                    templateStylesheets.add(stylesheet);
+                    addLocalStylesheet(stylesheet);
                 }
             }
             internalSetup();

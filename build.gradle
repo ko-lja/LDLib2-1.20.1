@@ -288,6 +288,9 @@ dependencies {
     if (!project.hasProperty('server')) { // client only so shouldnt be on a server run
         modLocalImplementation("maven.modrinth:embeddium:${embeddium_version}")
         modLocalImplementation("maven.modrinth:oculus:${oculus_version}")
+    } else {
+        modCompileOnly("maven.modrinth:embeddium:${embeddium_version}")
+        modCompileOnly("maven.modrinth:oculus:${oculus_version}")
     }
 
     // lombok

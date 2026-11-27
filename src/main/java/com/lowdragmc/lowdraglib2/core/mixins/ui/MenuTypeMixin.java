@@ -40,7 +40,11 @@ public abstract class MenuTypeMixin<T extends AbstractContainerMenu> {
             MinecraftForge.EVENT_BUS.post(new ContainerMenuEvent.Create(playerInventory.player, menu));
         }
         if (menu instanceof IModularUIHolder holder) {
-            holder.readInitialData(extraData);
+            if (extraData.readBoolean()) {
+                holder.readInitialData(extraData);
+            } else if (holder.getSyncManager() != null) {
+                holder.getSyncManager().setAwaitingInitialData(true);
+            }
         }
     }
 }

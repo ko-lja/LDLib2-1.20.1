@@ -260,7 +260,7 @@ public class Scene extends UIElement {
         //compute window size from scaled width & height
         renderer = ClientWrapper.createWorldSceneRenderer(dummyWorld, useFBOSceneRenderer, fboSize);
         var _renderer = renderer;
-        dummyWorld.setBlockFilter(pos -> _renderer.renderedBlocksMap.keySet().stream().anyMatch(c -> c.contains(pos)));
+        dummyWorld.setBlockFilter(_renderer::isBlockRendered);
         center = new Vector3f(0, 0, 0);
         renderer.useOrtho(useOrtho);
         renderer.setOnLookingAt(ray -> {});

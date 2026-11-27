@@ -63,6 +63,7 @@ public abstract class ModularUIEMIRecipe implements EmiRecipe {
         return DataBindingBuilder.local(() -> {
             var mui = uiProvider.createModularUI(this);
             try {
+                mui.calculateStylesWithoutLayout();
                 var recipeIngredient = new EMIRecipeIngredientHandler();
                 var event = UIEvent.create(EMIUIEvents.RECIPE_INGREDIENT);
                 event.target = mui.ui.rootElement;
