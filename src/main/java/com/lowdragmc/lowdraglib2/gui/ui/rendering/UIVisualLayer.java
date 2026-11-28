@@ -124,7 +124,7 @@ public class UIVisualLayer {
 
         var overflowClip = element.getStyle().overflowClip();
         // render mask first
-        var hasClip = overflowClip != IGuiTexture.EMPTY;
+        var hasClip = !element.getStyle().overflowVisible() && overflowClip != IGuiTexture.EMPTY;
         if (hasClip) {
             drawMask(guiContext, overflowClip);
         }
@@ -171,8 +171,10 @@ public class UIVisualLayer {
     public void draw(GUIContext guiContext) {
         if (target == null) return;
 
-        var opacity = element.getStyle().opacity();
-        var hasClip = element.getStyle().overflowClip() != IGuiTexture.EMPTY;
+        var style = element.getStyle();
+        var opacity = style.opacity();
+        var overflowVisible = style.overflowVisible();
+        var hasClip = !overflowVisible && style.overflowClip() != IGuiTexture.EMPTY;
 
         RenderSystem.setShader(LDLibShaders::getVisualLayerShader);
         RenderSystem.setShaderTexture(0, textureId());
@@ -197,18 +199,31 @@ public class UIVisualLayer {
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
         );
 
-        var guiToClip = new Matrix4f(RenderSystem.getProjectionMatrix()).mul(RenderSystem.getModelViewMatrix());
-        var origin = guiToClip.transform(guiContext.pose.last().pose().transform(new Vector4f(0, 0, 0, 1.0F)));
-        var ndcZ = origin.z / origin.w;
-        var clipToGui = guiToClip.invert(new Matrix4f());
-
         Tesselator tesselator = RenderSystem.renderThreadTesselator();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-        addClipVertex(bufferbuilder, clipToGui, -1, -1, ndcZ);
-        addClipVertex(bufferbuilder, clipToGui, 1, -1, ndcZ);
-        addClipVertex(bufferbuilder, clipToGui, 1, 1, ndcZ);
-        addClipVertex(bufferbuilder, clipToGui, -1, 1, ndcZ);
+
+        if (overflowVisible) {
+            var guiToClip = new Matrix4f(RenderSystem.getProjectionMatrix()).mul(RenderSystem.getModelViewMatrix());
+            var origin = guiToClip.transform(guiContext.pose.last().pose().transform(new Vector4f(0, 0, 0, 1.0F)));
+            var ndcZ = origin.z / origin.w;
+            var clipToGui = guiToClip.invert(new Matrix4f());
+            addClipVertex(bufferbuilder, clipToGui, -1, -1, ndcZ);
+            addClipVertex(bufferbuilder, clipToGui, 1, -1, ndcZ);
+            addClipVertex(bufferbuilder, clipToGui, 1, 1, ndcZ);
+            addClipVertex(bufferbuilder, clipToGui, -1, 1, ndcZ);
+        } else {
+            var x = element.getPositionX();
+            var y = element.getPositionY();
+            var width = element.getSizeWidth();
+            var height = element.getSizeHeight();
+            var pose = guiContext.pose.last().pose();
+            bufferbuilder.vertex(pose, x, y + height, 0).endVertex();
+            bufferbuilder.vertex(pose, x + width, y + height, 0).endVertex();
+            bufferbuilder.vertex(pose, x + width, y, 0).endVertex();
+            bufferbuilder.vertex(pose, x, y, 0).endVertex();
+        }
+
         BufferUploader.drawWithShader(bufferbuilder.end());
     }
 
